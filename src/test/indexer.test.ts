@@ -90,6 +90,48 @@ test('indexRepo extracts symbols, edges, and resolves across files', () => {
   rmSync(root, { recursive: true, force: true });
 });
 
+test('test blocks become symbols so test edges are block-scoped, not module-scoped', () => {
+  const root = fixtureRepo();
+  writeFileSync(
+    join(root, 'src', 'util.test.ts'),
+    `import { add } from './util.ts';
+declare function describe(t: string, f: () => void): void;
+declare function it(t: string, f: () => void): void;
+describe('add', () => {
+  it('sums two numbers', () => {
+    add(1, 2);
+  });
+  it('sums two numbers', () => {
+    add(3, 4);
+  });
+});
+`
+  );
+  const store = new Store(':memory:');
+  indexRepo(store, root);
+
+  const blocks = store.symbolsInFile('src/util.test.ts').filter((s) => s.kind === 'testblock');
+  const names = blocks.map((b) => b.name).sort();
+  assert.deepEqual(names, ['describe(add)', 'it(sums two numbers)', 'it(sums two numbers)#2']);
+  const it1 = blocks.find((b) => b.name === 'it(sums two numbers)')!;
+  assert.equal(it1.container, 'describe(add)');
+
+  const add = store.findSymbols('add').find((s) => s.kind === 'function')!;
+  const callers = store.edgesOf(add.id).in.filter((e) => e.kind === 'calls');
+  assert.ok(
+    callers.every((e) => e.fromId !== undefined) &&
+      callers.some((e) => e.fromId === it1.id),
+    'call edge originates from the it-block, not the file module'
+  );
+  assert.ok(
+    it1.spanEnd - it1.spanStart <= 3,
+    'block span is small enough to pack into a context budget'
+  );
+
+  store.close();
+  rmSync(root, { recursive: true, force: true });
+});
+
 test('re-index is incremental: unchanged files are not rewritten', () => {
   const root = fixtureRepo();
   const store = new Store(':memory:');

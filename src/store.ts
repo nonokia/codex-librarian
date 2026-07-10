@@ -17,7 +17,8 @@ export type SymbolKind =
   | 'interface'
   | 'typealias'
   | 'enum'
-  | 'variable';
+  | 'variable'
+  | 'testblock';
 
 export type EdgeKind = 'calls' | 'imports' | 'extends' | 'references';
 
