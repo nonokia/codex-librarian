@@ -22,6 +22,8 @@ export const EDGE_WEIGHTS: Record<EdgeKind, number> = {
   imports: 0.4,
 };
 export const HOP_DECAY = 0.65;
+/** per-file diminishing returns during packing (MMR-style diversity) */
+export const FILE_DAMP = 0.5;
 export const DEFAULT_BUDGET = 8000;
 export const DEFAULT_HOPS = 2;
 
@@ -159,25 +161,42 @@ export function expandContext(
   // wyt-012).
   let used = 0;
 
-  const ranked = [...best.values()]
+  const pool = [...best.values()]
     .filter((c) => !seedIds.has(c.symbol.id))
-    .map((c) => ({ c, cost: sourceOf(c.symbol).length }))
-    // score desc; ties broken by cost asc (more context per char), then name
-    // for full determinism — arbitrary tie order was the other half of the
-    // wyt-012 failure.
-    .sort(
-      (a, b) =>
-        b.c.score - a.c.score || a.cost - b.cost || a.c.symbol.name.localeCompare(b.c.symbol.name)
-    )
-    .map(({ c }) => c);
+    .map((c) => ({ c, cost: sourceOf(c.symbol).length }));
 
+  // Greedy packing with per-file diminishing returns: each item already
+  // packed from a file halves the effective score of that file's remaining
+  // candidates. Without this, swarms of cheap same-file items (test blocks)
+  // crowd out structurally distinct context (Phase-0 report follow-up).
+  // Ties break by cost asc (more context per char), then name (determinism).
   const items: ContextItem[] = [];
   const elided: ContextPack['elided'] = [];
-  for (const c of ranked) {
+  const perFile = new Map<string, number>();
+  while (pool.length > 0) {
+    let bestIdx = -1;
+    let bestEff = -1;
+    let bestCost = Infinity;
+    for (let i = 0; i < pool.length; i++) {
+      const { c, cost } = pool[i];
+      const eff = c.score * FILE_DAMP ** (perFile.get(c.symbol.file) ?? 0);
+      if (
+        eff > bestEff ||
+        (eff === bestEff &&
+          (cost < bestCost ||
+            (cost === bestCost && c.symbol.name.localeCompare(pool[bestIdx].c.symbol.name) < 0)))
+      ) {
+        bestIdx = i;
+        bestEff = eff;
+        bestCost = cost;
+      }
+    }
+    const [{ c, cost }] = pool.splice(bestIdx, 1);
     const item = toItem(c, withSource);
-    if (used + item.chars <= budget) {
+    if (used + cost <= budget) {
       items.push(item);
-      used += item.chars;
+      used += cost;
+      perFile.set(c.symbol.file, (perFile.get(c.symbol.file) ?? 0) + 1);
     } else {
       elided.push({ id: item.id, name: item.name, file: item.file, score: item.score });
     }
