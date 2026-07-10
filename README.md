@@ -17,7 +17,10 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
 - **Phase 1 スライス実装済み**: TypeScript Compiler API による型解決済み symbols/edges
   抽出(ADR-2)、単一 SQLite の Knowledge Store + 再帰 CTE k-hop 探索(ADR-1)、
   決定的展開リトリーバ(`librarian retrieve`、ADR-3 の stage 1)。
-- Context Engine の意味的補完・レビュー生成(Phase 2)は未着手。
+- **Phase 2 実装済み(MVP)**: 区画付き Context Pack 組み立て(`librarian pack`)、
+  Claude API による文脈接地レビュー生成(`librarian review`、構造化出力 + findings ごとの
+  根拠セクション記録)、GitHub Actions テンプレート(`templates/librarian-review.yml`)。
+  意味的補完(embeddings)と自己改善ループは Phase 3/4。
 
 ## Quick start
 

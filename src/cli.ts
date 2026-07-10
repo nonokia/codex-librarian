@@ -9,19 +9,33 @@ import { indexRepo } from './indexer.js';
 import { parseUnifiedDiff } from './diff.js';
 import { retrieveForDiff, DEFAULT_BUDGET } from './retrieval.js';
 import { loadGoldenFile, runEval } from './eval.js';
+import { assembleReviewPack, renderReviewPack } from './contextpack.js';
+import { generateReview, buildReviewRequest, renderReviewMarkdown, DEFAULT_MODEL } from './review.js';
 
 interface Flags {
   db?: string;
   repo?: string;
+  model: string;
   hops: number;
   budget: number;
   pretty: boolean;
   source: boolean;
+  dryRun: boolean;
+  markdown: boolean;
   limit: number;
 }
 
 function parseArgs(argv: string[]): { command: string; positional: string[]; flags: Flags } {
-  const flags: Flags = { hops: 2, budget: DEFAULT_BUDGET, pretty: false, source: false, limit: 20 };
+  const flags: Flags = {
+    model: process.env.LIBRARIAN_MODEL ?? DEFAULT_MODEL,
+    hops: 2,
+    budget: DEFAULT_BUDGET,
+    pretty: false,
+    source: false,
+    dryRun: false,
+    markdown: false,
+    limit: 20,
+  };
   const positional: string[] = [];
   let command = '';
   for (let i = 0; i < argv.length; i++) {
@@ -32,6 +46,9 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     else if (a === '--budget') flags.budget = Number(argv[++i]);
     else if (a === '--limit') flags.limit = Number(argv[++i]);
     else if (a === '--source') flags.source = true;
+    else if (a === '--model') flags.model = argv[++i];
+    else if (a === '--dry-run') flags.dryRun = true;
+    else if (a === '--markdown') flags.markdown = true;
     else if (a === '--pretty') flags.pretty = true;
     else if (!command) command = a;
     else positional.push(a);
@@ -64,6 +81,9 @@ Usage:
   librarian retrieve <diff-file|-> [--budget N] [--source]
                                               Context pack for a unified diff
   librarian eval <golden.json> [--budget N]   Retrieval match rate vs golden set
+  librarian pack <diff-file|->                Sectioned Context Pack (markdown)
+  librarian review <diff-file|-> [--model M] [--dry-run] [--markdown]
+                                              LLM review grounded in the pack
   librarian help                              This help
 
 Common flags: --db <file> (default: <repo>/.librarian/index.db of the current
@@ -174,6 +194,48 @@ function main(): void {
       });
       emit(report, flags.pretty);
       store.close();
+      break;
+    }
+    case 'pack':
+    case 'review': {
+      if (!positional[0]) fail(`usage: librarian ${command} <diff-file|->`);
+      const diffText =
+        positional[0] === '-' ? readFileSync(0, 'utf8') : readFileSync(positional[0], 'utf8');
+      const store = openStore(flags);
+      const root = flags.repo ?? store.getMeta('root');
+      if (!root) fail('index has no recorded root — pass --repo <dir>');
+      const retrieved = retrieveForDiff(store, root, parseUnifiedDiff(diffText), {
+        hops: flags.hops,
+        budget: flags.budget,
+        withSource: true,
+      });
+      store.close();
+      const pack = assembleReviewPack(diffText, retrieved);
+
+      if (command === 'pack') {
+        console.log(renderReviewPack(pack));
+        break;
+      }
+      if (flags.dryRun) {
+        const request = buildReviewRequest(pack, flags.model);
+        emit(
+          {
+            dry_run: true,
+            model: request.model,
+            system_chars: request.system.length,
+            prompt_chars: request.messages[0].content.length,
+            prompt: request.messages[0].content,
+          },
+          flags.pretty
+        );
+        break;
+      }
+      generateReview(pack, { model: flags.model })
+        .then((result) => {
+          if (flags.markdown) console.log(renderReviewMarkdown(result));
+          else emit(result, flags.pretty);
+        })
+        .catch((err: Error) => fail(`review failed: ${err.message}`));
       break;
     }
     case 'help':
