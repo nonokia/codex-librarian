@@ -153,11 +153,23 @@ export function expandContext(
 
   const withSource = opts.withSource ?? false;
   const seedItems = seeds.map((s) => toItem({ symbol: s.symbol, score: 1, via: 'seed' }, withSource));
-  let used = seedItems.reduce((n, i) => n + i.chars, 0);
+  // Seeds are NOT charged against the budget: the changed code is already
+  // carried by the diff itself — the budget governs *retrieved* context only.
+  // Charging seeds let hub-symbol diffs starve retrieval (Phase-0 report,
+  // wyt-012).
+  let used = 0;
 
   const ranked = [...best.values()]
     .filter((c) => !seedIds.has(c.symbol.id))
-    .sort((a, b) => b.score - a.score);
+    .map((c) => ({ c, cost: sourceOf(c.symbol).length }))
+    // score desc; ties broken by cost asc (more context per char), then name
+    // for full determinism — arbitrary tie order was the other half of the
+    // wyt-012 failure.
+    .sort(
+      (a, b) =>
+        b.c.score - a.c.score || a.cost - b.cost || a.c.symbol.name.localeCompare(b.c.symbol.name)
+    )
+    .map(({ c }) => c);
 
   const items: ContextItem[] = [];
   const elided: ContextPack['elided'] = [];
