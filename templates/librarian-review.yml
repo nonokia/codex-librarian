@@ -1,0 +1,54 @@
+# Codex Librarian — PR review workflow template (§4-④)
+#
+# 対象リポジトリの .github/workflows/ にコピーして使う。Webhook サーバは持たない
+# (運用ゼロ原則): PR イベントで Actions ランナー上に librarian を取得し、
+# インデックス → Context Pack → レビュー生成 → PR コメント投稿、をその場で行う。
+#
+# 必要な secrets:
+#   ANTHROPIC_API_KEY — レビュー生成用(これが無いジョブは何もせず成功終了)
+name: librarian-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install codex-librarian
+        run: |
+          git clone --depth 1 https://github.com/nonokia/code-on-board /tmp/librarian
+          cd /tmp/librarian && npm ci && npm run build
+
+      - name: Index repository
+        run: node /tmp/librarian/bin/librarian.js index . --db /tmp/index.db
+
+      - name: Generate review
+        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > /tmp/pr.diff
+          node /tmp/librarian/bin/librarian.js review /tmp/pr.diff \
+            --db /tmp/index.db --repo . --markdown > /tmp/review.md
+          cat /tmp/review.md
+
+      - name: Post PR comment
+        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/review.md
