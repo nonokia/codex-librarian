@@ -11,9 +11,13 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
 
 ## Status
 
-Phase-1 スライス実装済み: TypeScript Compiler API による型解決済み symbols/edges 抽出(ADR-2)、
-単一 SQLite の Knowledge Store + 再帰 CTE k-hop 探索(ADR-1)、`librarian` CLI。
-評価ハーネス(Phase 0)・Context Engine(Phase 2)は未着手。
+- **Phase 0 実装済み**: 評価ハーネス(`librarian eval`)+ 正解セット 16 ケース
+  (weather-you-travel 由来)。ベースライン **micro recall 69.6%** —
+  詳細と失敗分析は [`docs/phase0-report.md`](docs/phase0-report.md)。
+- **Phase 1 スライス実装済み**: TypeScript Compiler API による型解決済み symbols/edges
+  抽出(ADR-2)、単一 SQLite の Knowledge Store + 再帰 CTE k-hop 探索(ADR-1)、
+  決定的展開リトリーバ(`librarian retrieve`、ADR-3 の stage 1)。
+- Context Engine の意味的補完・レビュー生成(Phase 2)は未着手。
 
 ## Quick start
 
@@ -22,4 +26,6 @@ npm install && npm run build
 node bin/librarian.js index <repo>        # インデックス(<repo>/.librarian/index.db)
 node bin/librarian.js stats --db <db>
 node bin/librarian.js graph <symbol> --db <db> --hops 2 --pretty
+node bin/librarian.js retrieve <diff-file> --db <db> --budget 8000   # 文脈束
+node bin/librarian.js eval eval/golden/weather-you-travel.json --db <db> --pretty
 ```

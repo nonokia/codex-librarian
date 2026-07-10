@@ -1,0 +1,175 @@
+{
+  "repo": "nonokia/weather-you-travel",
+  "description": "Phase-0 golden set (ADR-4). Each case reenacts a real change from the repo's history (`note` cites the commit) or a realistic maintenance change, and lists the context a reviewer genuinely needed — curated by reading the code, NOT by running the retriever. Expectations may exceed what the current retriever can do; that gap is the number we improve. target-style cases resolve spans against the indexed tree so they don't rot as lines move (see dlog).",
+  "cases": [
+    {
+      "id": "wyt-001",
+      "title": "getFlightDetails のフォールバック挙動を変更",
+      "note": "api.js の実データ+mock 二重化(CLAUDE.md の契約)。呼び出し元と mock 定義が文脈",
+      "target": { "file": "src/services/api.js", "symbol": "getFlightDetails" },
+      "expected": [
+        { "file": "src/App.jsx", "symbol": "App" },
+        { "file": "src/services/api.test.js" },
+        { "file": "src/services/api.js", "symbol": "mapAviationStackFlight" },
+        { "file": "src/services/api.js", "symbol": "FLIGHTS" }
+      ]
+    },
+    {
+      "id": "wyt-002",
+      "title": "getWeather の日数集計を変更",
+      "note": "返り値 shape の消費者(App 経由で WeatherForecast)まで見ないと安全に変えられない",
+      "target": { "file": "src/services/api.js", "symbol": "getWeather" },
+      "expected": [
+        { "file": "src/App.jsx", "symbol": "App" },
+        { "file": "src/services/api.test.js" },
+        { "file": "src/services/api.js", "symbol": "aggregateForecast" },
+        { "file": "src/components/WeatherForecast.jsx", "symbol": "WeatherForecast" }
+      ]
+    },
+    {
+      "id": "wyt-003",
+      "title": "WeatherForecast の表示ロジックを変更",
+      "note": "commit a5066e3 / 30ed5df (#28, #32) の再演。props の供給元とフォーマッタ両方が文脈",
+      "target": { "file": "src/components/WeatherForecast.jsx", "symbol": "WeatherForecast" },
+      "expected": [
+        { "file": "src/App.jsx", "symbol": "App" },
+        { "file": "src/utils/formatDate.js", "symbol": "formatForecastDate" },
+        { "file": "src/utils/temperature.js", "symbol": "formatTemperature" }
+      ]
+    },
+    {
+      "id": "wyt-004",
+      "title": "formatTemperature の丸め仕様を変更",
+      "note": "commit a5066e3 (#28) の再演",
+      "target": { "file": "src/utils/temperature.js", "symbol": "formatTemperature" },
+      "expected": [
+        { "file": "src/components/WeatherForecast.jsx", "symbol": "WeatherForecast" },
+        { "file": "src/utils/temperature.test.js" },
+        { "file": "src/utils/temperature.js", "symbol": "toFahrenheit" }
+      ]
+    },
+    {
+      "id": "wyt-005",
+      "title": "formatForecastDate のロケール処理を変更",
+      "note": "commit 24e145f/30ed5df (#32) の再演",
+      "target": { "file": "src/utils/formatDate.js", "symbol": "formatForecastDate" },
+      "expected": [
+        { "file": "src/components/WeatherForecast.jsx", "symbol": "WeatherForecast" },
+        { "file": "src/utils/formatDate.test.js" }
+      ]
+    },
+    {
+      "id": "wyt-006",
+      "title": "isValidFlightNumber の判定を厳しくする",
+      "note": "commit 482182d (#20) の再演。検証対象の入力欄 FlightInput まで辿れてほしい",
+      "target": { "file": "src/utils/flightValidation.js", "symbol": "isValidFlightNumber" },
+      "expected": [
+        { "file": "src/App.jsx", "symbol": "App" },
+        { "file": "src/utils/flightValidation.test.js" },
+        { "file": "src/components/FlightInput.jsx", "symbol": "FlightInput" }
+      ]
+    },
+    {
+      "id": "wyt-007",
+      "title": "addRecentSearch の上限・重複排除を変更",
+      "note": "commit 7e24870 (#24) の再演",
+      "target": { "file": "src/utils/searchHistory.js", "symbol": "addRecentSearch" },
+      "expected": [
+        { "file": "src/App.jsx", "symbol": "App" },
+        { "file": "src/utils/searchHistory.js", "symbol": "getRecentSearches" },
+        { "file": "src/utils/searchHistory.test.js" }
+      ]
+    },
+    {
+      "id": "wyt-008",
+      "title": "RecentSearches の表示を変更",
+      "note": "commit f4c51b2 (#24) の再演。searches prop の生成元(searchHistory)が文脈",
+      "target": { "file": "src/components/RecentSearches.jsx", "symbol": "RecentSearches" },
+      "expected": [
+        { "file": "src/App.jsx", "symbol": "App" },
+        { "file": "src/utils/searchHistory.js" }
+      ]
+    },
+    {
+      "id": "wyt-009",
+      "title": "FlightInput の入力ハンドリングを変更",
+      "note": "onSearch/isLoading の契約先 App と、フローを固定する App.test が文脈",
+      "target": { "file": "src/components/FlightInput.jsx", "symbol": "FlightInput" },
+      "expected": [
+        { "file": "src/App.jsx", "symbol": "App" },
+        { "file": "src/App.test.jsx" }
+      ]
+    },
+    {
+      "id": "wyt-010",
+      "title": "FlightInfo の表示項目を変更",
+      "note": "flight オブジェクトの shape は getFlightDetails が生成する",
+      "target": { "file": "src/components/FlightInfo.jsx", "symbol": "FlightInfo" },
+      "expected": [
+        { "file": "src/App.jsx", "symbol": "App" },
+        { "file": "src/services/api.js", "symbol": "getFlightDetails" }
+      ]
+    },
+    {
+      "id": "wyt-011",
+      "title": "Skeleton のスタイル/props を変更",
+      "target": { "file": "src/components/Skeleton.jsx", "symbol": "Skeleton" },
+      "expected": [{ "file": "src/App.jsx", "symbol": "App" }]
+    },
+    {
+      "id": "wyt-012",
+      "title": "App の検索オーケストレーションを変更",
+      "note": "commit 87e6726 (#24) / 95f5d21 (#28) の再演。App はハブなので文脈が広い",
+      "target": { "file": "src/App.jsx", "symbol": "App" },
+      "expected": [
+        { "file": "src/components/FlightInput.jsx", "symbol": "FlightInput" },
+        { "file": "src/components/WeatherForecast.jsx", "symbol": "WeatherForecast" },
+        { "file": "src/components/RecentSearches.jsx", "symbol": "RecentSearches" },
+        { "file": "src/services/api.js", "symbol": "getFlightDetails" },
+        { "file": "src/services/api.js", "symbol": "getWeather" },
+        { "file": "src/App.test.jsx" }
+      ]
+    },
+    {
+      "id": "wyt-013",
+      "title": "mapAviationStackFlight のフィールドマッピングを変更",
+      "target": { "file": "src/services/api.js", "symbol": "mapAviationStackFlight" },
+      "expected": [
+        { "file": "src/services/api.js", "symbol": "getFlightDetails" },
+        { "file": "src/services/api.js", "symbol": "cityFromTimezone" },
+        { "file": "src/services/api.test.js" }
+      ]
+    },
+    {
+      "id": "wyt-014",
+      "title": "aggregateForecast の集計ロジックを変更",
+      "target": { "file": "src/services/api.js", "symbol": "aggregateForecast" },
+      "expected": [
+        { "file": "src/services/api.js", "symbol": "getWeather" },
+        { "file": "src/services/api.test.js" }
+      ]
+    },
+    {
+      "id": "wyt-015",
+      "title": "getRecentSearches の破損データ処理を変更",
+      "note": "commit 447bd8b(PR レビュー対応: non-array guard)の再演",
+      "target": { "file": "src/utils/searchHistory.js", "symbol": "getRecentSearches" },
+      "expected": [
+        { "file": "src/App.jsx", "symbol": "App" },
+        { "file": "src/utils/searchHistory.js", "symbol": "addRecentSearch" },
+        { "file": "src/components/RecentSearches.jsx", "symbol": "RecentSearches" },
+        { "file": "src/utils/searchHistory.test.js" }
+      ]
+    },
+    {
+      "id": "wyt-016-realdiff",
+      "title": "実 diff: WeatherForecast に formatForecastDate を導入 (30ed5df)",
+      "note": "diff-style ケース: パーサ込みのエンドツーエンドを 1 本だけ実 diff で計測。openspec/changes のハンクは unknownFiles に落ちるのが正",
+      "diff": "diff --git a/src/components/WeatherForecast.jsx b/src/components/WeatherForecast.jsx\n--- a/src/components/WeatherForecast.jsx\n+++ b/src/components/WeatherForecast.jsx\n@@ -2,9 +2,10 @@ import React from 'react';\n \n import { useTranslation } from 'react-i18next';\n import { formatTemperature } from '../utils/temperature';\n+import { formatForecastDate } from '../utils/formatDate';\n \n const WeatherForecast = ({ weather, city, unit, onToggleUnit }) => {\n-    const { t } = useTranslation();\n+    const { t, i18n } = useTranslation();\n     if (!weather || weather.length === 0) return null;\n \n     return (\n@@ -17,7 +18,7 @@ const WeatherForecast = ({ weather, city, unit, onToggleUnit }) => {\n             <div className=\"forecast-grid\">\n                 {weather.map((day, index) => (\n                     <div key={index} className=\"forecast-day\">\n-                        <div className=\"date\">{day.date}</div>\n+                        <div className=\"date\">{formatForecastDate(day.date, i18n.language)}</div>\ndiff --git a/openspec/changes/format-forecast-dates/tasks.md b/openspec/changes/format-forecast-dates/tasks.md\n--- a/openspec/changes/format-forecast-dates/tasks.md\n+++ b/openspec/changes/format-forecast-dates/tasks.md\n@@ -1,2 +1,2 @@\n-x\n+y\n",
+      "expected": [
+        { "file": "src/App.jsx", "symbol": "App" },
+        { "file": "src/utils/formatDate.js", "symbol": "formatForecastDate" }
+      ]
+    }
+  ]
+}
