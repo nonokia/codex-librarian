@@ -11,29 +11,37 @@ import { retrieveForDiff, DEFAULT_BUDGET } from './retrieval.js';
 import { loadGoldenFile, runEval } from './eval.js';
 import { assembleReviewPack, renderReviewPack } from './contextpack.js';
 import { generateReview, buildReviewRequest, renderReviewMarkdown, DEFAULT_MODEL } from './review.js';
+import { learn, recordReviewOutcome } from './loop.js';
 
 interface Flags {
   db?: string;
   repo?: string;
   model: string;
-  hops: number;
+  hops?: number;
   budget: number;
   pretty: boolean;
   source: boolean;
   dryRun: boolean;
   markdown: boolean;
+  useCache?: boolean;
+  holdout: boolean;
+  note?: string;
+  good: boolean;
+  bad: boolean;
   limit: number;
 }
 
 function parseArgs(argv: string[]): { command: string; positional: string[]; flags: Flags } {
   const flags: Flags = {
     model: process.env.LIBRARIAN_MODEL ?? DEFAULT_MODEL,
-    hops: 2,
     budget: DEFAULT_BUDGET,
     pretty: false,
     source: false,
     dryRun: false,
     markdown: false,
+    holdout: false,
+    good: false,
+    bad: false,
     limit: 20,
   };
   const positional: string[] = [];
@@ -49,6 +57,12 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     else if (a === '--model') flags.model = argv[++i];
     else if (a === '--dry-run') flags.dryRun = true;
     else if (a === '--markdown') flags.markdown = true;
+    else if (a === '--use-cache') flags.useCache = true;
+    else if (a === '--no-cache') flags.useCache = false;
+    else if (a === '--holdout') flags.holdout = true;
+    else if (a === '--note') flags.note = argv[++i];
+    else if (a === '--good') flags.good = true;
+    else if (a === '--bad') flags.bad = true;
     else if (a === '--pretty') flags.pretty = true;
     else if (!command) command = a;
     else positional.push(a);
@@ -84,7 +98,16 @@ Usage:
   librarian pack <diff-file|->                Sectioned Context Pack (markdown)
   librarian review <diff-file|-> [--model M] [--dry-run] [--markdown]
                                               LLM review grounded in the pack
+  librarian learn <golden.json> [--holdout]   Sweep strategies per diff signature,
+                                              promote winners into PatternCache
+  librarian patterns                          Show the PatternCache
+  librarian history                           Eval results over time (ADR-4 series)
+  librarian log [--limit N]                   Recent retrieval-log entries
+  librarian feedback <log-id> --good|--bad    Human 👍/👎 on a retrieval
   librarian help                              This help
+
+pack/review apply cached strategies by default (--no-cache to disable);
+eval stays on the default strategy unless --use-cache is passed.
 
 Common flags: --db <file> (default: <repo>/.librarian/index.db of the current
 directory), --pretty (indented JSON).`;
@@ -148,7 +171,7 @@ function main(): void {
         fail(`no symbol matching "${positional[0]}"`);
       }
       const seed = matches[0];
-      const neighbors = store.neighborhood(seed.id, flags.hops, flags.limit * 10);
+      const neighbors = store.neighborhood(seed.id, flags.hops ?? 2, flags.limit * 10);
       const edges = store.edgesOf(seed.id);
       emit(
         {
@@ -184,16 +207,72 @@ function main(): void {
       break;
     }
     case 'eval': {
-      if (!positional[0]) fail('usage: librarian eval <golden.json> [--budget N]');
+      if (!positional[0]) fail('usage: librarian eval <golden.json> [--budget N] [--use-cache]');
       const store = openStore(flags);
       const root = flags.repo ?? store.getMeta('root');
       if (!root) fail('index has no recorded root — pass --repo <dir>');
       const report = runEval(store, root, loadGoldenFile(positional[0]), {
         hops: flags.hops,
         budget: flags.budget,
+        useCache: flags.useCache ?? false,
+      });
+      store.recordEval({
+        golden: positional[0],
+        cases: report.aggregate.cases,
+        microRecall: report.aggregate.microRecall,
+        macroRecall: report.aggregate.macroRecall,
+        perfect: report.aggregate.perfectCases,
+        budget: flags.budget,
+        hops: flags.hops ?? 0,
+        usedCache: flags.useCache ?? false,
+        note: flags.note,
       });
       emit(report, flags.pretty);
       store.close();
+      break;
+    }
+    case 'learn': {
+      if (!positional[0]) fail('usage: librarian learn <golden.json> [--holdout]');
+      const store = openStore(flags);
+      const root = flags.repo ?? store.getMeta('root');
+      if (!root) fail('index has no recorded root — pass --repo <dir>');
+      const report = learn(store, root, loadGoldenFile(positional[0]), {
+        budget: flags.budget,
+        holdout: flags.holdout,
+      });
+      emit(report, flags.pretty);
+      store.close();
+      break;
+    }
+    case 'patterns': {
+      const store = openStore(flags);
+      emit(store.listPatterns(), flags.pretty);
+      store.close();
+      break;
+    }
+    case 'history': {
+      const store = openStore(flags);
+      emit(store.evalHistory(), flags.pretty);
+      store.close();
+      break;
+    }
+    case 'log': {
+      const store = openStore(flags);
+      emit(store.listRetrievals(flags.limit), flags.pretty);
+      store.close();
+      break;
+    }
+    case 'feedback': {
+      if (!positional[0] || flags.good === flags.bad) {
+        fail('usage: librarian feedback <log-id> (--good | --bad)');
+      }
+      const store = openStore(flags);
+      const ok = store.updateRetrievalOutcome(Number(positional[0]), {
+        feedback: flags.good ? 1 : -1,
+      });
+      store.close();
+      if (!ok) fail(`no retrieval log entry with id ${positional[0]}`);
+      emit({ id: Number(positional[0]), feedback: flags.good ? 1 : -1 }, flags.pretty);
       break;
     }
     case 'pack':
@@ -204,24 +283,40 @@ function main(): void {
       const store = openStore(flags);
       const root = flags.repo ?? store.getMeta('root');
       if (!root) fail('index has no recorded root — pass --repo <dir>');
+      const t0 = Date.now();
       const retrieved = retrieveForDiff(store, root, parseUnifiedDiff(diffText), {
         hops: flags.hops,
         budget: flags.budget,
         withSource: true,
+        useCache: flags.useCache ?? true, // learned strategies apply by default here
       });
-      store.close();
+      const logId = store.logRetrieval({
+        source: command,
+        signature: retrieved.signature,
+        strategy: JSON.stringify(retrieved.strategy),
+        fromCache: retrieved.strategyFromCache,
+        seeds: retrieved.seeds.map((s) => s.name),
+        itemCount: retrieved.items.length,
+        elidedCount: retrieved.elided.length,
+        usedChars: retrieved.usedChars,
+        latencyMs: Date.now() - t0,
+      });
       const pack = assembleReviewPack(diffText, retrieved);
 
       if (command === 'pack') {
+        store.close();
         console.log(renderReviewPack(pack));
         break;
       }
       if (flags.dryRun) {
+        store.close();
         const request = buildReviewRequest(pack, flags.model);
         emit(
           {
             dry_run: true,
             model: request.model,
+            retrieval_log_id: logId,
+            strategy_from_cache: retrieved.strategyFromCache,
             system_chars: request.system.length,
             prompt_chars: request.messages[0].content.length,
             prompt: request.messages[0].content,
@@ -232,10 +327,16 @@ function main(): void {
       }
       generateReview(pack, { model: flags.model })
         .then((result) => {
+          // feedback signal (a): write which sections the findings cited
+          recordReviewOutcome(store, logId, result);
+          store.close();
           if (flags.markdown) console.log(renderReviewMarkdown(result));
-          else emit(result, flags.pretty);
+          else emit({ retrieval_log_id: logId, ...result }, flags.pretty);
         })
-        .catch((err: Error) => fail(`review failed: ${err.message}`));
+        .catch((err: Error) => {
+          store.close();
+          fail(`review failed: ${err.message}`);
+        });
       break;
     }
     case 'help':

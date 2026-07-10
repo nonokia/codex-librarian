@@ -80,6 +80,46 @@ CREATE TABLE IF NOT EXISTS edges (
   PRIMARY KEY (from_id, to_id, to_name, kind)
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS idx_edges_to ON edges(to_id) WHERE to_id != '';
+CREATE TABLE IF NOT EXISTS retrieval_log (
+  id           INTEGER PRIMARY KEY,
+  ts           INTEGER NOT NULL,
+  source       TEXT NOT NULL,             -- review | retrieve | pack
+  signature    TEXT NOT NULL,
+  strategy     TEXT NOT NULL,             -- json Strategy
+  from_cache   INTEGER NOT NULL,
+  seeds        TEXT NOT NULL,             -- json string[]
+  item_count   INTEGER NOT NULL,
+  elided_count INTEGER NOT NULL,
+  used_chars   INTEGER NOT NULL,
+  latency_ms   INTEGER NOT NULL,
+  -- outcome, filled in later (feedback signals, §4-⑤)
+  sections_used     TEXT,                 -- json string[] cited by review findings
+  grounded_findings INTEGER,
+  total_findings    INTEGER,
+  feedback          INTEGER               -- +1 / -1 human signal
+);
+CREATE TABLE IF NOT EXISTS pattern_cache (
+  signature  TEXT PRIMARY KEY,
+  strategy   TEXT NOT NULL,               -- json Strategy
+  source     TEXT NOT NULL,               -- learned | promoted
+  score      REAL NOT NULL,               -- recall with this strategy at learn time
+  baseline   REAL NOT NULL,               -- recall with the default strategy
+  uses       INTEGER NOT NULL DEFAULT 0,
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS eval_history (
+  id           INTEGER PRIMARY KEY,
+  ts           INTEGER NOT NULL,
+  golden       TEXT NOT NULL,
+  cases        INTEGER NOT NULL,
+  micro_recall REAL NOT NULL,
+  macro_recall REAL NOT NULL,
+  perfect      INTEGER NOT NULL,
+  budget       INTEGER NOT NULL,
+  hops         INTEGER NOT NULL,
+  used_cache   INTEGER NOT NULL,
+  note         TEXT
+);
 `;
 
 export class Store {
@@ -247,6 +287,132 @@ export class Store {
       out: (this.db.prepare('SELECT * FROM edges WHERE from_id = ?').all(id) as Record<string, unknown>[]).map(map),
       in: (this.db.prepare("SELECT * FROM edges WHERE to_id = ? AND to_id != ''").all(id) as Record<string, unknown>[]).map(map),
     };
+  }
+
+  // ---- Phase 4: self-improving retrieval loop (§4-⑤) ----
+
+  logRetrieval(entry: {
+    source: string;
+    signature: string;
+    strategy: string;
+    fromCache: boolean;
+    seeds: string[];
+    itemCount: number;
+    elidedCount: number;
+    usedChars: number;
+    latencyMs: number;
+  }): number {
+    const res = this.db
+      .prepare(
+        `INSERT INTO retrieval_log(ts, source, signature, strategy, from_cache, seeds, item_count, elided_count, used_chars, latency_ms)
+         VALUES(?,?,?,?,?,?,?,?,?,?)`
+      )
+      .run(
+        Date.now(),
+        entry.source,
+        entry.signature,
+        entry.strategy,
+        entry.fromCache ? 1 : 0,
+        JSON.stringify(entry.seeds),
+        entry.itemCount,
+        entry.elidedCount,
+        entry.usedChars,
+        entry.latencyMs
+      );
+    return Number(res.lastInsertRowid);
+  }
+
+  updateRetrievalOutcome(
+    id: number,
+    outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }
+  ): boolean {
+    const res = this.db
+      .prepare(
+        `UPDATE retrieval_log SET
+           sections_used     = COALESCE(?, sections_used),
+           grounded_findings = COALESCE(?, grounded_findings),
+           total_findings    = COALESCE(?, total_findings),
+           feedback          = COALESCE(?, feedback)
+         WHERE id = ?`
+      )
+      .run(
+        outcome.sectionsUsed ? JSON.stringify(outcome.sectionsUsed) : null,
+        outcome.groundedFindings ?? null,
+        outcome.totalFindings ?? null,
+        outcome.feedback ?? null,
+        id
+      );
+    return res.changes > 0;
+  }
+
+  listRetrievals(limit = 20): Record<string, unknown>[] {
+    return this.db
+      .prepare('SELECT * FROM retrieval_log ORDER BY id DESC LIMIT ?')
+      .all(limit) as Record<string, unknown>[];
+  }
+
+  getPattern(signature: string): { strategy: string; source: string; score: number; baseline: number } | null {
+    const row = this.db
+      .prepare('SELECT strategy, source, score, baseline FROM pattern_cache WHERE signature = ?')
+      .get(signature) as { strategy: string; source: string; score: number; baseline: number } | undefined;
+    if (row) {
+      this.db.prepare('UPDATE pattern_cache SET uses = uses + 1 WHERE signature = ?').run(signature);
+    }
+    return row ?? null;
+  }
+
+  putPattern(signature: string, strategy: string, source: string, score: number, baseline: number): void {
+    this.db
+      .prepare(
+        `INSERT INTO pattern_cache(signature, strategy, source, score, baseline, uses, updated_at)
+         VALUES(?,?,?,?,?,0,?)
+         ON CONFLICT(signature) DO UPDATE SET
+           strategy = excluded.strategy, source = excluded.source,
+           score = excluded.score, baseline = excluded.baseline, updated_at = excluded.updated_at`
+      )
+      .run(signature, strategy, source, score, baseline, Date.now());
+  }
+
+  listPatterns(): Record<string, unknown>[] {
+    return this.db
+      .prepare('SELECT * FROM pattern_cache ORDER BY signature')
+      .all() as Record<string, unknown>[];
+  }
+
+  recordEval(entry: {
+    golden: string;
+    cases: number;
+    microRecall: number;
+    macroRecall: number;
+    perfect: number;
+    budget: number;
+    hops: number;
+    usedCache: boolean;
+    note?: string;
+  }): void {
+    this.db
+      .prepare(
+        `INSERT INTO eval_history(ts, golden, cases, micro_recall, macro_recall, perfect, budget, hops, used_cache, note)
+         VALUES(?,?,?,?,?,?,?,?,?,?)`
+      )
+      .run(
+        Date.now(),
+        entry.golden,
+        entry.cases,
+        entry.microRecall,
+        entry.macroRecall,
+        entry.perfect,
+        entry.budget,
+        entry.hops,
+        entry.usedCache ? 1 : 0,
+        entry.note ?? null
+      );
+  }
+
+  evalHistory(): Record<string, unknown>[] {
+    return this.db
+      .prepare('SELECT * FROM eval_history ORDER BY id')
+      .all() as Record<string, unknown>[];
   }
 
   symbolById(id: string): SymbolRow | null {

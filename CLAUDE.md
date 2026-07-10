@@ -26,6 +26,9 @@ librarian graph <symbol>         # k-hop 近傍探索
 librarian eval <golden.json>     # retrieval match 率の計測(ADR-4)
 librarian pack <diff>            # 区画付き Context Pack(markdown)
 librarian review <diff> --markdown   # Claude API でレビュー生成(要 ANTHROPIC_API_KEY)
+librarian learn <golden.json> --holdout  # 戦略掃引 → PatternCache 昇格(§4-⑤)
+librarian history                # 精度の時系列(ADR-4)
+librarian feedback <id> --good   # 人間の 👍/👎 を retrieval_log へ
 ```
 
 ## Decision logging with dlog (required)
@@ -52,6 +55,8 @@ librarian review <diff> --markdown   # Claude API でレビュー生成(要 ANTH
 - `src/extractor.ts` — Extractor インターフェース(多言語対応の抽象、v1 実装は TS のみ)。
 - `src/diff.ts` / `src/retrieval.ts` — unified diff → シード → 決定的展開(ADR-3 stage 1)。
 - `src/eval.ts` + `eval/golden/` — Phase 0 評価ハーネスと正解セット(規律は `eval/README.md`)。
+- `src/loop.ts` — 自己改善ループ(§4-⑤): 戦略候補・learn 掃引・レビュー結果の還流。
+  数値は `docs/phase4-report.md`(train=test と holdout の区別に注意)。
 - `src/contextpack.ts` — Context Pack 組み立て(§4-③ の区画: 変更/呼び出し元/呼び出し先/テスト)。
 - `src/review.ts` — Claude API でのレビュー生成(構造化出力)。モデル既定は `claude-opus-4-8`。
 - `templates/librarian-review.yml` — 対象リポジトリに配る GitHub Actions テンプレート(§4-④)。
