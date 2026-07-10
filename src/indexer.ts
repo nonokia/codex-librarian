@@ -93,7 +93,33 @@ export class TypeScriptExtractor implements Extractor {
       });
       declToId.set(sf, moduleId);
 
+      const usedIds = new Set<string>();
       const visit = (node: ts.Node, container: string | null) => {
+        const tb = testBlockCall(node);
+        if (tb) {
+          let name = tb.name;
+          let id = symbolId(file, container, name, 'testblock');
+          for (let n = 2; usedIds.has(id); n++) {
+            name = `${tb.name}#${n}`;
+            id = symbolId(file, container, name, 'testblock');
+          }
+          usedIds.add(id);
+          bucket.symbols.push({
+            id,
+            kind: 'testblock',
+            name,
+            file,
+            container,
+            spanStart: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
+            spanEnd: sf.getLineAndCharacterOfPosition(node.getEnd()).line + 1,
+            signature: null,
+            doc: null,
+          });
+          declToId.set(node, id);
+          const childContainer = container ? `${container}.${name}` : name;
+          node.forEachChild((c) => visit(c, childContainer));
+          return;
+        }
         const decl = classifyDeclaration(node);
         if (decl) {
           const { name, kind, nameNode } = decl;
@@ -202,6 +228,33 @@ export class TypeScriptExtractor implements Extractor {
       edges: dedupeEdges(edges),
     }));
   }
+}
+
+/**
+ * Test-runner blocks whose callbacks become `testblock` symbols. Without
+ * this, every edge out of a test file originates from the whole-file module
+ * symbol, which is too expensive to ever pack into a context budget
+ * (Phase-0 report, failure mode 2). Framework-specific by necessity;
+ * extend the set when a new runner shows up in a target repo.
+ */
+const TEST_BLOCK_CALLEES = new Set(['describe', 'it', 'test', 'suite']);
+
+function testBlockCall(
+  node: ts.Node
+): { name: string; body: ts.Node } | null {
+  if (!ts.isCallExpression(node)) return null;
+  const callee = ts.isIdentifier(node.expression)
+    ? node.expression.text
+    : ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.expression)
+      ? node.expression.expression.text // it.skip / describe.only
+      : null;
+  if (!callee || !TEST_BLOCK_CALLEES.has(callee)) return null;
+  const title = node.arguments.find(ts.isStringLiteralLike)?.text;
+  const body = node.arguments.find(
+    (a) => ts.isArrowFunction(a) || ts.isFunctionExpression(a)
+  );
+  if (!body) return null;
+  return { name: `${callee}(${title ?? ''})`, body };
 }
 
 function classifyDeclaration(

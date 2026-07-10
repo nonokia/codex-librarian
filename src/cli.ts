@@ -3,26 +3,35 @@
  * JSON out by default (agent-first consumers), `--pretty` for humans.
  */
 import { resolve, join } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { Store, type NeighborRow, type SymbolRow } from './store.js';
 import { indexRepo } from './indexer.js';
+import { parseUnifiedDiff } from './diff.js';
+import { retrieveForDiff, DEFAULT_BUDGET } from './retrieval.js';
+import { loadGoldenFile, runEval } from './eval.js';
 
 interface Flags {
   db?: string;
+  repo?: string;
   hops: number;
+  budget: number;
   pretty: boolean;
+  source: boolean;
   limit: number;
 }
 
 function parseArgs(argv: string[]): { command: string; positional: string[]; flags: Flags } {
-  const flags: Flags = { hops: 2, pretty: false, limit: 20 };
+  const flags: Flags = { hops: 2, budget: DEFAULT_BUDGET, pretty: false, source: false, limit: 20 };
   const positional: string[] = [];
   let command = '';
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--db') flags.db = argv[++i];
+    else if (a === '--repo') flags.repo = argv[++i];
     else if (a === '--hops') flags.hops = Number(argv[++i]);
+    else if (a === '--budget') flags.budget = Number(argv[++i]);
     else if (a === '--limit') flags.limit = Number(argv[++i]);
+    else if (a === '--source') flags.source = true;
     else if (a === '--pretty') flags.pretty = true;
     else if (!command) command = a;
     else positional.push(a);
@@ -52,6 +61,9 @@ Usage:
   librarian symbols <query> [--limit N]       Find symbols by (partial) name
   librarian file <path>                       Symbols declared in a file
   librarian graph <symbol> [--hops N]         k-hop neighborhood of a symbol
+  librarian retrieve <diff-file|-> [--budget N] [--source]
+                                              Context pack for a unified diff
+  librarian eval <golden.json> [--budget N]   Retrieval match rate vs golden set
   librarian help                              This help
 
 Common flags: --db <file> (default: <repo>/.librarian/index.db of the current
@@ -132,6 +144,35 @@ function main(): void {
         },
         flags.pretty
       );
+      store.close();
+      break;
+    }
+    case 'retrieve': {
+      if (!positional[0]) fail('usage: librarian retrieve <diff-file|-> [--budget N]');
+      const diffText =
+        positional[0] === '-' ? readFileSync(0, 'utf8') : readFileSync(positional[0], 'utf8');
+      const store = openStore(flags);
+      const root = flags.repo ?? store.getMeta('root');
+      if (!root) fail('index has no recorded root — pass --repo <dir>');
+      const pack = retrieveForDiff(store, root, parseUnifiedDiff(diffText), {
+        hops: flags.hops,
+        budget: flags.budget,
+        withSource: flags.source,
+      });
+      emit(pack, flags.pretty);
+      store.close();
+      break;
+    }
+    case 'eval': {
+      if (!positional[0]) fail('usage: librarian eval <golden.json> [--budget N]');
+      const store = openStore(flags);
+      const root = flags.repo ?? store.getMeta('root');
+      if (!root) fail('index has no recorded root — pass --repo <dir>');
+      const report = runEval(store, root, loadGoldenFile(positional[0]), {
+        hops: flags.hops,
+        budget: flags.budget,
+      });
+      emit(report, flags.pretty);
       store.close();
       break;
     }

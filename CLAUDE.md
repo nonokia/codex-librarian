@@ -42,8 +42,12 @@ librarian graph <symbol>         # k-hop 近傍探索
 ## Layout
 
 - `docs/architecture.md` — アーキテクチャ設計書(WHY/WHAT)。フェーズ計画・ADR・成功指標。
+- `docs/phase0-report.md` — Phase 0 ベースライン計測と失敗分析。**retrieval を変更したら
+  必ず `librarian eval` を回して数値を更新すること(ADR-4)。**
 - `src/store.ts` — Knowledge Store(`node:sqlite`)。files/symbols/edges + 再帰 CTE。
 - `src/indexer.ts` — Indexer。TS Compiler API で symbols/edges を抽出。
 - `src/extractor.ts` — Extractor インターフェース(多言語対応の抽象、v1 実装は TS のみ)。
+- `src/diff.ts` / `src/retrieval.ts` — unified diff → シード → 決定的展開(ADR-3 stage 1)。
+- `src/eval.ts` + `eval/golden/` — Phase 0 評価ハーネスと正解セット(規律は `eval/README.md`)。
 - `src/cli.ts` — CLI エントリポイント。
 - `.dlog/dlog.db` — dlog の意思決定ログ(コミット対象)。
