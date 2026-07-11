@@ -20,7 +20,11 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
 - **Phase 2 実装済み(MVP)**: 区画付き Context Pack 組み立て(`librarian pack`)、
   Claude API による文脈接地レビュー生成(`librarian review`、構造化出力 + findings ごとの
   根拠セクション記録)、GitHub Actions テンプレート(`templates/librarian-review.yml`)。
-  意味的補完(embeddings)と自己改善ループは Phase 3/4。
+- **Phase 4 実装済み**: RetrievalLog + diff シグネチャ → 戦略の PatternCache +
+  戦略探索(`librarian learn`)。micro recall 69.6% →(チューニング)87.0% →
+  (PatternCache)**89.1%**。ただし holdout では改善が示せておらず、汎化の主張には
+  正解セットの成長が先 — 詳細は [`docs/phase4-report.md`](docs/phase4-report.md)。
+- 意味的補完(embeddings、Phase 3 の Web UI)は未着手。
 
 ## Quick start
 

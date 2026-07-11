@@ -15,17 +15,26 @@ import { join } from 'node:path';
 import type { FileRanges } from './diff.js';
 import type { EdgeKind, Store, SymbolRow } from './store.js';
 
-export const EDGE_WEIGHTS: Record<EdgeKind, number> = {
-  calls: 1.0,
-  extends: 0.9,
-  references: 0.7,
-  imports: 0.4,
+/**
+ * A retrieval strategy: everything the deterministic expansion can vary.
+ * The default carries the Phase-0-measured baseline values; PatternCache
+ * (§4-⑤) stores per-diff-signature overrides that beat it on the harness.
+ */
+export interface Strategy {
+  hops: number;
+  decay: number;
+  weights: Record<EdgeKind, number>;
+  fileDamp: number;
+}
+
+export const DEFAULT_STRATEGY: Strategy = {
+  hops: 2,
+  decay: 0.65,
+  weights: { calls: 1.0, extends: 0.9, references: 0.7, imports: 0.4 },
+  fileDamp: 0.5,
 };
-export const HOP_DECAY = 0.65;
-/** per-file diminishing returns during packing (MMR-style diversity) */
-export const FILE_DAMP = 0.5;
+
 export const DEFAULT_BUDGET = 8000;
-export const DEFAULT_HOPS = 2;
 
 export interface Seed {
   symbol: SymbolRow;
@@ -54,6 +63,31 @@ export interface ContextPack {
   unknownFiles: string[];
   budget: number;
   usedChars: number;
+  /** diff signature + the strategy that produced this pack (§4-⑤ logging) */
+  signature: string;
+  strategy: Strategy;
+  strategyFromCache: boolean;
+}
+
+/**
+ * Deterministic "shape of the diff" (§4-⑤: diffシグネチャ → 探索戦略).
+ * Coarse on purpose so patterns repeat: seed kinds, top-level dirs (2 path
+ * segments), whether tests are touched, and a bucketed seed count.
+ */
+export function diffSignature(seeds: Seed[], unknownFiles: string[]): string {
+  const kinds = [...new Set(seeds.map((s) => s.symbol.kind))].sort();
+  const dirs = [
+    ...new Set(
+      seeds.map((s) => s.symbol.file.split('/').slice(0, -1).slice(0, 2).join('/') || '.')
+    ),
+  ].sort();
+  const tests = seeds.some(
+    (s) => s.symbol.kind === 'testblock' || /\.(test|spec)\.[jt]sx?$/.test(s.symbol.file)
+  );
+  const n = seeds.length;
+  const bucket = n <= 1 ? '1' : n <= 2 ? '2' : n <= 5 ? '3-5' : '6+';
+  const unknown = unknownFiles.length > 0 ? 1 : 0;
+  return `k=${kinds.join(',')}|d=${dirs.join(',')}|t=${tests ? 1 : 0}|n=${bucket}|u=${unknown}`;
 }
 
 /** Map diff hunks to seed symbols: span overlap first, module fallback second. */
@@ -96,9 +130,10 @@ export function expandContext(
   store: Store,
   rootDir: string,
   seeds: Seed[],
-  opts: { hops?: number; budget?: number; withSource?: boolean } = {}
+  opts: { strategy?: Strategy; hops?: number; budget?: number; withSource?: boolean } = {}
 ): ContextPack {
-  const hops = opts.hops ?? DEFAULT_HOPS;
+  const strategy = opts.strategy ?? DEFAULT_STRATEGY;
+  const hops = opts.hops ?? strategy.hops;
   const budget = opts.budget ?? DEFAULT_BUDGET;
 
   const best = new Map<string, Candidate>();
@@ -114,7 +149,7 @@ export function expandContext(
         for (const e of edges) {
           if (!e.resolved) continue;
           const otherId = dir === '→' ? e.toId! : e.fromId;
-          const score = cur.score * EDGE_WEIGHTS[e.kind] * HOP_DECAY;
+          const score = cur.score * strategy.weights[e.kind] * strategy.decay;
           const known = best.get(otherId);
           if (known && known.score >= score) continue;
           const sym = known?.symbol ?? store.symbolById(otherId);
@@ -179,7 +214,7 @@ export function expandContext(
     let bestCost = Infinity;
     for (let i = 0; i < pool.length; i++) {
       const { c, cost } = pool[i];
-      const eff = c.score * FILE_DAMP ** (perFile.get(c.symbol.file) ?? 0);
+      const eff = c.score * strategy.fileDamp ** (perFile.get(c.symbol.file) ?? 0);
       if (
         eff > bestEff ||
         (eff === bestEff &&
@@ -202,17 +237,47 @@ export function expandContext(
     }
   }
 
-  return { seeds: seedItems, items, elided, unknownFiles: [], budget, usedChars: used };
+  return {
+    seeds: seedItems,
+    items,
+    elided,
+    unknownFiles: [],
+    budget,
+    usedChars: used,
+    signature: diffSignature(seeds, []),
+    strategy,
+    strategyFromCache: false,
+  };
 }
 
+/**
+ * Full pipeline: diff → seeds → (PatternCache lookup by signature, §4-⑤)
+ * → weighted expansion. An explicit opts.strategy always wins; useCache
+ * falls back to DEFAULT_STRATEGY on a cache miss — the deterministic
+ * pipeline is the base, cached strategies are the learned overrides (ADR-3).
+ */
 export function retrieveForDiff(
   store: Store,
   rootDir: string,
   hunks: FileRanges[],
-  opts: { hops?: number; budget?: number; withSource?: boolean } = {}
+  opts: { strategy?: Strategy; useCache?: boolean; hops?: number; budget?: number; withSource?: boolean } = {}
 ): ContextPack {
   const { seeds, unknownFiles } = seedsFromDiff(store, hunks);
-  const pack = expandContext(store, rootDir, seeds, opts);
+  const signature = diffSignature(seeds, unknownFiles);
+
+  let strategy = opts.strategy;
+  let fromCache = false;
+  if (!strategy && opts.useCache) {
+    const cached = store.getPattern(signature);
+    if (cached) {
+      strategy = JSON.parse(cached.strategy) as Strategy;
+      fromCache = true;
+    }
+  }
+
+  const pack = expandContext(store, rootDir, seeds, { ...opts, strategy });
   pack.unknownFiles = unknownFiles;
+  pack.signature = signature;
+  pack.strategyFromCache = fromCache;
   return pack;
 }

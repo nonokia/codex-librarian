@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs';
 import type { Store } from './store.js';
 import { parseUnifiedDiff } from './diff.js';
-import { retrieveForDiff, type ContextItem, type ContextPack } from './retrieval.js';
+import { retrieveForDiff, type ContextItem, type ContextPack, type Strategy } from './retrieval.js';
 
 export interface ExpectedEntry {
   file: string;
@@ -38,6 +38,8 @@ export interface GoldenCase {
 export interface CaseResult {
   id: string;
   title: string;
+  signature?: string;
+  strategyFromCache?: boolean;
   seeds: string[];
   matched: ExpectedEntry[];
   missed: ExpectedEntry[];
@@ -99,7 +101,7 @@ export function runEval(
   store: Store,
   rootDir: string,
   cases: GoldenCase[],
-  opts: { hops?: number; budget?: number } = {}
+  opts: { hops?: number; budget?: number; strategy?: Strategy; useCache?: boolean } = {}
 ): EvalReport {
   const results: CaseResult[] = [];
 
@@ -118,6 +120,8 @@ export function runEval(
       results.push({
         id: c.id,
         title: c.title,
+        signature: pack.signature,
+        strategyFromCache: pack.strategyFromCache,
         seeds: pack.seeds.map((s) => s.name),
         matched,
         missed,
