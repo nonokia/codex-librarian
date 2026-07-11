@@ -29,6 +29,10 @@ librarian review <diff> --markdown   # Claude API でレビュー生成(要 ANTH
 librarian learn <golden.json> --holdout  # 戦略掃引 → PatternCache 昇格(§4-⑤)
 librarian history                # 精度の時系列(ADR-4)
 librarian feedback <id> --good   # 人間の 👍/👎 を retrieval_log へ
+
+# Web UI (Phase 3) — 親の dist/ を参照するため root の npm run build が先
+cd web && npm install
+LIBRARIAN_DB=/path/to/idx.db npm run dev   # http://localhost:3000
 ```
 
 ## Decision logging with dlog (required)
@@ -60,5 +64,8 @@ librarian feedback <id> --good   # 人間の 👍/👎 を retrieval_log へ
 - `src/contextpack.ts` — Context Pack 組み立て(§4-③ の区画: 変更/呼び出し元/呼び出し先/テスト)。
 - `src/review.ts` — Claude API でのレビュー生成(構造化出力)。モデル既定は `claude-opus-4-8`。
 - `templates/librarian-review.yml` — 対象リポジトリに配る GitHub Actions テンプレート(§4-④)。
+- `web/` — Phase 3 の Web UI(Next.js、ADR-5)。蔵書目録(ダッシュボード)/ 書架を歩く
+  (グラフ可視化)/ 司書に聞く(グラフ近傍 Q&A、要 ANTHROPIC_API_KEY)。store へは
+  親 dist/ 経由の読み取りのみで、ロジックの再実装はしない。
 - `src/cli.ts` — CLI エントリポイント。
 - `.dlog/dlog.db` — dlog の意思決定ログ(コミット対象)。
