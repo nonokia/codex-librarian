@@ -24,7 +24,17 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
   戦略探索(`librarian learn`)。micro recall 69.6% →(チューニング)87.0% →
   (PatternCache)**89.1%**。ただし holdout では改善が示せておらず、汎化の主張には
   正解セットの成長が先 — 詳細は [`docs/phase4-report.md`](docs/phase4-report.md)。
-- 意味的補完(embeddings、Phase 3 の Web UI)は未着手。
+- **Phase 3 実装済み**: Web UI(`web/`、Next.js)—「図書館」体験のデモ。
+  蔵書目録(統計 + 精度時系列 + PatternCache + retrieval_log)、書架を歩く
+  (シンボル検索 → k-hop 近傍のグラフ可視化 + ソース閲覧)、司書に聞く
+  (グラフ近傍を文脈にした Q&A、要 ANTHROPIC_API_KEY)。
+
+  ```bash
+  npm run build                       # 先に root で(web は dist/ を参照)
+  cd web && npm install
+  LIBRARIAN_DB=/path/to/idx.db npm run dev   # http://localhost:3000
+  ```
+- 意味的補完(embeddings)は未着手 — ask は語彙一致 + グラフ近傍で動く(UI に明記)。
 
 ## Quick start
 
