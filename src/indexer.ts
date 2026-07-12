@@ -15,6 +15,7 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { basename, join, relative, resolve, sep } from 'node:path';
 import type { EdgeKind, EdgeRow, SymbolKind } from './store.js';
+import { symbolId } from './extractor.js';
 import type { ExtractedSymbol, ExtractionResult, Extractor } from './extractor.js';
 import { GoExtractor } from './extractor-go.js';
 import { PhpExtractor } from './extractor-php.js';
@@ -56,14 +57,6 @@ function extractorFor(file: string, extractors: Extractor[]): Extractor | null {
 
 export function contentHash(text: string): string {
   return createHash('sha256').update(text).digest('hex').slice(0, 16);
-}
-
-/** Stable symbol id: survives line moves; changes only when identity changes. */
-function symbolId(file: string, container: string | null, name: string, kind: string): string {
-  return createHash('sha256')
-    .update(`${file}::${container ?? ''}::${name}::${kind}`)
-    .digest('hex')
-    .slice(0, 20);
 }
 
 export class TypeScriptExtractor implements Extractor {

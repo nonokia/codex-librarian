@@ -5,7 +5,26 @@
  * indexer.ts). Other languages plug in here later (tree-sitter/SCIP based);
  * the store and CLI must never know which extractor produced the rows.
  */
+import { createHash } from 'node:crypto';
 import type { EdgeRow, SymbolRow } from './store.js';
+
+/**
+ * Stable symbol id: survives line moves; changes only when identity changes.
+ * The single definition of the id scheme — indexer emit and SCIP+ ingest
+ * (src/scip.ts, moniker → id) must agree byte-for-byte, and the Go/PHP
+ * binaries reimplement this exact formula.
+ */
+export function symbolId(
+  file: string,
+  container: string | null,
+  name: string,
+  kind: string,
+): string {
+  return createHash('sha256')
+    .update(`${file}::${container ?? ''}::${name}::${kind}`)
+    .digest('hex')
+    .slice(0, 20);
+}
 
 /**
  * Extractors are repo-unaware (#11): the repo dimension — including its part
