@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 35
-- symbols: 268
-- edges: 1470 (unresolved: 863)
-- symbols by kind: class=5, function=85, interface=34, method=31, module=35, testblock=40, typealias=4, variable=34
+- files: 37
+- symbols: 338
+- edges: 1660 (unresolved: 953)
+- symbols by kind: class=5, function=110, interface=46, method=31, module=37, testblock=59, typealias=6, variable=44
 
 ## Files
 
@@ -79,32 +79,32 @@
 
 ### src/extractor.ts
 
-- typealias ExtractedSymbol L16-16
-- interface ExtractionResult L18-23
-- interface Extractor L25-34
+- function symbolId L17-27 `(file: string, container: string | null, name: string, kind: string): string`
+- typealias ExtractedSymbol L35-35
+- interface ExtractionResult L37-42
+- interface Extractor L44-53
 
 ### src/indexer.ts
 
-- variable SKIP_DIRS L23-23
-- variable EXTENSIONS L24-24
-- function defaultExtractors L31-33 `(): Extractor[]`
-- function discoverSourceFiles L35-50 `(rootDir: string, extensions: string[] = EXTENSIONS): string[]`
-- function extractorFor L53-55 `(file: string, extractors: Extractor[]): Extractor | null`
-- function contentHash L57-59 `(text: string): string`
-- function symbolId L62-67 `(file: string, container: string | null, name: string, kind: string): string`
-- class TypeScriptExtractor L69-247
-- method TypeScriptExtractor.extract L72-246 `(rootDir: string, files: string[]): ExtractionResult[]`
-- variable TEST_BLOCK_CALLEES L256-256
-- function testBlockCall L258-274 `(node: ts.Node): { name: string; body: ts.Node } | null`
-- function classifyDeclaration L276-311 `(node: ts.Node): { name: string; kind: SymbolKind; nameNode: ts.Node | null } | null`
-- function calleeNameNode L314-318 `(expr: ts.Expression): ts.Node | null`
-- function isBareReference L325-351 `(node: ts.Identifier): boolean`
-- function signatureOf L353-368 `(node: ts.Node, sf: ts.SourceFile): string | null`
-- function docOf L370-378 `(node: ts.Node): string | null`
-- function dedupeEdges L380-388 `(edges: EdgeRow[]): EdgeRow[]`
-- function namespaceIds L396-412 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
-- interface IndexReport L414-425
-- function indexRepo L438-504 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
+- variable SKIP_DIRS L24-24
+- variable EXTENSIONS L25-25
+- function defaultExtractors L32-34 `(): Extractor[]`
+- function discoverSourceFiles L36-51 `(rootDir: string, extensions: string[] = EXTENSIONS): string[]`
+- function extractorFor L54-56 `(file: string, extractors: Extractor[]): Extractor | null`
+- function contentHash L58-60 `(text: string): string`
+- class TypeScriptExtractor L62-240
+- method TypeScriptExtractor.extract L65-239 `(rootDir: string, files: string[]): ExtractionResult[]`
+- variable TEST_BLOCK_CALLEES L249-249
+- function testBlockCall L251-267 `(node: ts.Node): { name: string; body: ts.Node } | null`
+- function classifyDeclaration L269-304 `(node: ts.Node): { name: string; kind: SymbolKind; nameNode: ts.Node | null } | null`
+- function calleeNameNode L307-311 `(expr: ts.Expression): ts.Node | null`
+- function isBareReference L318-344 `(node: ts.Identifier): boolean`
+- function signatureOf L346-361 `(node: ts.Node, sf: ts.SourceFile): string | null`
+- function docOf L363-371 `(node: ts.Node): string | null`
+- function dedupeEdges L373-381 `(edges: EdgeRow[]): EdgeRow[]`
+- function namespaceIds L389-405 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
+- interface IndexReport L407-418
+- function indexRepo L431-497 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
 
 ### src/loop.ts
 
@@ -157,6 +157,54 @@
 - function buildReviewRequest L66-80 `(pack: ReviewPack, model: string)`
 - function generateReview L82-98 `(pack: ReviewPack, opts: { model?: string; client?: Anthropic } = {}): Promise<ReviewResult>`
 - function renderReviewMarkdown L101-125 `(r: ReviewResult): string`
+
+### src/scip.ts
+
+- interface ScipPlusEnvelope L40-43
+- interface Ext L51-54
+- interface ExtDocument L57-61
+- interface ExtSymbol L63-72
+- interface ExtEdge L74-82
+- variable SYMBOL_KIND_FLAGS L86-98
+- variable EDGE_KIND_FLAGS L99-104
+- variable SYMBOL_KINDS L105-105
+- variable EDGE_KINDS L106-106
+- function parseScipPlus L113-122 `(envelope: unknown): { index: Index; ext: Ext }`
+- function parseExt L124-134 `(raw: unknown): Ext`
+- function parseExtDocument L136-151 `(raw: unknown, i: number): ExtDocument`
+- function parseExtSymbol L153-175 `(raw: unknown, at: string): ExtSymbol`
+- function parseExtEdge L177-194 `(raw: unknown, at: string): ExtEdge`
+- function encodeScip L200-202 `(index: Index): Uint8Array`
+- function decodeScip L204-206 `(bytes: Uint8Array): Index`
+- function scipFromJson L208-210 `(json: JsonValue): Index`
+- function scipToJson L212-214 `(index: Index): JsonValue`
+- function createScipIndex L217-219 `(init: MessageInitShape<typeof IndexSchema>): Index`
+- variable KIND_TO_SCIP L227-238
+- variable SCIP_TO_KIND L240-242
+- function kindFromScip L244-246 `(kind: SymbolInformation_Kind): SymbolKind | null`
+- typealias LibrarianScheme L262-262
+- interface MonikerParts L264-276
+- typealias DescriptorSuffix L278-286
+- interface ParsedDescriptor L288-292
+- interface ParsedMoniker L294-300
+- interface LibrarianSymbolKey L303-307
+- variable IDENT_CHAR L309-309
+- variable SIMPLE_IDENT L310-310
+- variable TYPE_KINDS L311-311
+- function escapeIdent L313-316 `(name: string): string`
+- function descriptorFor L318-323 `(name: string, kind: SymbolKind): string`
+- function formatLocal L325-328 `(n: number): string`
+- function isLocalSymbol L330-332 `(symbol: string): boolean`
+- function formatMoniker L334-352 `(scheme: LibrarianScheme, parts: MonikerParts): string`
+- function readHeaderField L355-369 `(s: string, i: number, what: string): [string, number]`
+- function readIdent L371-392 `(s: string, i: number): [string, number]`
+- function parseMoniker L394-467 `(moniker: string): ParsedMoniker`
+- function monikerToParts L475-486 `(moniker: string): LibrarianSymbolKey`
+- function monikerToId L488-491 `(moniker: string, kind: SymbolKind): string`
+- interface ScipMultiLineRange L498-503
+- interface ScipSingleLineRange L505-509
+- function spanToScipRange L512-517 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
+- function scipRangeToSpan L519-530 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
 
 ### src/store.ts
 
@@ -317,6 +365,32 @@
 - testblock test(map prefixes paths with the repo only when the db is multi-repo) L116-132
 - testblock test(a pre-v2 (single-repo) db is rejected with re-index guidance) L134-143
 
+### src/test/scip.test.ts
+
+- testblock test(moniker format matches the documented shape (design §4.2)) L27-36
+- testblock test(module moniker is the file descriptor alone) L38-46
+- testblock test(module moniker rejects name !== file (id would be unrecoverable)) L48-54
+- testblock test(testblocks are refused a moniker — they are local symbols) L56-70
+- interface Case L74-80
+- variable CASES L82-93
+- testblock test(moniker roundtrip recovers file/container/name exactly) L95-103
+- testblock test(monikerToId equals the extractor id scheme byte-for-byte) L105-110
+- testblock test(parseMoniker handles an external scip-typescript-shaped symbol) L114-125
+- testblock test(parseMoniker honours double-space escapes in header fields) L127-132
+- testblock test(parseMoniker reads method disambiguators and exotic descriptors) L134-141
+- testblock test(parseMoniker rejects malformed symbols) L143-149
+- testblock test(monikerToParts rejects non-file-rooted monikers) L151-153
+- testblock test(kind mapping is a bijection on the mapped subset; testblock excluded) L157-163
+- testblock test(span → range → span roundtrips) L167-177
+- testblock test(range → span handles single-line and mid-line ends) L179-194
+- testblock test(spanToScipRange rejects invalid spans) L196-199
+- function sampleIndex L203-233 `()`
+- testblock test(.scip binary roundtrips through encode/decode) L235-239
+- testblock test(proto3 canonical JSON roundtrips (the child-process representation)) L241-245
+- function sampleEnvelope L249-282 `(): unknown`
+- testblock test(parseScipPlus accepts a well-formed envelope) L284-289
+- testblock test(parseScipPlus rejects malformed envelopes with precise errors) L291-310
+
 ### web/app/api/ask/route.ts
 
 - variable MODEL L8-8
@@ -413,6 +487,8 @@
 - src/retrieval.ts → src/diff.ts
 - src/retrieval.ts → src/store.ts
 - src/review.ts → src/contextpack.ts
+- src/scip.ts → src/extractor.ts
+- src/scip.ts → src/store.ts
 - src/test/contextpack.test.ts → src/contextpack.ts
 - src/test/contextpack.test.ts → src/diff.ts
 - src/test/contextpack.test.ts → src/indexer.ts
@@ -458,6 +534,9 @@
 - src/test/multirepo.test.ts → src/map.ts
 - src/test/multirepo.test.ts → src/retrieval.ts
 - src/test/multirepo.test.ts → src/store.ts
+- src/test/scip.test.ts → src/extractor.ts
+- src/test/scip.test.ts → src/scip.ts
+- src/test/scip.test.ts → src/store.ts
 
 ## Edges (symbol → symbol, resolved)
 
@@ -605,13 +684,13 @@
 - src/indexer.ts testBlockCall —references→ src/indexer.ts TEST_BLOCK_CALLEES
 - src/indexer.ts TypeScriptExtractor.extract —references→ src/extractor.ts ExtractedSymbol
 - src/indexer.ts TypeScriptExtractor.extract —references→ src/extractor.ts ExtractionResult
+- src/indexer.ts TypeScriptExtractor.extract —calls→ src/extractor.ts symbolId
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts calleeNameNode
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts classifyDeclaration
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts dedupeEdges
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts docOf
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts isBareReference
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts signatureOf
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts symbolId
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts testBlockCall
 - src/indexer.ts TypeScriptExtractor.extract —references→ src/store.ts EdgeKind
 - src/indexer.ts TypeScriptExtractor.extract —references→ src/store.ts EdgeRow
@@ -704,6 +783,61 @@
 - src/review.ts generateReview —references→ src/review.ts ReviewResult
 - src/review.ts generateReview —calls→ src/review.ts buildReviewRequest
 - src/review.ts renderReviewMarkdown —references→ src/review.ts ReviewResult
+- src/scip.ts EDGE_KINDS —references→ src/scip.ts EDGE_KIND_FLAGS
+- src/scip.ts EDGE_KIND_FLAGS —references→ src/store.ts EdgeKind
+- src/scip.ts Ext —references→ src/scip.ts ExtDocument
+- src/scip.ts ExtDocument —references→ src/scip.ts ExtEdge
+- src/scip.ts ExtDocument —references→ src/scip.ts ExtSymbol
+- src/scip.ts ExtEdge —references→ src/store.ts EdgeKind
+- src/scip.ts ExtSymbol —references→ src/store.ts SymbolKind
+- src/scip.ts KIND_TO_SCIP —references→ src/store.ts SymbolKind
+- src/scip.ts MonikerParts —references→ src/store.ts SymbolKind
+- src/scip.ts ParsedDescriptor —references→ src/scip.ts DescriptorSuffix
+- src/scip.ts ParsedMoniker —references→ src/scip.ts ParsedDescriptor
+- src/scip.ts SCIP_TO_KIND —references→ src/scip.ts KIND_TO_SCIP
+- src/scip.ts SCIP_TO_KIND —references→ src/store.ts SymbolKind
+- src/scip.ts SYMBOL_KINDS —references→ src/scip.ts SYMBOL_KIND_FLAGS
+- src/scip.ts SYMBOL_KIND_FLAGS —references→ src/store.ts SymbolKind
+- src/scip.ts ScipPlusEnvelope —references→ src/scip.ts Ext
+- src/scip.ts TYPE_KINDS —references→ src/store.ts SymbolKind
+- src/scip.ts descriptorFor —references→ src/scip.ts TYPE_KINDS
+- src/scip.ts descriptorFor —calls→ src/scip.ts escapeIdent
+- src/scip.ts descriptorFor —references→ src/store.ts SymbolKind
+- src/scip.ts escapeIdent —references→ src/scip.ts SIMPLE_IDENT
+- src/scip.ts formatMoniker —references→ src/scip.ts LibrarianScheme
+- src/scip.ts formatMoniker —references→ src/scip.ts MonikerParts
+- src/scip.ts formatMoniker —calls→ src/scip.ts descriptorFor
+- src/scip.ts formatMoniker —calls→ src/scip.ts escapeIdent
+- src/scip.ts kindFromScip —references→ src/scip.ts SCIP_TO_KIND
+- src/scip.ts kindFromScip —references→ src/store.ts SymbolKind
+- src/scip.ts monikerToId —calls→ src/extractor.ts symbolId
+- src/scip.ts monikerToId —calls→ src/scip.ts monikerToParts
+- src/scip.ts monikerToId —references→ src/store.ts SymbolKind
+- src/scip.ts monikerToParts —references→ src/scip.ts LibrarianSymbolKey
+- src/scip.ts monikerToParts —calls→ src/scip.ts parseMoniker
+- src/scip.ts parseExt —references→ src/scip.ts Ext
+- src/scip.ts parseExt —references→ src/scip.ts parseExtDocument
+- src/scip.ts parseExtDocument —references→ src/scip.ts ExtDocument
+- src/scip.ts parseExtDocument —calls→ src/scip.ts parseExtEdge
+- src/scip.ts parseExtDocument —calls→ src/scip.ts parseExtSymbol
+- src/scip.ts parseExtEdge —references→ src/scip.ts EDGE_KINDS
+- src/scip.ts parseExtEdge —references→ src/scip.ts ExtEdge
+- src/scip.ts parseExtEdge —references→ src/store.ts EdgeKind
+- src/scip.ts parseExtSymbol —references→ src/scip.ts ExtSymbol
+- src/scip.ts parseExtSymbol —references→ src/scip.ts SYMBOL_KINDS
+- src/scip.ts parseExtSymbol —references→ src/store.ts SymbolKind
+- src/scip.ts parseMoniker —references→ src/scip.ts ParsedDescriptor
+- src/scip.ts parseMoniker —references→ src/scip.ts ParsedMoniker
+- src/scip.ts parseMoniker —calls→ src/scip.ts isLocalSymbol
+- src/scip.ts parseMoniker —calls→ src/scip.ts readHeaderField
+- src/scip.ts parseMoniker —calls→ src/scip.ts readIdent
+- src/scip.ts parseScipPlus —references→ src/scip.ts Ext
+- src/scip.ts parseScipPlus —calls→ src/scip.ts parseExt
+- src/scip.ts parseScipPlus —calls→ src/scip.ts scipFromJson
+- src/scip.ts readIdent —references→ src/scip.ts IDENT_CHAR
+- src/scip.ts scipRangeToSpan —references→ src/scip.ts ScipMultiLineRange
+- src/scip.ts scipRangeToSpan —references→ src/scip.ts ScipSingleLineRange
+- src/scip.ts spanToScipRange —references→ src/scip.ts ScipMultiLineRange
 - src/store.ts EdgeEndpoint —references→ src/store.ts SymbolKind
 - src/store.ts EdgeRow —references→ src/store.ts EdgeKind
 - src/store.ts JoinedEdge —references→ src/store.ts EdgeEndpoint
@@ -975,6 +1109,46 @@
 - src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.neighborhood
 - src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.stats
 - src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/test/multirepo.test.ts twoRepos
+- src/test/scip.test.ts CASES —references→ src/test/scip.test.ts Case
+- src/test/scip.test.ts Case —references→ src/store.ts SymbolKind
+- src/test/scip.test.ts sampleEnvelope —calls→ src/scip.ts scipToJson
+- src/test/scip.test.ts sampleEnvelope —calls→ src/test/scip.test.ts sampleIndex
+- src/test/scip.test.ts sampleIndex —calls→ src/scip.ts createScipIndex
+- src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/scip.ts decodeScip
+- src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/scip.ts encodeScip
+- src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/scip.ts scipToJson
+- src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/test/scip.test.ts sampleIndex
+- src/test/scip.test.ts test(kind mapping is a bijection on the mapped subset; testblock excluded) —references→ src/scip.ts KIND_TO_SCIP
+- src/test/scip.test.ts test(kind mapping is a bijection on the mapped subset; testblock excluded) —calls→ src/scip.ts kindFromScip
+- src/test/scip.test.ts test(module moniker is the file descriptor alone) —calls→ src/scip.ts formatMoniker
+- src/test/scip.test.ts test(module moniker rejects name !== file (id would be unrecoverable)) —calls→ src/scip.ts formatMoniker
+- src/test/scip.test.ts test(moniker format matches the documented shape (design §4.2)) —calls→ src/scip.ts formatMoniker
+- src/test/scip.test.ts test(moniker roundtrip recovers file/container/name exactly) —calls→ src/scip.ts formatMoniker
+- src/test/scip.test.ts test(moniker roundtrip recovers file/container/name exactly) —calls→ src/scip.ts monikerToParts
+- src/test/scip.test.ts test(moniker roundtrip recovers file/container/name exactly) —references→ src/test/scip.test.ts CASES
+- src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —calls→ src/extractor.ts symbolId
+- src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —calls→ src/scip.ts formatMoniker
+- src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —calls→ src/scip.ts monikerToId
+- src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —references→ src/test/scip.test.ts CASES
+- src/test/scip.test.ts test(monikerToParts rejects non-file-rooted monikers) —calls→ src/scip.ts monikerToParts
+- src/test/scip.test.ts test(parseMoniker handles an external scip-typescript-shaped symbol) —calls→ src/scip.ts parseMoniker
+- src/test/scip.test.ts test(parseMoniker honours double-space escapes in header fields) —calls→ src/scip.ts parseMoniker
+- src/test/scip.test.ts test(parseMoniker reads method disambiguators and exotic descriptors) —calls→ src/scip.ts parseMoniker
+- src/test/scip.test.ts test(parseMoniker rejects malformed symbols) —calls→ src/scip.ts parseMoniker
+- src/test/scip.test.ts test(parseScipPlus accepts a well-formed envelope) —calls→ src/scip.ts parseScipPlus
+- src/test/scip.test.ts test(parseScipPlus accepts a well-formed envelope) —calls→ src/test/scip.test.ts sampleEnvelope
+- src/test/scip.test.ts test(parseScipPlus rejects malformed envelopes with precise errors) —calls→ src/scip.ts parseScipPlus
+- src/test/scip.test.ts test(parseScipPlus rejects malformed envelopes with precise errors) —calls→ src/test/scip.test.ts sampleEnvelope
+- src/test/scip.test.ts test(proto3 canonical JSON roundtrips (the child-process representation)) —calls→ src/scip.ts scipFromJson
+- src/test/scip.test.ts test(proto3 canonical JSON roundtrips (the child-process representation)) —calls→ src/scip.ts scipToJson
+- src/test/scip.test.ts test(proto3 canonical JSON roundtrips (the child-process representation)) —calls→ src/test/scip.test.ts sampleIndex
+- src/test/scip.test.ts test(range → span handles single-line and mid-line ends) —calls→ src/scip.ts scipRangeToSpan
+- src/test/scip.test.ts test(span → range → span roundtrips) —calls→ src/scip.ts scipRangeToSpan
+- src/test/scip.test.ts test(span → range → span roundtrips) —calls→ src/scip.ts spanToScipRange
+- src/test/scip.test.ts test(spanToScipRange rejects invalid spans) —calls→ src/scip.ts spanToScipRange
+- src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/scip.ts formatLocal
+- src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/scip.ts formatMoniker
+- src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/scip.ts isLocalSymbol
 - web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts MODEL
 - web/components/AskPanel.tsx AskPanel —references→ web/components/AskPanel.tsx Cited
 - web/components/AskPanel.tsx AskPanel —calls→ web/components/AskPanel.tsx AskPanel.ask
@@ -998,49 +1172,53 @@
 
 ## Unresolved (aggregated)
 
-- 42× join (calls)
-- 42× map (calls)
+- 48× map (calls)
+- 44× join (calls)
+- 36× equal (calls)
+- 29× ok (calls)
 - 28× some (calls)
-- 27× ok (calls)
-- 26× equal (calls)
 - 26× prepare (calls)
-- 20× get (calls)
+- 21× Error (calls)
+- 21× get (calls)
+- 19× deepEqual (calls)
 - 19× node:fs (imports)
+- 19× push (calls)
 - 18× filter (calls)
 - 18× node:path (imports)
-- 18× push (calls)
+- 18× test (calls)
+- 17× stringify (calls)
 - 16× rmSync (calls)
-- 15× slice (calls)
-- 15× test (calls)
+- 16× slice (calls)
+- 15× Set (calls)
 - 14× all (calls)
 - 14× find (calls)
-- 13× deepEqual (calls)
-- 13× split (calls)
+- 14× split (calls)
+- 13× Map (calls)
 - 13× writeFileSync (calls)
-- 12× Map (calls)
-- 12× Set (calls)
-- 12× stringify (calls)
+- 12× has (calls)
 - 11× mkdtempSync (calls)
 - 11× tmpdir (calls)
+- 10× node:assert/strict (imports)
+- 10× node:test (imports)
 - 10× set (calls)
-- 9× has (calls)
 - 9× mkdirSync (calls)
-- 9× node:assert/strict (imports)
 - 9× node:os (imports)
-- 9× node:test (imports)
 - 9× readFileSync (calls)
 - 9× run (calls)
-- 8× Error (calls)
+- 8× parse (calls)
 - 8× resolve (calls)
 - 7× existsSync (calls)
 - 7× match (calls)
 - 7× now (calls)
 - 7× sort (calls)
+- 7× throws (calls)
 - 6× createHash (calls)
 - 6× digest (calls)
 - 6× dirname (calls)
+- 6× entries (calls)
 - 6× json (calls)
-- 6× parse (calls)
+- 6× keys (calls)
+- 6× max (calls)
 - 6× trim (calls)
 - 6× update (calls)
 - 5× @/lib/librarian (imports)
@@ -1048,36 +1226,36 @@
 - 5× endsWith (calls)
 - 5× exec (calls)
 - 5× includes (calls)
-- 5× max (calls)
+- 5× node:crypto (imports)
 - 5× openLibrarian (calls)
 - 5× relative (calls)
 - 5× spawnSync (calls)
+- 5× startsWith (calls)
 - 4× add (calls)
-- 4× entries (calls)
 - 4× every (calls)
 - 4× fileURLToPath (calls)
+- 4× isArray (calls)
 - 4× isIdentifier (calls)
-- 4× keys (calls)
 - 4× next/server (imports)
 - 4× node:child_process (imports)
-- 4× node:crypto (imports)
 - 4× node:url (imports)
 - 4× round (calls)
-- 4× startsWith (calls)
 - 3× close (calls)
+- 3× create (calls)
 - 3× error (calls)
 - 3× getText (calls)
 - 3× isArrowFunction (calls)
 - 3× isCallExpression (calls)
 - 3× isFunctionDeclaration (calls)
+- 3× isInteger (calls)
 - 3× isMethodDeclaration (calls)
 - 3× isPropertyAccessExpression (calls)
 - 3× isVariableDeclaration (calls)
 - 3× values (calls)
 - 2× @anthropic-ai/sdk (imports)
+- 2× @scip-code/scip (imports)
 - 2× Anthropic (calls)
 - 2× DatabaseSync (calls)
-- 2× create (calls)
 - 2× fetch (calls)
 - 2× findSymbols (calls)
 - 2× flatMap (calls)
@@ -1106,6 +1284,7 @@
 - 1× @/components/AskPanel (imports)
 - 1× @/components/EvalChart (imports)
 - 1× @/components/GraphExplorer (imports)
+- 1× @bufbuild/protobuf (imports)
 - 1× AskPanel (calls)
 - 1× EvalChart (calls)
 - 1× GraphExplorer (calls)
@@ -1125,6 +1304,8 @@
 - 1× exit (calls)
 - 1× floor (calls)
 - 1× forEachChild (calls)
+- 1× fromBinary (calls)
+- 1× fromJson (calls)
 - 1× getAliasedSymbol (calls)
 - 1× getEnd (calls)
 - 1× getJSDocCommentsAndTags (calls)
@@ -1133,7 +1314,6 @@
 - 1× getStart (calls)
 - 1× getSymbolAtLocation (calls)
 - 1× getTypeChecker (calls)
-- 1× isArray (calls)
 - 1× isBindingElement (calls)
 - 1× isClassLike (calls)
 - 1× isDirectory (calls)
@@ -1163,11 +1343,13 @@
 - 1× readdirSync (calls)
 - 1× reduce (calls)
 - 1× replace (calls)
+- 1× replaceAll (calls)
 - 1× sin (calls)
 - 1× splice (calls)
 - 1× sqrt (calls)
 - 1× stats (calls)
-- 1× throws (calls)
+- 1× toBinary (calls)
+- 1× toJson (calls)
 - 1× trimEnd (calls)
 - 1× typescript (imports)
 - 1× useCallback (calls)
