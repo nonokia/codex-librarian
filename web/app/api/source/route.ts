@@ -6,11 +6,13 @@ import { openLibrarian } from '@/lib/librarian';
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
-  const { store, root } = openLibrarian();
+  const { store, rootFor } = openLibrarian();
   const sym = store.symbolById(id);
   if (!sym) return NextResponse.json({ error: 'unknown symbol' }, { status: 404 });
   let text = '';
   try {
+    const root = rootFor(sym.repo);
+    if (root === null) throw new Error('unknown repo');
     const lines = readFileSync(join(root, sym.file), 'utf8').split('\n');
     text = lines.slice(sym.spanStart - 1, sym.spanEnd).join('\n');
   } catch {

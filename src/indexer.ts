@@ -13,9 +13,9 @@
 import ts from 'typescript';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
-import type { EdgeKind, EdgeRow, SymbolKind, SymbolRow } from './store.js';
-import type { ExtractionResult, Extractor } from './extractor.js';
+import { basename, join, relative, resolve, sep } from 'node:path';
+import type { EdgeKind, EdgeRow, SymbolKind } from './store.js';
+import type { ExtractedSymbol, ExtractionResult, Extractor } from './extractor.js';
 import { GoExtractor } from './extractor-go.js';
 import { PhpExtractor } from './extractor-php.js';
 import { Store } from './store.js';
@@ -87,12 +87,12 @@ export class TypeScriptExtractor implements Extractor {
 
     // Pass 1: collect declared symbols so pass 2 can resolve edges to them.
     const declToId = new Map<ts.Node, string>();
-    const perFile = new Map<string, { symbols: SymbolRow[]; edges: EdgeRow[] }>();
+    const perFile = new Map<string, { symbols: ExtractedSymbol[]; edges: EdgeRow[] }>();
 
     for (const sf of program.getSourceFiles()) {
       if (!inRepo.has(sf.fileName)) continue;
       const file = rel(sf.fileName);
-      const bucket = { symbols: [] as SymbolRow[], edges: [] as EdgeRow[] };
+      const bucket = { symbols: [] as ExtractedSymbol[], edges: [] as EdgeRow[] };
       perFile.set(file, bucket);
 
       const moduleId = symbolId(file, null, file, 'module');
@@ -387,7 +387,32 @@ function dedupeEdges(edges: EdgeRow[]): EdgeRow[] {
   });
 }
 
+/**
+ * Namespace extractor-local symbol ids with the repo (#11). Extractors hash
+ * only file::container::name::kind (the Go/PHP binaries share that scheme),
+ * so two repos containing the same path would collide in one db; folding the
+ * repo in here keeps every language binary unchanged.
+ */
+function namespaceIds(repo: string, results: ExtractionResult[]): ExtractionResult[] {
+  const remap = new Map<string, string>();
+  for (const r of results) {
+    for (const s of r.symbols) {
+      remap.set(s.id, createHash('sha256').update(`${repo}::${s.id}`).digest('hex').slice(0, 20));
+    }
+  }
+  return results.map((r) => ({
+    file: r.file,
+    symbols: r.symbols.map((s) => ({ ...s, id: remap.get(s.id)! })),
+    edges: r.edges.map((e) => ({
+      ...e,
+      fromId: remap.get(e.fromId) ?? e.fromId,
+      toId: e.toId === null ? null : (remap.get(e.toId) ?? e.toId),
+    })),
+  }));
+}
+
 export interface IndexReport {
+  repo: string;
   root: string;
   filesSeen: number;
   filesIndexed: number;
@@ -413,9 +438,10 @@ export interface IndexReport {
 export function indexRepo(
   store: Store,
   rootDir: string,
-  opts: { extractors?: Extractor[]; include?: string[] } = {}
+  opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}
 ): IndexReport {
   const t0 = Date.now();
+  const repo = opts.repoName ?? basename(resolve(rootDir));
   const extractors = opts.extractors ?? defaultExtractors();
   const allExtensions = [...new Set(extractors.flatMap((x) => x.extensions))];
   const rel = (abs: string) => relative(rootDir, abs).split(sep).join('/');
@@ -432,34 +458,39 @@ export function indexRepo(
   const hashes = new Map<string, string>();
   for (const abs of absFiles) hashes.set(rel(abs), contentHash(readFileSync(abs, 'utf8')));
 
-  const known = new Map(store.listFiles().map((f) => [f.path, f.hash]));
+  const known = new Map(store.listFiles(repo).map((f) => [f.path, f.hash]));
   const removed = [...known.keys()].filter((p) => !hashes.has(p));
-  store.removeFiles(removed);
+  store.removeFiles(repo, removed);
 
   const changedSet = new Set(
     [...hashes.entries()].filter(([p, h]) => known.get(p) !== h).map(([p]) => p)
   );
 
+  // The repos row must exist before any files row references it (FK), but a
+  // no-op reindex must not touch the db at all (byte-identity, #15) — so the
+  // upsert only happens when this run will actually write.
+  const existing = store.getRepo(repo);
+  if (changedSet.size > 0 || removed.length > 0 || !existing || existing.root !== rootDir) {
+    store.upsertRepo(repo, rootDir);
+  }
+
   let indexed = 0;
   for (const extractor of extractors) {
     const claimed = absFiles.filter((abs) => extractorFor(rel(abs), extractors) === extractor);
     if (claimed.length === 0 || !claimed.some((abs) => changedSet.has(rel(abs)))) continue;
-    for (const r of extractor.extract(rootDir, claimed)) {
+    for (const r of namespaceIds(repo, extractor.extract(rootDir, claimed))) {
       if (!changedSet.has(r.file)) continue;
-      store.replaceFile(r.file, hashes.get(r.file)!, r.symbols, r.edges);
+      store.replaceFile(repo, r.file, hashes.get(r.file)!, r.symbols, r.edges);
       indexed++;
     }
   }
-  // No-op reindex must leave the db byte-identical (self-index #15: the
-  // committed db would otherwise churn on every run), so meta is written
-  // only when something actually changed.
-  if (indexed > 0 || removed.length > 0 || store.getMeta('root') !== rootDir) {
-    store.setMeta('root', rootDir);
+  if (indexed > 0 || removed.length > 0 || !existing || existing.root !== rootDir) {
     store.setMeta('last_indexed_at', String(Date.now()));
   }
 
   const s = store.stats();
   return {
+    repo,
     root: rootDir,
     filesSeen: absFiles.length,
     filesIndexed: indexed,

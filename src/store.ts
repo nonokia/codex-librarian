@@ -26,6 +26,7 @@ export type EdgeKind = 'calls' | 'imports' | 'extends' | 'references';
 
 export interface SymbolRow {
   id: string;
+  repo: string;
   kind: SymbolKind;
   name: string;
   file: string;
@@ -34,6 +35,12 @@ export interface SymbolRow {
   spanEnd: number;
   signature: string | null;
   doc: string | null;
+}
+
+export interface RepoRow {
+  name: string;
+  root: string;
+  indexedAt: number;
 }
 
 export interface EdgeRow {
@@ -45,6 +52,7 @@ export interface EdgeRow {
 }
 
 export interface EdgeEndpoint {
+  repo: string;
   file: string;
   name: string;
   container: string | null;
@@ -63,29 +71,41 @@ export interface NeighborRow extends SymbolRow {
   direction: 'out' | 'in';
 }
 
+/** Bumped when the table shapes change incompatibly (v2: multi-repo, #11). */
+export const SCHEMA_VERSION = '2';
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS meta (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS files (
-  path       TEXT PRIMARY KEY,
-  hash       TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS repos (
+  name       TEXT PRIMARY KEY,
+  root       TEXT NOT NULL,
   indexed_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS files (
+  repo       TEXT NOT NULL REFERENCES repos(name) ON DELETE CASCADE,
+  path       TEXT NOT NULL,
+  hash       TEXT NOT NULL,
+  indexed_at INTEGER NOT NULL,
+  PRIMARY KEY (repo, path)
 );
 CREATE TABLE IF NOT EXISTS symbols (
   id         TEXT PRIMARY KEY,
+  repo       TEXT NOT NULL,
   kind       TEXT NOT NULL,
   name       TEXT NOT NULL,
-  file       TEXT NOT NULL REFERENCES files(path) ON DELETE CASCADE,
+  file       TEXT NOT NULL,
   container  TEXT,
   span_start INTEGER NOT NULL,
   span_end   INTEGER NOT NULL,
   signature  TEXT,
-  doc        TEXT
+  doc        TEXT,
+  FOREIGN KEY (repo, file) REFERENCES files(repo, path) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_symbols_name ON symbols(name);
-CREATE INDEX IF NOT EXISTS idx_symbols_file ON symbols(file);
+CREATE INDEX IF NOT EXISTS idx_symbols_file ON symbols(repo, file);
 CREATE TABLE IF NOT EXISTS edges (
   from_id  TEXT NOT NULL,
   to_id    TEXT NOT NULL DEFAULT '',
@@ -144,7 +164,21 @@ export class Store {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
     this.db = new DatabaseSync(path);
     this.db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
+    // Pre-v2 dbs (files keyed by path alone) cannot be migrated in place:
+    // symbol ids are hashed without the repo dimension, so every id — and
+    // every edge endpoint — would change anyway. Re-indexing is the migration.
+    const filesCols = this.db
+      .prepare(`SELECT name FROM pragma_table_info('files')`)
+      .all() as { name: string }[];
+    if (filesCols.length > 0 && !filesCols.some((c) => c.name === 'repo')) {
+      this.db.close();
+      throw new Error(
+        `incompatible index schema (pre-v${SCHEMA_VERSION}, single-repo) at ${path} — ` +
+          `delete the db and re-run \`librarian index <repo> --db ${path}\``
+      );
+    }
     this.db.exec(SCHEMA);
+    if (this.getMeta('schema_version') === null) this.setMeta('schema_version', SCHEMA_VERSION);
   }
 
   close(): void {
@@ -164,31 +198,57 @@ export class Store {
       .run(key, value);
   }
 
-  fileHash(path: string): string | null {
-    const row = this.db.prepare('SELECT hash FROM files WHERE path = ?').get(path) as
-      | { hash: string }
+  upsertRepo(name: string, root: string): void {
+    this.db
+      .prepare(
+        `INSERT INTO repos(name, root, indexed_at) VALUES(?, ?, ?)
+         ON CONFLICT(name) DO UPDATE SET root = excluded.root, indexed_at = excluded.indexed_at`
+      )
+      .run(name, root, Date.now());
+  }
+
+  getRepo(name: string): RepoRow | null {
+    const row = this.db.prepare('SELECT * FROM repos WHERE name = ?').get(name) as
+      | { name: string; root: string; indexed_at: number }
       | undefined;
+    return row ? { name: row.name, root: row.root, indexedAt: row.indexed_at } : null;
+  }
+
+  listRepos(): RepoRow[] {
+    return (
+      this.db.prepare('SELECT * FROM repos ORDER BY name').all() as {
+        name: string;
+        root: string;
+        indexed_at: number;
+      }[]
+    ).map((r) => ({ name: r.name, root: r.root, indexedAt: r.indexed_at }));
+  }
+
+  fileHash(repo: string, path: string): string | null {
+    const row = this.db
+      .prepare('SELECT hash FROM files WHERE repo = ? AND path = ?')
+      .get(repo, path) as { hash: string } | undefined;
     return row?.hash ?? null;
   }
 
   /** Replace a file's rows wholesale: its symbols, and edges originating from them. */
-  replaceFile(path: string, hash: string, symbols: SymbolRow[], edges: EdgeRow[]): void {
+  replaceFile(repo: string, path: string, hash: string, symbols: Omit<SymbolRow, 'repo'>[], edges: EdgeRow[]): void {
     this.db.exec('BEGIN');
     try {
       this.db
-        .prepare(`DELETE FROM edges WHERE from_id IN (SELECT id FROM symbols WHERE file = ?)`)
-        .run(path);
-      this.db.prepare('DELETE FROM symbols WHERE file = ?').run(path);
+        .prepare(`DELETE FROM edges WHERE from_id IN (SELECT id FROM symbols WHERE repo = ? AND file = ?)`)
+        .run(repo, path);
+      this.db.prepare('DELETE FROM symbols WHERE repo = ? AND file = ?').run(repo, path);
       this.db
         .prepare(
-          'INSERT INTO files(path, hash, indexed_at) VALUES(?, ?, ?) ON CONFLICT(path) DO UPDATE SET hash = excluded.hash, indexed_at = excluded.indexed_at'
+          'INSERT INTO files(repo, path, hash, indexed_at) VALUES(?, ?, ?, ?) ON CONFLICT(repo, path) DO UPDATE SET hash = excluded.hash, indexed_at = excluded.indexed_at'
         )
-        .run(path, hash, Date.now());
+        .run(repo, path, hash, Date.now());
       const insSym = this.db.prepare(
-        'INSERT OR REPLACE INTO symbols(id, kind, name, file, container, span_start, span_end, signature, doc) VALUES(?,?,?,?,?,?,?,?,?)'
+        'INSERT OR REPLACE INTO symbols(id, repo, kind, name, file, container, span_start, span_end, signature, doc) VALUES(?,?,?,?,?,?,?,?,?,?)'
       );
       for (const s of symbols) {
-        insSym.run(s.id, s.kind, s.name, s.file, s.container, s.spanStart, s.spanEnd, s.signature, s.doc);
+        insSym.run(s.id, repo, s.kind, s.name, s.file, s.container, s.spanStart, s.spanEnd, s.signature, s.doc);
       }
       const insEdge = this.db.prepare(
         'INSERT OR IGNORE INTO edges(from_id, to_id, to_name, kind, resolved) VALUES(?,?,?,?,?)'
@@ -203,19 +263,25 @@ export class Store {
     }
   }
 
-  removeFiles(paths: string[]): void {
+  removeFiles(repo: string, paths: string[]): void {
     const delEdges = this.db.prepare(
-      'DELETE FROM edges WHERE from_id IN (SELECT id FROM symbols WHERE file = ?)'
+      'DELETE FROM edges WHERE from_id IN (SELECT id FROM symbols WHERE repo = ? AND file = ?)'
     );
-    const delFile = this.db.prepare('DELETE FROM files WHERE path = ?');
+    const delFile = this.db.prepare('DELETE FROM files WHERE repo = ? AND path = ?');
     for (const p of paths) {
-      delEdges.run(p);
-      delFile.run(p);
+      delEdges.run(repo, p);
+      delFile.run(repo, p);
     }
   }
 
-  listFiles(): { path: string; hash: string }[] {
-    return this.db.prepare('SELECT path, hash FROM files ORDER BY path').all() as {
+  listFiles(repo?: string): { repo: string; path: string; hash: string }[] {
+    if (repo !== undefined) {
+      return this.db
+        .prepare('SELECT repo, path, hash FROM files WHERE repo = ? ORDER BY path')
+        .all(repo) as { repo: string; path: string; hash: string }[];
+    }
+    return this.db.prepare('SELECT repo, path, hash FROM files ORDER BY repo, path').all() as {
+      repo: string;
       path: string;
       hash: string;
     }[];
@@ -228,6 +294,7 @@ export class Store {
     unresolvedEdges: number;
     byKind: Record<string, number>;
     byExtension: Record<string, number>;
+    byRepo: Record<string, { files: number; symbols: number }>;
   } {
     const one = (sql: string) => (this.db.prepare(sql).get() as { n: number }).n;
     const byKind: Record<string, number> = {};
@@ -235,6 +302,16 @@ export class Store {
       .prepare('SELECT kind, COUNT(*) AS n FROM symbols GROUP BY kind ORDER BY n DESC')
       .all() as { kind: string; n: number }[]) {
       byKind[row.kind] = row.n;
+    }
+    const byRepo: Record<string, { files: number; symbols: number }> = {};
+    for (const row of this.db
+      .prepare(
+        `SELECT f.repo AS repo, COUNT(*) AS files,
+                (SELECT COUNT(*) FROM symbols s WHERE s.repo = f.repo) AS symbols
+         FROM files f GROUP BY f.repo ORDER BY f.repo`
+      )
+      .all() as { repo: string; files: number; symbols: number }[]) {
+      byRepo[row.repo] = { files: row.files, symbols: row.symbols };
     }
     // language breakdown (#10): which extractor family each indexed file
     // belongs to is visible from its extension
@@ -252,27 +329,32 @@ export class Store {
       unresolvedEdges: one('SELECT COUNT(*) AS n FROM edges WHERE resolved = 0'),
       byKind,
       byExtension,
+      byRepo,
     };
   }
 
-  findSymbols(query: string, limit = 20): SymbolRow[] {
+  /** Cross-repo by default (#11); pass `repo` to scope to one repository. */
+  findSymbols(query: string, limit = 20, repo?: string): SymbolRow[] {
     return (
       this.db
         .prepare(
           `SELECT * FROM symbols
-           WHERE name = ?1 OR name LIKE ?2 OR (container || '.' || name) = ?1
-           ORDER BY CASE WHEN name = ?1 THEN 0 ELSE 1 END, file, span_start
+           WHERE (name = ?1 OR name LIKE ?2 OR (container || '.' || name) = ?1)
+             AND (?4 IS NULL OR repo = ?4)
+           ORDER BY CASE WHEN name = ?1 THEN 0 ELSE 1 END, repo, file, span_start
            LIMIT ?3`
         )
-        .all(query, `%${query}%`, limit) as unknown[]
+        .all(query, `%${query}%`, limit, repo ?? null) as unknown[]
     ).map(rowToSymbol);
   }
 
-  symbolsInFile(file: string): SymbolRow[] {
+  symbolsInFile(file: string, repo?: string): SymbolRow[] {
     return (
       this.db
-        .prepare('SELECT * FROM symbols WHERE file = ? ORDER BY span_start')
-        .all(file) as unknown[]
+        .prepare(
+          'SELECT * FROM symbols WHERE file = ?1 AND (?2 IS NULL OR repo = ?2) ORDER BY repo, span_start'
+        )
+        .all(file, repo ?? null) as unknown[]
     ).map(rowToSymbol);
   }
 
@@ -456,13 +538,13 @@ export class Store {
     return this.db
       .prepare(
         `SELECT e.kind AS kind,
-                f.file AS from_file, f.name AS from_name, f.container AS from_container, f.kind AS from_kind,
-                t.file AS to_file,   t.name AS to_name,   t.container AS to_container,   t.kind AS to_kind
+                f.repo AS from_repo, f.file AS from_file, f.name AS from_name, f.container AS from_container, f.kind AS from_kind,
+                t.repo AS to_repo,   t.file AS to_file,   t.name AS to_name,   t.container AS to_container,   t.kind AS to_kind
          FROM edges e
          JOIN symbols f ON f.id = e.from_id
          JOIN symbols t ON t.id = e.to_id
          WHERE e.resolved = 1
-         ORDER BY f.file, f.container, f.name, t.file, t.container, t.name, e.kind`
+         ORDER BY f.repo, f.file, f.container, f.name, t.repo, t.file, t.container, t.name, e.kind`
       )
       .all()
       .map((r) => {
@@ -470,12 +552,14 @@ export class Store {
         return {
           kind: row.kind as EdgeKind,
           from: {
+            repo: row.from_repo as string,
             file: row.from_file as string,
             name: row.from_name as string,
             container: (row.from_container as string | null) ?? null,
             kind: row.from_kind as SymbolKind,
           },
           to: {
+            repo: row.to_repo as string,
             file: row.to_file as string,
             name: row.to_name as string,
             container: (row.to_container as string | null) ?? null,
@@ -509,6 +593,7 @@ function rowToSymbol(r: unknown): SymbolRow {
   const row = r as Record<string, unknown>;
   return {
     id: row.id as string,
+    repo: row.repo as string,
     kind: row.kind as SymbolKind,
     name: row.name as string,
     file: row.file as string,

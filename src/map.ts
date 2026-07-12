@@ -27,6 +27,8 @@ export interface CodebaseMap {
     edges: number;
     unresolvedEdges: number;
     byKind: Record<string, number>;
+    /** per-repo breakdown (#11) — names only; roots are machine-local paths */
+    byRepo: Record<string, { files: number; symbols: number }>;
   };
   files: MapFile[];
   /** file-level import graph, one entry per (from, to) pair */
@@ -42,10 +44,15 @@ const display = (s: { name: string; container: string | null }): string =>
 
 export function buildMap(store: Store): CodebaseMap {
   const stats = store.stats();
+  // Single-repo maps stay exactly as before (#11): the repo prefix on paths
+  // appears only when the db actually holds more than one repository, so the
+  // committed self-index MAP.md does not churn.
+  const multi = Object.keys(stats.byRepo).length > 1;
+  const label = (repo: string, path: string) => (multi ? `${repo}:${path}` : path);
   const files: MapFile[] = store.listFiles().map((f) => ({
-    path: f.path,
+    path: label(f.repo, f.path),
     symbols: store
-      .symbolsInFile(f.path)
+      .symbolsInFile(f.path, f.repo)
       .filter((s: SymbolRow) => s.kind !== 'module') // the module row duplicates the file path
       .map((s: SymbolRow) => ({
         kind: s.kind,
@@ -61,17 +68,17 @@ export function buildMap(store: Store): CodebaseMap {
   const edges: CodebaseMap['edges'] = [];
   for (const e of joined) {
     if (e.kind === 'imports') {
-      const key = `${e.from.file} ${e.to.file}`;
+      const key = `${label(e.from.repo, e.from.file)} ${label(e.to.repo, e.to.file)}`;
       if (!seenImports.has(key)) {
         seenImports.add(key);
-        imports.push({ from: e.from.file, to: e.to.file });
+        imports.push({ from: label(e.from.repo, e.from.file), to: label(e.to.repo, e.to.file) });
       }
     } else {
       edges.push({
         from: display(e.from),
-        fromFile: e.from.file,
+        fromFile: label(e.from.repo, e.from.file),
         to: display(e.to),
-        toFile: e.to.file,
+        toFile: label(e.to.repo, e.to.file),
         kind: e.kind,
       });
     }
@@ -84,6 +91,7 @@ export function buildMap(store: Store): CodebaseMap {
       edges: stats.edges,
       unresolvedEdges: stats.unresolvedEdges,
       byKind: sortedRecord(stats.byKind),
+      byRepo: stats.byRepo,
     },
     files,
     imports,
@@ -119,6 +127,13 @@ export function renderMapMarkdown(map: CodebaseMap): string {
     .map(([k, n]) => `${k}=${n}`)
     .join(', ');
   lines.push(`- symbols by kind: ${kinds}`);
+  const repoNames = Object.keys(map.stats.byRepo);
+  if (repoNames.length > 1) {
+    const repos = repoNames
+      .map((r) => `${r} (files=${map.stats.byRepo[r].files}, symbols=${map.stats.byRepo[r].symbols})`)
+      .join(', ');
+    lines.push(`- repos: ${repos}`);
+  }
   lines.push('');
 
   lines.push('## Files');

@@ -112,3 +112,22 @@ node bin/librarian.js graph <symbol> --db <db> --hops 2 --pretty
 node bin/librarian.js retrieve <diff-file> --db <db> --budget 8000   # 文脈束
 node bin/librarian.js eval eval/golden/weather-you-travel.json --db <db> --pretty
 ```
+
+## マルチレポ(issue #11)
+
+複数リポジトリを 1 つの db にインデックスして横断で引ける(schema v2)。
+
+```bash
+node bin/librarian.js index ~/src/repo-a --db shared.db            # repo 名は basename
+node bin/librarian.js index ~/src/repo-b --db shared.db --repo-name backend
+node bin/librarian.js symbols handleRequest --db shared.db          # 既定で横断検索
+node bin/librarian.js graph handleRequest --db shared.db --repo backend  # --repo で絞り込み
+node bin/librarian.js stats --db shared.db                          # repos / repo 別内訳
+```
+
+- diff 系(`retrieve`/`pack`/`review`/`eval`)はソース本文を repos テーブルの root から
+  読む。同じ相対パスが複数 repo にある場合は `--repo <name>` で diff の属する repo を
+  指定する。インデックス時と root が移動した場合は `--root <dir>` で上書き。
+- v2 より前の db は開けない(再インデックスを案内するエラーになる)。
+- リポジトリ間の import は静的には解決できないため `resolved = 0` のまま
+  (unresolved として隔離)。package 名 → repo マッピングによる解決は将来課題。

@@ -18,7 +18,7 @@ LIBRARIAN_DB=/path/to/idx.db npm run dev          # web/ で`}</pre>
       </div>
     );
   }
-  const { store, dbPath, root } = data;
+  const { store, dbPath, repos } = data;
   const stats = store.stats();
   const history = store.evalHistory() as {
     id: number; micro_recall: number; macro_recall: number; perfect: number;
@@ -36,14 +36,36 @@ LIBRARIAN_DB=/path/to/idx.db npm run dev          # web/ で`}</pre>
   return (
     <>
       <h2 style={{ marginTop: 18 }}>
-        蔵書目録 <span className="sub">{root}</span>
+        蔵書目録 <span className="sub">{repos.map((r) => r.name).join(' + ') || '(no repos)'}</span>
       </h2>
       <div className="tiles">
+        <div className="tile"><div className="label">repos</div><div className="value">{repos.length}</div></div>
         <div className="tile"><div className="label">files</div><div className="value">{stats.files}</div></div>
         <div className="tile"><div className="label">symbols</div><div className="value">{stats.symbols}</div></div>
         <div className="tile"><div className="label">edges(解決済み)</div><div className="value">{stats.edges - stats.unresolvedEdges}</div><div className="hint">unresolved {stats.unresolvedEdges} は隔離済み</div></div>
         <div className="tile"><div className="label">学習済みパターン</div><div className="value">{patterns.length}</div><div className="hint">PatternCache(§4-⑤)</div></div>
       </div>
+
+      {repos.length > 1 && (
+        <>
+          <h2>リポジトリ別内訳 <span className="sub">マルチレポ(#11)— 1 つの db を横断検索</span></h2>
+          <div className="card">
+            <table className="ledger">
+              <thead><tr><th>repo</th><th>files</th><th>symbols</th><th>root</th></tr></thead>
+              <tbody>
+                {repos.map((r) => (
+                  <tr key={r.name}>
+                    <td><span className="pill">{r.name}</span></td>
+                    <td>{stats.byRepo[r.name]?.files ?? 0}</td>
+                    <td>{stats.byRepo[r.name]?.symbols ?? 0}</td>
+                    <td className="mono muted">{r.root}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       <h2>
         retrieval match 率の推移 <span className="sub">micro recall / ADR-4 — ホバーで詳細</span>

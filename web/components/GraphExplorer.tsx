@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface Sym {
   id: string;
+  repo: string;
   kind: string;
   name: string;
   file: string;
@@ -148,6 +149,7 @@ export default function GraphExplorer() {
                 <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => void openGraph(s.id)}>
                   <td><span style={{ color: KIND_COLOR[s.kind] ?? 'var(--ink-2)' }}>●</span> {s.container ? `${s.container}.` : ''}{s.name}</td>
                   <td className="muted">{s.kind}</td>
+                  <td><span className="pill">{s.repo}</span></td>
                   <td className="mono muted">{s.file}:{s.spanStart}</td>
                 </tr>
               ))}
@@ -189,7 +191,7 @@ export default function GraphExplorer() {
                       stroke="var(--surface-1)"
                       strokeWidth={2}
                     >
-                      <title>{`${n.name} (${n.kind}) — ${n.file}:${n.spanStart}-${n.spanEnd}`}</title>
+                      <title>{`${n.name} (${n.kind}) — ${n.repo}:${n.file}:${n.spanStart}-${n.spanEnd}`}</title>
                     </circle>
                     <text x={p.x} y={p.y - (isSeed ? 15 : 11)} textAnchor="middle" fontSize={isSeed ? 12 : 10.5} fontWeight={isSeed ? 600 : 400} fill="var(--ink)">
                       {n.name.length > 26 ? n.name.slice(0, 24) + '…' : n.name}
@@ -206,7 +208,8 @@ export default function GraphExplorer() {
             {selected && (
               <>
                 <h2 style={{ marginTop: 0 }}>
-                  {selected.symbol.name} <span className="sub">{selected.symbol.kind}</span>
+                  {selected.symbol.name} <span className="sub">{selected.symbol.kind}</span>{' '}
+                  <span className="pill">{selected.symbol.repo}</span>
                 </h2>
                 <p className="mono muted" style={{ fontSize: 12 }}>
                   {selected.symbol.file}:{selected.symbol.spanStart}-{selected.symbol.spanEnd}

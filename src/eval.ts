@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs';
 import type { Store } from './store.js';
 import { parseUnifiedDiff } from './diff.js';
-import { retrieveForDiff, type ContextItem, type ContextPack, type Strategy } from './retrieval.js';
+import { retrieveForDiff, type ContextItem, type ContextPack, type RootResolver, type Strategy } from './retrieval.js';
 
 export interface ExpectedEntry {
   file: string;
@@ -99,7 +99,7 @@ function matches(item: ContextItem, exp: ExpectedEntry): boolean {
 
 export function runEval(
   store: Store,
-  rootDir: string,
+  rootDir: RootResolver,
   cases: GoldenCase[],
   opts: { hops?: number; budget?: number; strategy?: Strategy; useCache?: boolean } = {}
 ): EvalReport {
