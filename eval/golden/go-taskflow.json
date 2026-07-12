@@ -1,0 +1,138 @@
+{
+  "cases": [
+    {
+      "id": "gtf-001",
+      "title": "MemStore.Complete の振る舞い変更(欠落 id の扱い)",
+      "note": "expected はコードリーディングで作成: Store 契約・interface 経由の呼び出し元・ErrNotFound を 404 に写像する transport 層・回帰テスト",
+      "target": { "file": "store/memstore.go", "symbol": "Complete" },
+      "expected": [
+        { "file": "store/store.go", "symbol": "Store" },
+        { "file": "store/store.go", "symbol": "ErrNotFound" },
+        { "file": "service/service.go", "symbol": "CompleteTask" },
+        { "file": "httpapi/handler.go", "symbol": "handleComplete" },
+        { "file": "store/memstore_test.go", "symbol": "TestMemStoreComplete" }
+      ]
+    },
+    {
+      "id": "gtf-002",
+      "title": "Service.CreateTask のバリデーション変更",
+      "target": { "file": "service/service.go", "symbol": "CreateTask" },
+      "expected": [
+        { "file": "httpapi/handler.go", "symbol": "handleCreate" },
+        { "file": "service/service_test.go", "symbol": "TestCreateTask" },
+        { "file": "store/store.go", "symbol": "Store" },
+        { "file": "store/task.go", "symbol": "Task" }
+      ]
+    },
+    {
+      "id": "gtf-003",
+      "title": "Task.Overdue の判定条件変更",
+      "target": { "file": "store/task.go", "symbol": "Overdue" },
+      "expected": [
+        { "file": "service/service.go", "symbol": "OverdueTasks" },
+        { "file": "store/memstore_test.go", "symbol": "TestTaskOverdue" }
+      ]
+    },
+    {
+      "id": "gtf-004",
+      "title": "Store インターフェースへのメソッド追加",
+      "note": "実装型と依存側の両方が壊れる変更",
+      "target": { "file": "store/store.go", "symbol": "Store" },
+      "expected": [
+        { "file": "store/memstore.go", "symbol": "MemStore" },
+        { "file": "service/service.go", "symbol": "Service" },
+        { "file": "service/service.go", "symbol": "CreateTask" }
+      ]
+    },
+    {
+      "id": "gtf-005",
+      "title": "Reader インターフェースのシグネチャ変更",
+      "target": { "file": "store/store.go", "symbol": "Reader" },
+      "expected": [
+        { "file": "store/store.go", "symbol": "Store" },
+        { "file": "store/memstore.go", "symbol": "MemStore" },
+        { "file": "service/service.go", "symbol": "ListTasks" },
+        { "file": "service/service.go", "symbol": "OverdueTasks" }
+      ]
+    },
+    {
+      "id": "gtf-006",
+      "title": "ErrNotFound の意味変更(センチネル→型付きエラー)",
+      "target": { "file": "store/store.go", "symbol": "ErrNotFound" },
+      "expected": [
+        { "file": "store/memstore.go", "symbol": "Get" },
+        { "file": "store/memstore.go", "symbol": "Complete" },
+        { "file": "httpapi/handler.go", "symbol": "handleComplete" },
+        { "file": "store/memstore_test.go" }
+      ]
+    },
+    {
+      "id": "gtf-007",
+      "title": "Handler.Routes のルーティング変更",
+      "target": { "file": "httpapi/handler.go", "symbol": "Routes" },
+      "expected": [
+        { "file": "httpapi/handler.go", "symbol": "handleCreate" },
+        { "file": "httpapi/handler.go", "symbol": "handleList" },
+        { "file": "httpapi/handler.go", "symbol": "handleComplete" },
+        { "file": "cmd/taskflow/main.go", "symbol": "main" },
+        { "file": "httpapi/handler_test.go" }
+      ]
+    },
+    {
+      "id": "gtf-008",
+      "title": "handleCreate のリクエスト検証変更",
+      "target": { "file": "httpapi/handler.go", "symbol": "handleCreate" },
+      "expected": [
+        { "file": "service/service.go", "symbol": "CreateTask" },
+        { "file": "httpapi/handler.go", "symbol": "writeError" },
+        { "file": "httpapi/handler.go", "symbol": "writeJSON" },
+        { "file": "httpapi/handler.go", "symbol": "createRequest" },
+        { "file": "httpapi/handler_test.go", "symbol": "TestHandleCreate" }
+      ]
+    },
+    {
+      "id": "gtf-009",
+      "title": "Clock インターフェースの拡張",
+      "target": { "file": "clock/clock.go", "symbol": "Clock" },
+      "expected": [
+        { "file": "clock/clock.go", "symbol": "RealClock" },
+        { "file": "clock/clock.go", "symbol": "Fixed" },
+        { "file": "service/service.go", "symbol": "Service" },
+        { "file": "service/service.go", "symbol": "CreateTask" },
+        { "file": "service/service.go", "symbol": "OverdueTasks" }
+      ]
+    },
+    {
+      "id": "gtf-010",
+      "title": "service.New のコンストラクタ引数変更",
+      "target": { "file": "service/service.go", "symbol": "New" },
+      "expected": [
+        { "file": "cmd/taskflow/main.go", "symbol": "main" },
+        { "file": "service/service_test.go", "symbol": "fixedService" },
+        { "file": "httpapi/handler_test.go", "symbol": "testHandler" }
+      ]
+    },
+    {
+      "id": "gtf-011",
+      "title": "MemStore.Add の id 採番変更",
+      "target": { "file": "store/memstore.go", "symbol": "Add" },
+      "expected": [
+        { "file": "store/store.go", "symbol": "Store" },
+        { "file": "service/service.go", "symbol": "CreateTask" },
+        { "file": "store/memstore_test.go", "symbol": "TestMemStoreAdd" },
+        { "file": "service/service_test.go", "symbol": "TestOverdueTasks" }
+      ]
+    },
+    {
+      "id": "gtf-012",
+      "title": "clock.Fixed.Now の変更(実 PR 形式の diff)",
+      "note": "diff 形式の経路を検証するケース。行番号は clock/clock.go の現状に一致させてある",
+      "diff": "--- a/clock/clock.go\n+++ b/clock/clock.go\n@@ -23,1 +23,1 @@\n-func (f Fixed) Now() time.Time { return f.At }\n+func (f Fixed) Now() time.Time { return f.At.UTC() }\n",
+      "expected": [
+        { "file": "clock/clock.go", "symbol": "Clock" },
+        { "file": "service/service_test.go", "symbol": "fixedService" },
+        { "file": "httpapi/handler_test.go", "symbol": "testHandler" }
+      ]
+    }
+  ]
+}

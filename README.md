@@ -35,6 +35,25 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
   LIBRARIAN_DB=/path/to/idx.db npm run dev   # http://localhost:3000
   ```
 - 意味的補完(embeddings)は未着手 — ask は語彙一致 + グラフ近傍で動く(UI に明記)。
+- **Go 対応実装済み(issue #7)**: `go-extractor/`(`golang.org/x/tools/go/packages`
+  ベースの抽出バイナリ)を子プロセスとして呼ぶ第 2 の Extractor。正解セット 12 ケース、
+  fixture ベースライン micro recall 95.7% — 詳細は [`docs/go-baseline.md`](docs/go-baseline.md)。
+
+## Go リポジトリのインデックス
+
+`.go` ファイルは Go 製の抽出バイナリ(`go-extractor/`)で symbols/edges 化される。
+librarian は以下の順でバイナリを探す:
+
+1. `LIBRARIAN_GO_EXTRACTOR` 環境変数(ビルド済みバイナリへのパス)
+2. `librarian-go-extractor` が `$PATH` 上にある(推奨: `go install ./go-extractor` 後、
+   `mv $(go env GOPATH)/bin/go-extractor $(go env GOPATH)/bin/librarian-go-extractor`
+   か `go build -o <PATHの通った場所>/librarian-go-extractor ./go-extractor`)
+3. Go toolchain(1.24+)があれば `go run ./go-extractor` に自動フォールバック(初回は
+   ビルドの分だけ遅い)
+
+どれも無い場合、`.go` ファイルはファイルレベルの module シンボルのみに degrade する
+(インデックス全体は失敗しない。警告が stderr に出る)。制約: 対象リポジトリは
+ルートに `go.mod` を持つこと(非モジュール/ネストモジュールはファイルレベルに degrade)。
 
 ## Quick start
 

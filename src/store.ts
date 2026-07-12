@@ -14,6 +14,7 @@ export type SymbolKind =
   | 'function'
   | 'method'
   | 'class'
+  | 'struct'
   | 'interface'
   | 'typealias'
   | 'enum'

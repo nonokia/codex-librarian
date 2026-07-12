@@ -82,7 +82,8 @@ export function diffSignature(seeds: Seed[], unknownFiles: string[]): string {
     ),
   ].sort();
   const tests = seeds.some(
-    (s) => s.symbol.kind === 'testblock' || /\.(test|spec)\.[jt]sx?$/.test(s.symbol.file)
+    (s) =>
+      s.symbol.kind === 'testblock' || /\.(test|spec)\.[jt]sx?$|_test\.go$/.test(s.symbol.file)
   );
   const n = seeds.length;
   const bucket = n <= 1 ? '1' : n <= 2 ? '2' : n <= 5 ? '3-5' : '6+';

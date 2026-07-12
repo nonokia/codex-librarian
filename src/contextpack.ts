@@ -22,7 +22,7 @@ export interface ReviewPack {
   budget: number;
 }
 
-const TEST_FILE = /\.(test|spec)\.[jt]sx?$|(^|\/)__tests__\//;
+const TEST_FILE = /\.(test|spec)\.[jt]sx?$|(^|\/)__tests__\/|_test\.go$/;
 
 function isTest(item: ContextItem): boolean {
   return item.kind === 'testblock' || TEST_FILE.test(item.file);
