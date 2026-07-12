@@ -16,7 +16,12 @@ import { buildMap, renderMapMarkdown } from './map.js';
 
 interface Flags {
   db?: string;
+  /** repo-name filter for cross-repo queries (#11) */
   repo?: string;
+  /** repo name recorded at index time (default: basename of the root) */
+  repoName?: string;
+  /** source-root override for pack/review/eval when the recorded root moved */
+  root?: string;
   model: string;
   hops?: number;
   budget: number;
@@ -55,6 +60,8 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     const a = argv[i];
     if (a === '--db') flags.db = argv[++i];
     else if (a === '--repo') flags.repo = argv[++i];
+    else if (a === '--repo-name') flags.repoName = argv[++i];
+    else if (a === '--root') flags.root = argv[++i];
     else if (a === '--hops') flags.hops = Number(argv[++i]);
     else if (a === '--budget') flags.budget = Number(argv[++i]);
     else if (a === '--limit') flags.limit = Number(argv[++i]);
@@ -94,10 +101,12 @@ function fail(message: string): never {
 const HELP = `codex-librarian — graph-first code knowledge store (docs/architecture.md)
 
 Usage:
-  librarian index <repo> [--db <file>] [--include <prefix>]...
-                                              Index a repository (incremental);
+  librarian index <repo> [--db <file>] [--repo-name <name>] [--include <prefix>]...
+                                              Index a repository (incremental) —
+                                              several repos may share one db (#11);
+                                              --repo-name defaults to the basename,
                                               --include restricts to path prefixes
-  librarian stats [--db <file>]               Store statistics
+  librarian stats [--db <file>]               Store statistics (incl. per-repo)
   librarian map [--json] [--db <file>]        Deterministic codebase map (markdown)
   librarian symbols <query> [--limit N]       Find symbols by (partial) name
   librarian file <path>                       Symbols declared in a file
@@ -120,7 +129,10 @@ pack/review apply cached strategies by default (--no-cache to disable);
 eval stays on the default strategy unless --use-cache is passed.
 
 Common flags: --db <file> (default: <repo>/.librarian/index.db of the current
-directory), --pretty (indented JSON).`;
+directory), --pretty (indented JSON).
+Multi-repo (#11): symbols/file/graph search across every indexed repo by
+default; --repo <name> narrows to one. Source roots come from the repos
+table; --root <dir> overrides them (e.g. the recorded root moved).`;
 
 function openStore(flags: Flags): Store {
   const path = flags.db ?? defaultDb();
@@ -131,12 +143,27 @@ function openStore(flags: Flags): Store {
 function compactSymbol(s: SymbolRow) {
   return {
     id: s.id,
+    repo: s.repo,
     kind: s.kind,
     name: s.container ? `${s.container}.${s.name}` : s.name,
     file: s.file,
     span: [s.spanStart, s.spanEnd],
     signature: s.signature ?? undefined,
   };
+}
+
+/**
+ * Source roots for reading symbol text (#11): the repos table by default,
+ * a --root override when the recorded root is elsewhere on this machine.
+ */
+function rootResolver(store: Store, flags: Flags): (repo: string) => string | null {
+  if (flags.root) {
+    const fixed = resolve(flags.root);
+    return () => fixed;
+  }
+  const roots = new Map(store.listRepos().map((r) => [r.name, r.root]));
+  if (roots.size === 0) fail('index has no repos recorded — run `librarian index <repo>` first (or pass --root <dir>)');
+  return (repo: string) => roots.get(repo) ?? null;
 }
 
 function main(): void {
@@ -147,14 +174,14 @@ function main(): void {
       const root = resolve(positional[0] ?? '.');
       if (!existsSync(root)) fail(`no such directory: ${root}`);
       const store = new Store(flags.db ?? defaultDb(root));
-      const report = indexRepo(store, root, { include: flags.include });
+      const report = indexRepo(store, root, { include: flags.include, repoName: flags.repoName });
       store.close();
       emit(report, flags.pretty);
       break;
     }
     case 'stats': {
       const store = openStore(flags);
-      emit({ ...store.stats(), root: store.getMeta('root') }, flags.pretty);
+      emit({ ...store.stats(), repos: store.listRepos() }, flags.pretty);
       store.close();
       break;
     }
@@ -170,21 +197,21 @@ function main(): void {
     case 'symbols': {
       if (!positional[0]) fail('usage: librarian symbols <query>');
       const store = openStore(flags);
-      emit(store.findSymbols(positional[0], flags.limit).map(compactSymbol), flags.pretty);
+      emit(store.findSymbols(positional[0], flags.limit, flags.repo).map(compactSymbol), flags.pretty);
       store.close();
       break;
     }
     case 'file': {
       if (!positional[0]) fail('usage: librarian file <path>');
       const store = openStore(flags);
-      emit(store.symbolsInFile(positional[0]).map(compactSymbol), flags.pretty);
+      emit(store.symbolsInFile(positional[0], flags.repo).map(compactSymbol), flags.pretty);
       store.close();
       break;
     }
     case 'graph': {
       if (!positional[0]) fail('usage: librarian graph <symbol> [--hops N]');
       const store = openStore(flags);
-      const matches = store.findSymbols(positional[0], 2);
+      const matches = store.findSymbols(positional[0], 2, flags.repo);
       if (matches.length === 0) {
         store.close();
         fail(`no symbol matching "${positional[0]}"`);
@@ -214,12 +241,11 @@ function main(): void {
       const diffText =
         positional[0] === '-' ? readFileSync(0, 'utf8') : readFileSync(positional[0], 'utf8');
       const store = openStore(flags);
-      const root = flags.repo ?? store.getMeta('root');
-      if (!root) fail('index has no recorded root — pass --repo <dir>');
-      const pack = retrieveForDiff(store, root, parseUnifiedDiff(diffText), {
+      const pack = retrieveForDiff(store, rootResolver(store, flags), parseUnifiedDiff(diffText), {
         hops: flags.hops,
         budget: flags.budget,
         withSource: flags.source,
+        repo: flags.repo,
       });
       emit(pack, flags.pretty);
       store.close();
@@ -228,9 +254,7 @@ function main(): void {
     case 'eval': {
       if (!positional[0]) fail('usage: librarian eval <golden.json> [--budget N] [--use-cache]');
       const store = openStore(flags);
-      const root = flags.repo ?? store.getMeta('root');
-      if (!root) fail('index has no recorded root — pass --repo <dir>');
-      const report = runEval(store, root, loadGoldenFile(positional[0]), {
+      const report = runEval(store, rootResolver(store, flags), loadGoldenFile(positional[0]), {
         hops: flags.hops,
         budget: flags.budget,
         useCache: flags.useCache ?? false,
@@ -253,9 +277,7 @@ function main(): void {
     case 'learn': {
       if (!positional[0]) fail('usage: librarian learn <golden.json> [--holdout]');
       const store = openStore(flags);
-      const root = flags.repo ?? store.getMeta('root');
-      if (!root) fail('index has no recorded root — pass --repo <dir>');
-      const report = learn(store, root, loadGoldenFile(positional[0]), {
+      const report = learn(store, rootResolver(store, flags), loadGoldenFile(positional[0]), {
         budget: flags.budget,
         holdout: flags.holdout,
       });
@@ -300,14 +322,13 @@ function main(): void {
       const diffText =
         positional[0] === '-' ? readFileSync(0, 'utf8') : readFileSync(positional[0], 'utf8');
       const store = openStore(flags);
-      const root = flags.repo ?? store.getMeta('root');
-      if (!root) fail('index has no recorded root — pass --repo <dir>');
       const t0 = Date.now();
-      const retrieved = retrieveForDiff(store, root, parseUnifiedDiff(diffText), {
+      const retrieved = retrieveForDiff(store, rootResolver(store, flags), parseUnifiedDiff(diffText), {
         hops: flags.hops,
         budget: flags.budget,
         withSource: true,
         useCache: flags.useCache ?? true, // learned strategies apply by default here
+        repo: flags.repo,
       });
       const logId = store.logRetrieval({
         source: command,

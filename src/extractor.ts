@@ -7,10 +7,18 @@
  */
 import type { EdgeRow, SymbolRow } from './store.js';
 
+/**
+ * Extractors are repo-unaware (#11): the repo dimension — including its part
+ * of the symbol id hash — is folded in by the indexer at the persistence
+ * boundary, so language binaries (go-extractor/, php-extractor/) never change
+ * when the store grows dimensions.
+ */
+export type ExtractedSymbol = Omit<SymbolRow, 'repo'>;
+
 export interface ExtractionResult {
   /** repo-relative file path this result describes */
   file: string;
-  symbols: SymbolRow[];
+  symbols: ExtractedSymbol[];
   edges: EdgeRow[];
 }
 

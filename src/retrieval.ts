@@ -36,6 +36,16 @@ export const DEFAULT_STRATEGY: Strategy = {
 
 export const DEFAULT_BUDGET = 8000;
 
+/**
+ * Where to read source text from (#11): a single root (single-repo db, the
+ * historical shape) or a per-repo resolver backed by the repos table.
+ */
+export type RootResolver = string | ((repo: string) => string | null);
+
+function rootOf(roots: RootResolver, repo: string): string | null {
+  return typeof roots === 'function' ? roots(repo) : roots;
+}
+
 export interface Seed {
   symbol: SymbolRow;
   via: 'span-overlap' | 'file-fallback';
@@ -43,6 +53,7 @@ export interface Seed {
 
 export interface ContextItem {
   id: string;
+  repo: string;
   name: string;
   kind: string;
   file: string;
@@ -91,12 +102,20 @@ export function diffSignature(seeds: Seed[], unknownFiles: string[]): string {
   return `k=${kinds.join(',')}|d=${dirs.join(',')}|t=${tests ? 1 : 0}|n=${bucket}|u=${unknown}`;
 }
 
-/** Map diff hunks to seed symbols: span overlap first, module fallback second. */
-export function seedsFromDiff(store: Store, hunks: FileRanges[]): { seeds: Seed[]; unknownFiles: string[] } {
+/**
+ * Map diff hunks to seed symbols: span overlap first, module fallback second.
+ * `repo` scopes path lookup when two repos in the db share a path (#11) —
+ * a diff always belongs to one repository.
+ */
+export function seedsFromDiff(
+  store: Store,
+  hunks: FileRanges[],
+  repo?: string
+): { seeds: Seed[]; unknownFiles: string[] } {
   const seeds = new Map<string, Seed>();
   const unknownFiles: string[] = [];
   for (const { file, ranges } of hunks) {
-    const symbols = store.symbolsInFile(file);
+    const symbols = store.symbolsInFile(file, repo);
     if (symbols.length === 0) {
       unknownFiles.push(file);
       continue;
@@ -129,7 +148,7 @@ interface Candidate {
  */
 export function expandContext(
   store: Store,
-  rootDir: string,
+  roots: RootResolver,
   seeds: Seed[],
   opts: { strategy?: Strategy; hops?: number; budget?: number; withSource?: boolean } = {}
 ): ContextPack {
@@ -166,8 +185,10 @@ export function expandContext(
   }
 
   const sourceOf = (s: SymbolRow): string => {
+    const root = rootOf(roots, s.repo);
+    if (root === null) return '';
     try {
-      const lines = readFileSync(join(rootDir, s.file), 'utf8').split('\n');
+      const lines = readFileSync(join(root, s.file), 'utf8').split('\n');
       return lines.slice(s.spanStart - 1, s.spanEnd).join('\n');
     } catch {
       return '';
@@ -178,6 +199,7 @@ export function expandContext(
     const text = sourceOf(c.symbol);
     return {
       id: c.symbol.id,
+      repo: c.symbol.repo,
       name: c.symbol.container ? `${c.symbol.container}.${c.symbol.name}` : c.symbol.name,
       kind: c.symbol.kind,
       file: c.symbol.file,
@@ -259,11 +281,11 @@ export function expandContext(
  */
 export function retrieveForDiff(
   store: Store,
-  rootDir: string,
+  roots: RootResolver,
   hunks: FileRanges[],
-  opts: { strategy?: Strategy; useCache?: boolean; hops?: number; budget?: number; withSource?: boolean } = {}
+  opts: { strategy?: Strategy; useCache?: boolean; hops?: number; budget?: number; withSource?: boolean; repo?: string } = {}
 ): ContextPack {
-  const { seeds, unknownFiles } = seedsFromDiff(store, hunks);
+  const { seeds, unknownFiles } = seedsFromDiff(store, hunks, opts.repo);
   const signature = diffSignature(seeds, unknownFiles);
 
   let strategy = opts.strategy;
@@ -276,7 +298,7 @@ export function retrieveForDiff(
     }
   }
 
-  const pack = expandContext(store, rootDir, seeds, { ...opts, strategy });
+  const pack = expandContext(store, roots, seeds, { ...opts, strategy });
   pack.unknownFiles = unknownFiles;
   pack.signature = signature;
   pack.strategyFromCache = fromCache;

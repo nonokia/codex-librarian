@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const { question } = (await req.json()) as { question?: string };
   if (!question?.trim()) return NextResponse.json({ error: 'question required' }, { status: 400 });
 
-  const { store, root } = openLibrarian();
+  const { store, rootFor } = openLibrarian();
 
   // lexical seed selection: try each word of the question against symbol names
   const terms = [...new Set(question.match(/[A-Za-z_][A-Za-z0-9_]{2,}/g) ?? [])];
@@ -31,6 +31,8 @@ export async function POST(req: NextRequest) {
   }
 
   const sourceOf = (s: SymbolRow) => {
+    const root = rootFor(s.repo);
+    if (root === null) return '';
     try {
       return readFileSync(join(root, s.file), 'utf8')
         .split('\n')

@@ -14,7 +14,7 @@
  * both numbers; the holdout figure is the one that may be claimed.
  */
 import type { Store } from './store.js';
-import { DEFAULT_STRATEGY, type Strategy } from './retrieval.js';
+import { DEFAULT_STRATEGY, type RootResolver, type Strategy } from './retrieval.js';
 import { runEval, type GoldenCase } from './eval.js';
 import type { ReviewResult } from './review.js';
 
@@ -51,7 +51,7 @@ export interface LearnReport {
   holdout: { cases: number; default: number; learned: number } | null;
 }
 
-function microRecall(store: Store, root: string, cases: GoldenCase[], opts: {
+function microRecall(store: Store, root: RootResolver, cases: GoldenCase[], opts: {
   budget?: number;
   strategy?: Strategy;
   useCache?: boolean;
@@ -67,7 +67,7 @@ function microRecall(store: Store, root: string, cases: GoldenCase[], opts: {
  */
 export function learn(
   store: Store,
-  root: string,
+  root: RootResolver,
   cases: GoldenCase[],
   opts: { budget?: number; holdout?: boolean } = {}
 ): LearnReport {
@@ -135,7 +135,7 @@ export function learn(
 /** signature of a golden case = signature of the pack its diff produces */
 function caseSignature(
   store: Store,
-  root: string,
+  root: RootResolver,
   c: GoldenCase,
   opts: { budget?: number }
 ): string {
