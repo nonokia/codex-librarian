@@ -64,6 +64,16 @@ test('buildMap covers files, imports, symbol edges, and unresolved summary', () 
   assert.ok(map.unresolved.some((u) => u.name === 'external'), 'unresolved aggregated');
 });
 
+test('no-op reindex leaves the store untouched (self-index idempotence)', () => {
+  const root = fixtureRepo();
+  const store = new Store(':memory:');
+  indexRepo(store, root);
+  const before = store.getMeta('last_indexed_at');
+  const report = indexRepo(store, root);
+  assert.equal(report.filesIndexed, 0);
+  assert.equal(store.getMeta('last_indexed_at'), before, 'meta untouched when nothing changed');
+});
+
 test('map is deterministic: reindex from scratch renders byte-identical output', () => {
   const root = fixtureRepo();
   const renders: string[] = [];

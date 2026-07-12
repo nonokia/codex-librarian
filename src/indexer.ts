@@ -450,8 +450,13 @@ export function indexRepo(
       indexed++;
     }
   }
-  store.setMeta('root', rootDir);
-  store.setMeta('last_indexed_at', String(Date.now()));
+  // No-op reindex must leave the db byte-identical (self-index #15: the
+  // committed db would otherwise churn on every run), so meta is written
+  // only when something actually changed.
+  if (indexed > 0 || removed.length > 0 || store.getMeta('root') !== rootDir) {
+    store.setMeta('root', rootDir);
+    store.setMeta('last_indexed_at', String(Date.now()));
+  }
 
   const s = store.stats();
   return {
