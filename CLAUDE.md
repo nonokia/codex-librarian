@@ -11,6 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Graph-first**: レビュー/検索の単位は diff ではなく「diff が触れたコードグラフ上の近傍」。
 - **単一 SQLite・ローカル完結**(ADR-1)。運用ミドルウェアを持たない。
 - **抽出器は TypeScript Compiler API**(ADR-2)。tree-sitter ではない。`allowJs` で JS/JSX も対象。
+  Go は ADR-2 の多言語パス: `go-extractor/`(`go/packages` = 公式型チェッカベースの
+  Go 製バイナリ)を子プロセスとして呼ぶ(issue #7、`docs/go-baseline.md`)。
 - **全機能はまず CLI**(`librarian`)として存在する。
 
 ## Commands
@@ -56,7 +58,12 @@ LIBRARIAN_DB=/path/to/idx.db npm run dev   # http://localhost:3000
   必ず `librarian eval` を回して数値を更新すること(ADR-4)。**
 - `src/store.ts` — Knowledge Store(`node:sqlite`)。files/symbols/edges + 再帰 CTE。
 - `src/indexer.ts` — Indexer。TS Compiler API で symbols/edges を抽出。
-- `src/extractor.ts` — Extractor インターフェース(多言語対応の抽象、v1 実装は TS のみ)。
+- `src/extractor.ts` — Extractor インターフェース(多言語対応の抽象)。実装は TS
+  (`src/indexer.ts`)と Go(`src/extractor-go.ts` + `go-extractor/`)。
+- `go-extractor/` — Go 抽出バイナリ(`golang.org/x/tools/go/packages`)。stdin/stdout
+  JSON 契約。ビルド・配布は README の「Go リポジトリのインデックス」。
+- `eval/fixtures/go-taskflow/` — Go 用正解セットの対象リポジトリ(コミットされた fixture)。
+  ベースラインは `docs/go-baseline.md`(`eval/golden/go-taskflow.json`)。
 - `src/diff.ts` / `src/retrieval.ts` — unified diff → シード → 決定的展開(ADR-3 stage 1)。
 - `src/eval.ts` + `eval/golden/` — Phase 0 評価ハーネスと正解セット(規律は `eval/README.md`)。
 - `src/loop.ts` — 自己改善ループ(§4-⑤): 戦略候補・learn 掃引・レビュー結果の還流。
