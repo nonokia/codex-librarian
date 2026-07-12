@@ -1,0 +1,19 @@
+{
+  "name": "librarian/php-taskflow-fixture",
+  "description": "Committed PHP fixture for the librarian PHP extractor eval (issue #8).",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "App\\Tests\\": "tests/"
+    }
+  }
+}

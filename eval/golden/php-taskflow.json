@@ -1,0 +1,133 @@
+{
+  "cases": [
+    {
+      "id": "ptf-001",
+      "title": "MemStore::complete の振る舞い変更(欠落 id の扱い)",
+      "note": "expected はコードリーディングで作成: Store 契約・interface 経由の呼び出し元・NotFoundError を 404 に写像する transport 層・回帰テスト",
+      "target": { "file": "src/Store/MemStore.php", "symbol": "complete" },
+      "expected": [
+        { "file": "src/Store/Store.php", "symbol": "Store" },
+        { "file": "src/Store/NotFoundError.php", "symbol": "NotFoundError" },
+        { "file": "src/Service/Service.php", "symbol": "completeTask" },
+        { "file": "src/Http/Handler.php", "symbol": "handleComplete" },
+        { "file": "tests/Store/MemStoreTest.php", "symbol": "testComplete" },
+        { "file": "tests/Store/MemStoreTest.php", "symbol": "testCompleteMissingThrows" }
+      ]
+    },
+    {
+      "id": "ptf-002",
+      "title": "Service::createTask のバリデーション変更",
+      "target": { "file": "src/Service/Service.php", "symbol": "createTask" },
+      "expected": [
+        { "file": "src/Service/ValidationError.php", "symbol": "ValidationError" },
+        { "file": "src/Store/Task.php", "symbol": "Task" },
+        { "file": "src/Http/Handler.php", "symbol": "handleCreate" },
+        { "file": "tests/Service/ServiceTest.php", "symbol": "testCreateTaskPersistsAndReturns" },
+        { "file": "tests/Service/ServiceTest.php", "symbol": "rejectsEmptyTitle" }
+      ]
+    },
+    {
+      "id": "ptf-003",
+      "title": "Task::overdue の判定条件変更",
+      "target": { "file": "src/Store/Task.php", "symbol": "overdue" },
+      "expected": [
+        { "file": "src/Service/Service.php", "symbol": "overdueTasks" },
+        { "file": "tests/Service/ServiceTest.php", "symbol": "testOverdueTasks" }
+      ]
+    },
+    {
+      "id": "ptf-004",
+      "title": "Store インターフェースへのメソッド追加",
+      "note": "実装型と依存側の両方が壊れる変更",
+      "target": { "file": "src/Store/Store.php", "symbol": "Store" },
+      "expected": [
+        { "file": "src/Store/MemStore.php", "symbol": "MemStore" },
+        { "file": "src/Store/Reader.php", "symbol": "Reader" },
+        { "file": "src/Service/Service.php", "symbol": "Service" }
+      ]
+    },
+    {
+      "id": "ptf-005",
+      "title": "Reader インターフェースのシグネチャ変更",
+      "target": { "file": "src/Store/Reader.php", "symbol": "Reader" },
+      "expected": [
+        { "file": "src/Store/Store.php", "symbol": "Store" },
+        { "file": "src/Store/MemStore.php", "symbol": "MemStore" },
+        { "file": "src/Service/Service.php", "symbol": "Service" }
+      ]
+    },
+    {
+      "id": "ptf-006",
+      "title": "NotFoundError の意味変更(センチネル→ファクトリ付き型)",
+      "target": { "file": "src/Store/NotFoundError.php", "symbol": "NotFoundError" },
+      "expected": [
+        { "file": "src/Store/MemStore.php", "symbol": "complete" },
+        { "file": "src/Store/MemStore.php", "symbol": "remove" },
+        { "file": "src/Http/Handler.php", "symbol": "handleComplete" },
+        { "file": "tests/Store/MemStoreTest.php", "symbol": "testCompleteMissingThrows" }
+      ]
+    },
+    {
+      "id": "ptf-007",
+      "title": "Handler::handleCreate のエラー写像変更",
+      "target": { "file": "src/Http/Handler.php", "symbol": "handleCreate" },
+      "expected": [
+        { "file": "src/Service/Service.php", "symbol": "createTask" },
+        { "file": "src/Service/ValidationError.php", "symbol": "ValidationError" },
+        { "file": "src/Http/JsonResponse.php", "symbol": "JsonResponse" },
+        { "file": "tests/Http/HandlerTest.php", "symbol": "testHandleCreateRejectsEmpty" }
+      ]
+    },
+    {
+      "id": "ptf-008",
+      "title": "MemStore::add の id 採番変更(Sequence trait)",
+      "target": { "file": "src/Store/MemStore.php", "symbol": "add" },
+      "expected": [
+        { "file": "src/Store/Sequence.php", "symbol": "Sequence" },
+        { "file": "src/Store/Task.php", "symbol": "Task" },
+        { "file": "src/Store/Store.php", "symbol": "Store" },
+        { "file": "tests/Store/MemStoreTest.php", "symbol": "testAddAssignsSequentialIds" }
+      ]
+    },
+    {
+      "id": "ptf-009",
+      "title": "Priority enum の変更(ケース追加/重み変更)",
+      "target": { "file": "src/Store/Priority.php", "symbol": "Priority" },
+      "expected": [
+        { "file": "src/Store/Task.php", "symbol": "Task" },
+        { "file": "src/Service/Service.php", "symbol": "createTask" }
+      ]
+    },
+    {
+      "id": "ptf-010",
+      "title": "Factory の合成ルート変更(具象 store の差し替え)",
+      "target": { "file": "src/Factory.php", "symbol": "build" },
+      "expected": [
+        { "file": "src/Http/Handler.php", "symbol": "Handler" },
+        { "file": "src/Service/Service.php", "symbol": "Service" },
+        { "file": "src/Store/MemStore.php", "symbol": "MemStore" }
+      ]
+    },
+    {
+      "id": "ptf-011",
+      "title": "JsonResponse の形状変更",
+      "target": { "file": "src/Http/JsonResponse.php", "symbol": "JsonResponse" },
+      "expected": [
+        { "file": "src/Http/Handler.php", "symbol": "handleCreate" },
+        { "file": "src/Http/Handler.php", "symbol": "handleComplete" }
+      ]
+    },
+    {
+      "id": "ptf-012",
+      "title": "実 diff 形式: createTask にタイトル長バリデーションを追加",
+      "note": "unified diff 入力の解析経路を 1 ケースで担保(go-taskflow と同じ役割)",
+      "diff": "--- a/src/Service/Service.php\n+++ b/src/Service/Service.php\n@@ -27,4 +27,4 @@\n         $title = trim($title);\n-        if ($title === '' || strlen($title) > MAX_TITLE) {\n+        if ($title === '' || mb_strlen($title) > MAX_TITLE) {\n             throw new ValidationError('title must be 1..' . MAX_TITLE . ' chars');\n         }\n",
+      "expected": [
+        { "file": "src/Service/ValidationError.php", "symbol": "ValidationError" },
+        { "file": "src/Store/Task.php", "symbol": "Task" },
+        { "file": "src/Http/Handler.php", "symbol": "handleCreate" },
+        { "file": "tests/Service/ServiceTest.php", "symbol": "rejectsEmptyTitle" }
+      ]
+    }
+  ]
+}

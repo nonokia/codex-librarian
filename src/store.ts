@@ -16,6 +16,7 @@ export type SymbolKind =
   | 'class'
   | 'struct'
   | 'interface'
+  | 'trait'
   | 'typealias'
   | 'enum'
   | 'variable'
