@@ -11,3 +11,5 @@ dist/
 *.tsbuildinfo
 go-extractor/go-extractor
 librarian-go-extractor
+.env.local
+.env*.local
