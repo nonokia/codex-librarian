@@ -77,6 +77,31 @@ librarian は以下の順でバイナリを探す:
 `php` もスクリプトも無い場合、`.php` ファイルはファイルレベルの module シンボルのみに
 degrade する(インデックス全体は失敗しない。警告が stderr に出る)。
 
+## 自己インデックス(dogfooding, issue #15)
+
+librarian 自身のコードグラフを **リポジトリにコミットして持ち運ぶ**(`.dlog/dlog.db` と対になる実験)。
+エージェント/開発者は全ファイルを読む代わりに、committed の知識から着手できる:
+
+- `.librarian/MAP.md` — grep で読める決定的コードベースマップ(ファイル→シンボル、
+  imports、シンボル間 edges、unresolved 集計)。一次成果物。
+- `.librarian/self.db` — CLI クエリ用の index(`src/` + `web/` のみ。fixture は含めない)。
+
+```bash
+node bin/librarian.js graph indexRepo --db .librarian/self.db --pretty   # 変更前に近傍を引く
+node bin/librarian.js pack <diff> --db .librarian/self.db                # 変更の Context Pack
+npm run selfindex          # 再生成(index + MAP.md)— src/ or web/ を変えたら
+npm run selfindex:check    # drift 検出: 再生成した map と committed の diff(stale なら exit 1)
+```
+
+**更新手順**: `src/`・`web/` を変更したコミットの後に `npm run selfindex` を実行し、
+`.librarian/self.db` + `.librarian/MAP.md` を次のコミットで取り込む(dlog と同じ
+**1 コミット遅れ**の追従)。no-op の再実行は byte-identical(git diff ゼロ)なので、
+stale 判定は `selfindex:check` = 「再生成して差分が出たら stale」で閉じる。
+
+注意: `graph`/`symbols`/`file`/`map`/`stats` は読み取り専用だが、**`pack`/`review` は
+retrieval_log(§4-⑤ の feedback 信号)を db に書き込む**。残す意図がなければ
+`git checkout .librarian/self.db` で戻す。
+
 ## Quick start
 
 ```bash

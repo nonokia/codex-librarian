@@ -197,3 +197,20 @@ Two complementary aids:
   your mind.
 - Check `resolution` before trusting a decision; `drifted` means verify.
 - Subagents seal at task end. Everyone seals after committing.
+
+## Repo-specific: self-index first (code-on-board, issue #15)
+
+This repo also commits its own code graph — the committed self-index
+(`.librarian/MAP.md` + `.librarian/self.db`). The pairing rule to "run
+`dlog why` before changing code" is: **query the self-index instead of
+reading every file** —
+
+```bash
+grep -n "<symbol>" .librarian/MAP.md                       # map: files, symbols, edges
+node bin/librarian.js graph <symbol> --db .librarian/self.db --pretty
+node bin/librarian.js pack <diff> --db .librarian/self.db  # context pack for a change
+```
+
+After changing `src/` or `web/`, regenerate with `npm run selfindex` and commit
+both artifacts in the **next** commit (one commit behind, like `.dlog/dlog.db`).
+Check staleness with `npm run selfindex:check`.

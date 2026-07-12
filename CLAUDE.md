@@ -26,6 +26,7 @@ npm test             # node --test によるユニットテスト
 node dist/cli.js --help          # ビルド後の CLI
 librarian index <repo>           # リポジトリをインデックス
 librarian stats                  # ストア統計
+librarian map [--json]           # 決定的コードベースマップ(markdown)
 librarian graph <symbol>         # k-hop 近傍探索
 librarian eval <golden.json>     # retrieval match 率の計測(ADR-4)
 librarian pack <diff>            # 区画付き Context Pack(markdown)
@@ -38,6 +39,24 @@ librarian feedback <id> --good   # 人間の 👍/👎 を retrieval_log へ
 cd web && npm install
 LIBRARIAN_DB=/path/to/idx.db npm run dev   # http://localhost:3000
 ```
+
+## Self-index first (required — issue #15)
+
+このリポジトリは **自分自身の committed self-index** を持つ(dogfooding)。
+**コードを変更する前に、全ファイルを読む代わりに committed self-index を引くこと** —
+dlog の「変更前に `dlog why`」と対になるルール:
+
+1. まず `.librarian/MAP.md` を grep(ファイル→シンボル、imports、シンボル間 edges、
+   unresolved 集計が決定的な形式で載っている)。
+2. 深掘りは `librarian graph <symbol> --db .librarian/self.db` /
+   `librarian pack <diff> --db .librarian/self.db`(近傍だけ読めば着手できる)。
+3. `src/` または `web/` を変更したら、コミット後に `npm run selfindex` で再生成し、
+   `.librarian/self.db` + `.librarian/MAP.md` を**次のコミット**で取り込む
+   (dlog db と同じ 1 コミット遅れ)。stale 検出は `npm run selfindex:check`
+   (再生成した map との diff。差分ありなら exit 1)。
+4. 注意: `pack`/`review` は retrieval_log を self.db に**書き込む**。残す意図が
+   なければ `git checkout .librarian/self.db` で戻す(graph/symbols/file/map/stats
+   は読み取り専用)。
 
 ## Decision logging with dlog (required)
 
@@ -82,4 +101,8 @@ LIBRARIAN_DB=/path/to/idx.db npm run dev   # http://localhost:3000
   (グラフ可視化)/ 司書に聞く(グラフ近傍 Q&A、要 ANTHROPIC_API_KEY)。store へは
   親 dist/ 経由の読み取りのみで、ロジックの再実装はしない。
 - `src/cli.ts` — CLI エントリポイント。
+- `src/map.ts` — `librarian map` のマップ組み立て/レンダラ(決定性が不変条件)。
+- `scripts/selfindex.mjs` — 自己インデックスの再生成と drift 検出(`npm run selfindex[:check]`)。
+- `.librarian/MAP.md` / `.librarian/self.db` — committed self-index(コミット対象、issue #15)。
+  「Self-index first」参照。
 - `.dlog/dlog.db` — dlog の意思決定ログ(コミット対象)。

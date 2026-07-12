@@ -2,7 +2,12 @@ node_modules/
 dist/
 .next/
 *.log
-.librarian/
+# .librarian/ is generated — except the committed self-index (#15, dogfooding):
+# `.librarian/` would exclude the directory itself and make the negations dead,
+# so ignore its contents with `/*` instead.
+.librarian/*
+!.librarian/self.db
+!.librarian/MAP.md
 *.tsbuildinfo
 go-extractor/go-extractor
 librarian-go-extractor

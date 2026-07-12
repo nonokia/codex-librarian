@@ -9,7 +9,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && node --test \"dist/test/*.test.js\""
+    "test": "npm run build && node --test \"dist/test/*.test.js\"",
+    "selfindex": "npm run build && node scripts/selfindex.mjs",
+    "selfindex:check": "npm run build && node scripts/selfindex.mjs --check"
   },
   "engines": {
     "node": ">=22.5"

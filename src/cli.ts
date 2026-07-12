@@ -12,6 +12,7 @@ import { loadGoldenFile, runEval } from './eval.js';
 import { assembleReviewPack, renderReviewPack } from './contextpack.js';
 import { generateReview, buildReviewRequest, renderReviewMarkdown, DEFAULT_MODEL } from './review.js';
 import { learn, recordReviewOutcome } from './loop.js';
+import { buildMap, renderMapMarkdown } from './map.js';
 
 interface Flags {
   db?: string;
@@ -29,6 +30,8 @@ interface Flags {
   good: boolean;
   bad: boolean;
   limit: number;
+  include: string[];
+  json: boolean;
 }
 
 function parseArgs(argv: string[]): { command: string; positional: string[]; flags: Flags } {
@@ -43,6 +46,8 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     good: false,
     bad: false,
     limit: 20,
+    include: [],
+    json: false,
   };
   const positional: string[] = [];
   let command = '';
@@ -53,6 +58,8 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     else if (a === '--hops') flags.hops = Number(argv[++i]);
     else if (a === '--budget') flags.budget = Number(argv[++i]);
     else if (a === '--limit') flags.limit = Number(argv[++i]);
+    else if (a === '--include') flags.include.push(argv[++i]);
+    else if (a === '--json') flags.json = true;
     else if (a === '--source') flags.source = true;
     else if (a === '--model') flags.model = argv[++i];
     else if (a === '--dry-run') flags.dryRun = true;
@@ -87,8 +94,11 @@ function fail(message: string): never {
 const HELP = `codex-librarian — graph-first code knowledge store (docs/architecture.md)
 
 Usage:
-  librarian index <repo> [--db <file>]        Index a repository (incremental)
+  librarian index <repo> [--db <file>] [--include <prefix>]...
+                                              Index a repository (incremental);
+                                              --include restricts to path prefixes
   librarian stats [--db <file>]               Store statistics
+  librarian map [--json] [--db <file>]        Deterministic codebase map (markdown)
   librarian symbols <query> [--limit N]       Find symbols by (partial) name
   librarian file <path>                       Symbols declared in a file
   librarian graph <symbol> [--hops N]         k-hop neighborhood of a symbol
@@ -137,7 +147,7 @@ function main(): void {
       const root = resolve(positional[0] ?? '.');
       if (!existsSync(root)) fail(`no such directory: ${root}`);
       const store = new Store(flags.db ?? defaultDb(root));
-      const report = indexRepo(store, root);
+      const report = indexRepo(store, root, { include: flags.include });
       store.close();
       emit(report, flags.pretty);
       break;
@@ -146,6 +156,15 @@ function main(): void {
       const store = openStore(flags);
       emit({ ...store.stats(), root: store.getMeta('root') }, flags.pretty);
       store.close();
+      break;
+    }
+    case 'map': {
+      const store = openStore(flags);
+      const map = buildMap(store);
+      store.close();
+      // markdown is the committed grep-able artifact; --json for programmatic use
+      if (flags.json) emit(map, flags.pretty);
+      else console.log(renderMapMarkdown(map));
       break;
     }
     case 'symbols': {
