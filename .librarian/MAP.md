@@ -6,24 +6,25 @@
 
 ## Stats
 
-- files: 34
-- symbols: 250
-- edges: 1346 (unresolved: 792)
-- symbols by kind: class=5, function=81, interface=32, method=28, module=34, testblock=35, typealias=2, variable=33
+- files: 35
+- symbols: 268
+- edges: 1470 (unresolved: 863)
+- symbols by kind: class=5, function=85, interface=34, method=31, module=35, testblock=40, typealias=4, variable=34
 
 ## Files
 
 ### src/cli.ts
 
-- interface Flags L17-35
-- function parseArgs L37-78 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
-- function defaultDb L80-83 `(repoRoot?: string): string`
-- function emit L85-87 `(value: unknown, pretty: boolean): void`
-- function fail L89-92 `(message: string): never`
-- variable HELP L94-123
-- function openStore L125-129 `(flags: Flags): Store`
-- function compactSymbol L131-140 `(s: SymbolRow)`
-- function main L142-369 `(): void`
+- interface Flags L17-40
+- function parseArgs L42-85 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
+- function defaultDb L87-90 `(repoRoot?: string): string`
+- function emit L92-94 `(value: unknown, pretty: boolean): void`
+- function fail L96-99 `(message: string): never`
+- variable HELP L101-135
+- function openStore L137-141 `(flags: Flags): Store`
+- function compactSymbol L143-153 `(s: SymbolRow)`
+- function rootResolver L159-167 `(store: Store, flags: Flags): (repo: string) => string | null`
+- function main L169-390 `(): void`
 
 ### src/contextpack.ts
 
@@ -50,7 +51,7 @@
 - function loadGoldenFile L69-78 `(path: string): GoldenCase[]`
 - function hunksForCase L80-92 `(store: Store, c: GoldenCase)`
 - function matches L94-98 `(item: ContextItem, exp: ExpectedEntry): boolean`
-- function runEval L100-167 `(store: Store, rootDir: string, cases: GoldenCase[], opts: { hops?: number; budget?: number; strategy?: Strategy; useCache?: boolean } = {}): EvalReport`
+- function runEval L100-167 `(store: Store, rootDir: RootResolver, cases: GoldenCase[], opts: { hops?: number; budget?: number; strategy?: Strategy; useCache?: boolean } = {}): EvalReport`
 
 ### src/extractor-go.ts
 
@@ -78,8 +79,9 @@
 
 ### src/extractor.ts
 
-- interface ExtractionResult L10-15
-- interface Extractor L17-26
+- typealias ExtractedSymbol L16-16
+- interface ExtractionResult L18-23
+- interface Extractor L25-34
 
 ### src/indexer.ts
 
@@ -100,8 +102,9 @@
 - function signatureOf L353-368 `(node: ts.Node, sf: ts.SourceFile): string | null`
 - function docOf L370-378 `(node: ts.Node): string | null`
 - function dedupeEdges L380-388 `(edges: EdgeRow[]): EdgeRow[]`
-- interface IndexReport L390-400
-- function indexRepo L413-473 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[] } = {}): IndexReport`
+- function namespaceIds L396-412 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
+- interface IndexReport L414-425
+- function indexRepo L438-504 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
 
 ### src/loop.ts
 
@@ -109,38 +112,40 @@
 - variable W L26-26
 - variable CANDIDATE_STRATEGIES L29-38
 - interface LearnReport L40-52
-- function microRecall L54-61 `(store: Store, root: string, cases: GoldenCase[], opts: {
+- function microRecall L54-61 `(store: Store, root: RootResolver, cases: GoldenCase[], opts: {
   budget?: number;
   strategy?: Strategy;
   useCache?: boolean;
 }): number`
-- function learn L68-133 `(store: Store, root: string, cases: GoldenCase[], opts: { budget?: number; holdout?: boolean } = {}): LearnReport`
-- function caseSignature L136-144 `(store: Store, root: string, c: GoldenCase, opts: { budget?: number }): string`
+- function learn L68-133 `(store: Store, root: RootResolver, cases: GoldenCase[], opts: { budget?: number; holdout?: boolean } = {}): LearnReport`
+- function caseSignature L136-144 `(store: Store, root: RootResolver, c: GoldenCase, opts: { budget?: number }): string`
 - function recordReviewOutcome L150-158 `(store: Store, logId: number, result: ReviewResult): void`
 - function round L160-162 `(x: number): number`
 
 ### src/map.ts
 
 - interface MapFile L13-21
-- interface CodebaseMap L23-38
-- function display L40-41 `(s: { name: string; container: string | null })`
-- function buildMap L43-93 `(store: Store): CodebaseMap`
-- function sortedRecord L96-100 `(rec: Record<string, number>): Record<string, number>`
-- function renderMapMarkdown L102-155 `(map: CodebaseMap): string`
+- interface CodebaseMap L23-40
+- function display L42-43 `(s: { name: string; container: string | null })`
+- function buildMap L45-101 `(store: Store): CodebaseMap`
+- function sortedRecord L104-108 `(rec: Record<string, number>): Record<string, number>`
+- function renderMapMarkdown L110-170 `(map: CodebaseMap): string`
 
 ### src/retrieval.ts
 
 - interface Strategy L23-28
 - variable DEFAULT_STRATEGY L30-35
 - variable DEFAULT_BUDGET L37-37
-- interface Seed L39-42
-- interface ContextItem L44-55
-- interface ContextPack L57-70
-- function diffSignature L77-92 `(seeds: Seed[], unknownFiles: string[]): string`
-- function seedsFromDiff L95-118 `(store: Store, hunks: FileRanges[]): { seeds: Seed[]; unknownFiles: string[] }`
-- interface Candidate L120-124
-- function expandContext L130-252 `(store: Store, rootDir: string, seeds: Seed[], opts: { strategy?: Strategy; hops?: number; budget?: number; withSource?: boolean } = {}): ContextPack`
-- function retrieveForDiff L260-284 `(store: Store, rootDir: string, hunks: FileRanges[], opts: { strategy?: Strategy; useCache?: boolean; hops?: number; budget?: number; withSource?: boolean } = {}): ContextPack`
+- typealias RootResolver L43-43
+- function rootOf L45-47 `(roots: RootResolver, repo: string): string | null`
+- interface Seed L49-52
+- interface ContextItem L54-66
+- interface ContextPack L68-81
+- function diffSignature L88-103 `(seeds: Seed[], unknownFiles: string[]): string`
+- function seedsFromDiff L110-137 `(store: Store, hunks: FileRanges[], repo?: string): { seeds: Seed[]; unknownFiles: string[] }`
+- interface Candidate L139-143
+- function expandContext L149-274 `(store: Store, roots: RootResolver, seeds: Seed[], opts: { strategy?: Strategy; hops?: number; budget?: number; withSource?: boolean } = {}): ContextPack`
+- function retrieveForDiff L282-306 `(store: Store, roots: RootResolver, hunks: FileRanges[], opts: { strategy?: Strategy; useCache?: boolean; hops?: number; budget?: number; withSource?: boolean; repo?: string } = {}): ContextPack`
 
 ### src/review.ts
 
@@ -157,34 +162,40 @@
 
 - typealias SymbolKind L12-23
 - typealias EdgeKind L25-25
-- interface SymbolRow L27-37
-- interface EdgeRow L39-45
-- interface EdgeEndpoint L47-52
-- interface JoinedEdge L54-58
-- interface NeighborRow L60-64
-- variable SCHEMA L66-138
-- class Store L140-506
-- method Store.constructor L143-148 `(path: string)`
-- method Store.close L150-152 `(): void`
-- method Store.getMeta L154-159 `(key: string): string | null`
-- method Store.setMeta L161-165 `(key: string, value: string): void`
-- method Store.fileHash L167-172 `(path: string): string | null`
-- method Store.replaceFile L175-204 `(path: string, hash: string, symbols: SymbolRow[], edges: EdgeRow[]): void`
-- method Store.removeFiles L206-215 `(paths: string[]): void`
-- method Store.listFiles L217-222 `(): { path: string; hash: string }[]`
-- method Store.stats L224-256 `(): {
+- interface SymbolRow L27-38
+- interface RepoRow L40-44
+- interface EdgeRow L46-52
+- interface EdgeEndpoint L54-60
+- interface JoinedEdge L62-66
+- interface NeighborRow L68-72
+- variable SCHEMA_VERSION L75-75
+- variable SCHEMA L77-158
+- class Store L160-590
+- method Store.constructor L163-182 `(path: string)`
+- method Store.close L184-186 `(): void`
+- method Store.getMeta L188-193 `(key: string): string | null`
+- method Store.setMeta L195-199 `(key: string, value: string): void`
+- method Store.upsertRepo L201-208 `(name: string, root: string): void`
+- method Store.getRepo L210-215 `(name: string): RepoRow | null`
+- method Store.listRepos L217-225 `(): RepoRow[]`
+- method Store.fileHash L227-232 `(repo: string, path: string): string | null`
+- method Store.replaceFile L235-264 `(repo: string, path: string, hash: string, symbols: Omit<SymbolRow, 'repo'>[], edges: EdgeRow[]): void`
+- method Store.removeFiles L266-275 `(repo: string, paths: string[]): void`
+- method Store.listFiles L277-288 `(repo?: string): { repo: string; path: string; hash: string }[]`
+- method Store.stats L290-334 `(): {
     files: number;
     symbols: number;
     edges: number;
     unresolvedEdges: number;
     byKind: Record<string, number>;
     byExtension: Record<string, number>;
+    byRepo: Record<string, { files: number; symbols: number }>;
   }`
-- method Store.findSymbols L258-269 `(query: string, limit = 20): SymbolRow[]`
-- method Store.symbolsInFile L271-277 `(file: string): SymbolRow[]`
-- method Store.neighborhood L283-308 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
-- method Store.edgesOf L310-322 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
-- method Store.logRetrieval L326-355 `(entry: {
+- method Store.findSymbols L337-349 `(query: string, limit = 20, repo?: string): SymbolRow[]`
+- method Store.symbolsInFile L351-359 `(file: string, repo?: string): SymbolRow[]`
+- method Store.neighborhood L365-390 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
+- method Store.edgesOf L392-404 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
+- method Store.logRetrieval L408-437 `(entry: {
     source: string;
     signature: string;
     strategy: string;
@@ -195,12 +206,12 @@
     usedChars: number;
     latencyMs: number;
   }): number`
-- method Store.updateRetrievalOutcome L357-378 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
-- method Store.listRetrievals L380-384 `(limit = 20): Record<string, unknown>[]`
-- method Store.getPattern L386-394 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
-- method Store.putPattern L396-406 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
-- method Store.listPatterns L408-412 `(): Record<string, unknown>[]`
-- method Store.recordEval L414-442 `(entry: {
+- method Store.updateRetrievalOutcome L439-460 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
+- method Store.listRetrievals L462-466 `(limit = 20): Record<string, unknown>[]`
+- method Store.getPattern L468-476 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
+- method Store.putPattern L478-488 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
+- method Store.listPatterns L490-494 `(): Record<string, unknown>[]`
+- method Store.recordEval L496-524 `(entry: {
     golden: string;
     cases: number;
     microRecall: number;
@@ -211,11 +222,11 @@
     usedCache: boolean;
     note?: string;
   }): void`
-- method Store.evalHistory L444-448 `(): Record<string, unknown>[]`
-- method Store.resolvedEdgesJoined L455-486 `(): JoinedEdge[]`
-- method Store.unresolvedSummary L489-498 `(): { name: string; kind: EdgeKind; count: number }[]`
-- method Store.symbolById L500-505 `(id: string): SymbolRow | null`
-- function rowToSymbol L508-521 `(r: unknown): SymbolRow`
+- method Store.evalHistory L526-530 `(): Record<string, unknown>[]`
+- method Store.resolvedEdgesJoined L537-570 `(): JoinedEdge[]`
+- method Store.unresolvedSummary L573-582 `(): { name: string; kind: EdgeKind; count: number }[]`
+- method Store.symbolById L584-589 `(id: string): SymbolRow | null`
+- function rowToSymbol L592-606 `(r: unknown): SymbolRow`
 
 ### src/test/contextpack.test.ts
 
@@ -297,10 +308,19 @@
 - testblock test(no-op reindex leaves the store untouched (self-index idempotence)) L67-75
 - testblock test(map is deterministic: reindex from scratch renders byte-identical output) L77-92
 
+### src/test/multirepo.test.ts
+
+- function twoRepos L15-33 `(): { alphaRoot: string; betaRoot: string }`
+- testblock test(two repos share one db without path or symbol-id collisions) L35-73
+- testblock test(single-repo flow keeps working without --repo-name (basename default)) L75-82
+- testblock test(retrieval scopes seeds by repo and reads source from the right root) L84-114
+- testblock test(map prefixes paths with the repo only when the db is multi-repo) L116-132
+- testblock test(a pre-v2 (single-repo) db is rejected with re-index guidance) L134-143
+
 ### web/app/api/ask/route.ts
 
 - variable MODEL L8-8
-- function POST L16-98 `(req: NextRequest)`
+- function POST L16-100 `(req: NextRequest)`
 
 ### web/app/api/graph/route.ts
 
@@ -308,7 +328,7 @@
 
 ### web/app/api/source/route.ts
 
-- function GET L6-20 `(req: NextRequest)`
+- function GET L6-22 `(req: NextRequest)`
 
 ### web/app/api/symbols/route.ts
 
@@ -332,7 +352,7 @@
 ### web/app/page.tsx
 
 - variable dynamic L4-4
-- function Dashboard L6-122 `()`
+- function Dashboard L6-144 `()`
 
 ### web/components/AskPanel.tsx
 
@@ -347,16 +367,17 @@
 
 ### web/components/GraphExplorer.tsx
 
-- interface Sym L5-13
-- interface GraphData L14-18
-- variable KIND_COLOR L20-29
-- function layout L32-84 `(data: GraphData, W: number, H: number): Map<string, { x: number; y: number }>`
-- function GraphExplorer L86-228 `()`
+- interface Sym L5-14
+- interface GraphData L15-19
+- variable KIND_COLOR L21-30
+- function layout L33-85 `(data: GraphData, W: number, H: number): Map<string, { x: number; y: number }>`
+- function GraphExplorer L87-231 `()`
 
 ### web/lib/librarian.ts
 
-- variable cached L12-12
-- function openLibrarian L14-27 `(): { store: Store; dbPath: string; root: string }`
+- interface Librarian L14-19
+- variable cached L21-21
+- function openLibrarian L23-41 `(): Librarian`
 
 ### web/next.config.mjs
 
@@ -432,6 +453,11 @@
 - src/test/map.test.ts → src/indexer.ts
 - src/test/map.test.ts → src/map.ts
 - src/test/map.test.ts → src/store.ts
+- src/test/multirepo.test.ts → src/diff.ts
+- src/test/multirepo.test.ts → src/indexer.ts
+- src/test/multirepo.test.ts → src/map.ts
+- src/test/multirepo.test.ts → src/retrieval.ts
+- src/test/multirepo.test.ts → src/store.ts
 
 ## Edges (symbol → symbol, resolved)
 
@@ -444,6 +470,7 @@
 - src/cli.ts main —calls→ src/cli.ts fail
 - src/cli.ts main —calls→ src/cli.ts openStore
 - src/cli.ts main —calls→ src/cli.ts parseArgs
+- src/cli.ts main —calls→ src/cli.ts rootResolver
 - src/cli.ts main —calls→ src/contextpack.ts assembleReviewPack
 - src/cli.ts main —calls→ src/contextpack.ts renderReviewPack
 - src/cli.ts main —calls→ src/diff.ts parseUnifiedDiff
@@ -464,8 +491,8 @@
 - src/cli.ts main —calls→ src/store.ts Store.edgesOf
 - src/cli.ts main —calls→ src/store.ts Store.evalHistory
 - src/cli.ts main —calls→ src/store.ts Store.findSymbols
-- src/cli.ts main —calls→ src/store.ts Store.getMeta
 - src/cli.ts main —calls→ src/store.ts Store.listPatterns
+- src/cli.ts main —calls→ src/store.ts Store.listRepos
 - src/cli.ts main —calls→ src/store.ts Store.listRetrievals
 - src/cli.ts main —calls→ src/store.ts Store.logRetrieval
 - src/cli.ts main —calls→ src/store.ts Store.neighborhood
@@ -481,6 +508,10 @@
 - src/cli.ts parseArgs —references→ src/cli.ts Flags
 - src/cli.ts parseArgs —references→ src/retrieval.ts DEFAULT_BUDGET
 - src/cli.ts parseArgs —references→ src/review.ts DEFAULT_MODEL
+- src/cli.ts rootResolver —references→ src/cli.ts Flags
+- src/cli.ts rootResolver —calls→ src/cli.ts fail
+- src/cli.ts rootResolver —references→ src/store.ts Store
+- src/cli.ts rootResolver —calls→ src/store.ts Store.listRepos
 - src/cli.ts src/cli.ts —calls→ src/cli.ts main
 - src/contextpack.ts ReviewPack —references→ src/retrieval.ts ContextItem
 - src/contextpack.ts assembleReviewPack —references→ src/contextpack.ts ReviewPack
@@ -512,6 +543,7 @@
 - src/eval.ts runEval —calls→ src/eval.ts hunksForCase
 - src/eval.ts runEval —calls→ src/eval.ts matches
 - src/eval.ts runEval —references→ src/retrieval.ts ContextPack
+- src/eval.ts runEval —references→ src/retrieval.ts RootResolver
 - src/eval.ts runEval —references→ src/retrieval.ts Strategy
 - src/eval.ts runEval —calls→ src/retrieval.ts retrieveForDiff
 - src/eval.ts runEval —references→ src/store.ts Store
@@ -537,8 +569,9 @@
 - src/extractor-php.ts PhpExtractor.extract —calls→ src/extractor-php.ts fileLevelOnly
 - src/extractor-php.ts PhpExtractor.extract —calls→ src/extractor-php.ts resolvePhpExtractorCommand
 - src/extractor-php.ts PhpExtractor.extract —references→ src/extractor.ts ExtractionResult
+- src/extractor.ts ExtractedSymbol —references→ src/store.ts SymbolRow
+- src/extractor.ts ExtractionResult —references→ src/extractor.ts ExtractedSymbol
 - src/extractor.ts ExtractionResult —references→ src/store.ts EdgeRow
-- src/extractor.ts ExtractionResult —references→ src/store.ts SymbolRow
 - src/extractor.ts Extractor —references→ src/extractor.ts ExtractionResult
 - src/indexer.ts TypeScriptExtractor —extends→ src/extractor.ts Extractor
 - src/indexer.ts TypeScriptExtractor —references→ src/extractor.ts Extractor
@@ -559,14 +592,18 @@
 - src/indexer.ts indexRepo —calls→ src/indexer.ts defaultExtractors
 - src/indexer.ts indexRepo —calls→ src/indexer.ts discoverSourceFiles
 - src/indexer.ts indexRepo —calls→ src/indexer.ts extractorFor
+- src/indexer.ts indexRepo —calls→ src/indexer.ts namespaceIds
 - src/indexer.ts indexRepo —references→ src/store.ts Store
-- src/indexer.ts indexRepo —calls→ src/store.ts Store.getMeta
+- src/indexer.ts indexRepo —calls→ src/store.ts Store.getRepo
 - src/indexer.ts indexRepo —calls→ src/store.ts Store.listFiles
 - src/indexer.ts indexRepo —calls→ src/store.ts Store.removeFiles
 - src/indexer.ts indexRepo —calls→ src/store.ts Store.replaceFile
 - src/indexer.ts indexRepo —calls→ src/store.ts Store.setMeta
 - src/indexer.ts indexRepo —calls→ src/store.ts Store.stats
+- src/indexer.ts indexRepo —calls→ src/store.ts Store.upsertRepo
+- src/indexer.ts namespaceIds —references→ src/extractor.ts ExtractionResult
 - src/indexer.ts testBlockCall —references→ src/indexer.ts TEST_BLOCK_CALLEES
+- src/indexer.ts TypeScriptExtractor.extract —references→ src/extractor.ts ExtractedSymbol
 - src/indexer.ts TypeScriptExtractor.extract —references→ src/extractor.ts ExtractionResult
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts calleeNameNode
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts classifyDeclaration
@@ -578,7 +615,6 @@
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts testBlockCall
 - src/indexer.ts TypeScriptExtractor.extract —references→ src/store.ts EdgeKind
 - src/indexer.ts TypeScriptExtractor.extract —references→ src/store.ts EdgeRow
-- src/indexer.ts TypeScriptExtractor.extract —references→ src/store.ts SymbolRow
 - src/loop.ts CANDIDATE_STRATEGIES —references→ src/loop.ts NamedStrategy
 - src/loop.ts CANDIDATE_STRATEGIES —references→ src/loop.ts W
 - src/loop.ts CANDIDATE_STRATEGIES —references→ src/retrieval.ts DEFAULT_STRATEGY
@@ -587,6 +623,7 @@
 - src/loop.ts caseSignature —references→ src/eval.ts GoldenCase
 - src/loop.ts caseSignature —calls→ src/eval.ts runEval
 - src/loop.ts caseSignature —references→ src/retrieval.ts DEFAULT_STRATEGY
+- src/loop.ts caseSignature —references→ src/retrieval.ts RootResolver
 - src/loop.ts caseSignature —references→ src/store.ts Store
 - src/loop.ts learn —references→ src/eval.ts GoldenCase
 - src/loop.ts learn —references→ src/loop.ts CANDIDATE_STRATEGIES
@@ -595,11 +632,13 @@
 - src/loop.ts learn —calls→ src/loop.ts microRecall
 - src/loop.ts learn —calls→ src/loop.ts round
 - src/loop.ts learn —references→ src/retrieval.ts DEFAULT_STRATEGY
+- src/loop.ts learn —references→ src/retrieval.ts RootResolver
 - src/loop.ts learn —references→ src/retrieval.ts Strategy
 - src/loop.ts learn —references→ src/store.ts Store
 - src/loop.ts learn —calls→ src/store.ts Store.putPattern
 - src/loop.ts microRecall —references→ src/eval.ts GoldenCase
 - src/loop.ts microRecall —calls→ src/eval.ts runEval
+- src/loop.ts microRecall —references→ src/retrieval.ts RootResolver
 - src/loop.ts microRecall —references→ src/retrieval.ts Strategy
 - src/loop.ts microRecall —references→ src/store.ts Store
 - src/loop.ts recordReviewOutcome —references→ src/review.ts ReviewResult
@@ -631,9 +670,11 @@
 - src/retrieval.ts expandContext —references→ src/retrieval.ts ContextPack
 - src/retrieval.ts expandContext —references→ src/retrieval.ts DEFAULT_BUDGET
 - src/retrieval.ts expandContext —references→ src/retrieval.ts DEFAULT_STRATEGY
+- src/retrieval.ts expandContext —references→ src/retrieval.ts RootResolver
 - src/retrieval.ts expandContext —references→ src/retrieval.ts Seed
 - src/retrieval.ts expandContext —references→ src/retrieval.ts Strategy
 - src/retrieval.ts expandContext —calls→ src/retrieval.ts diffSignature
+- src/retrieval.ts expandContext —calls→ src/retrieval.ts rootOf
 - src/retrieval.ts expandContext —references→ src/store.ts Store
 - src/retrieval.ts expandContext —references→ src/store.ts SymbolRow
 - src/retrieval.ts expandContext —calls→ src/store.ts Store.edgesOf
@@ -641,12 +682,14 @@
 - src/retrieval.ts expandContext —calls→ src/store.ts Store.symbolById
 - src/retrieval.ts retrieveForDiff —references→ src/diff.ts FileRanges
 - src/retrieval.ts retrieveForDiff —references→ src/retrieval.ts ContextPack
+- src/retrieval.ts retrieveForDiff —references→ src/retrieval.ts RootResolver
 - src/retrieval.ts retrieveForDiff —references→ src/retrieval.ts Strategy
 - src/retrieval.ts retrieveForDiff —calls→ src/retrieval.ts diffSignature
 - src/retrieval.ts retrieveForDiff —calls→ src/retrieval.ts expandContext
 - src/retrieval.ts retrieveForDiff —calls→ src/retrieval.ts seedsFromDiff
 - src/retrieval.ts retrieveForDiff —references→ src/store.ts Store
 - src/retrieval.ts retrieveForDiff —calls→ src/store.ts Store.getPattern
+- src/retrieval.ts rootOf —references→ src/retrieval.ts RootResolver
 - src/retrieval.ts seedsFromDiff —references→ src/diff.ts FileRanges
 - src/retrieval.ts seedsFromDiff —references→ src/retrieval.ts Seed
 - src/retrieval.ts seedsFromDiff —references→ src/store.ts Store
@@ -672,10 +715,15 @@
 - src/store.ts rowToSymbol —references→ src/store.ts SymbolKind
 - src/store.ts rowToSymbol —references→ src/store.ts SymbolRow
 - src/store.ts Store.constructor —references→ src/store.ts SCHEMA
+- src/store.ts Store.constructor —references→ src/store.ts SCHEMA_VERSION
+- src/store.ts Store.constructor —calls→ src/store.ts Store.getMeta
+- src/store.ts Store.constructor —calls→ src/store.ts Store.setMeta
 - src/store.ts Store.edgesOf —references→ src/store.ts EdgeKind
 - src/store.ts Store.edgesOf —references→ src/store.ts EdgeRow
 - src/store.ts Store.findSymbols —references→ src/store.ts SymbolRow
 - src/store.ts Store.findSymbols —references→ src/store.ts rowToSymbol
+- src/store.ts Store.getRepo —references→ src/store.ts RepoRow
+- src/store.ts Store.listRepos —references→ src/store.ts RepoRow
 - src/store.ts Store.neighborhood —references→ src/store.ts EdgeKind
 - src/store.ts Store.neighborhood —references→ src/store.ts NeighborRow
 - src/store.ts Store.neighborhood —calls→ src/store.ts rowToSymbol
@@ -903,6 +951,30 @@
 - src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/store.ts Store
 - src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/store.ts Store.getMeta
 - src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/test/map.test.ts fixtureRepo
+- src/test/multirepo.test.ts test(a pre-v2 (single-repo) db is rejected with re-index guidance) —calls→ src/store.ts Store
+- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/indexer.ts indexRepo
+- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/map.ts buildMap
+- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/map.ts renderMapMarkdown
+- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/store.ts Store
+- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/test/multirepo.test.ts twoRepos
+- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/diff.ts parseUnifiedDiff
+- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/indexer.ts indexRepo
+- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/retrieval.ts retrieveForDiff
+- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/store.ts Store
+- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/test/multirepo.test.ts twoRepos
+- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/indexer.ts indexRepo
+- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/store.ts Store
+- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/store.ts Store.findSymbols
+- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/store.ts Store.listRepos
+- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/test/multirepo.test.ts twoRepos
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/indexer.ts indexRepo
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.edgesOf
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.findSymbols
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.listRepos
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.neighborhood
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.stats
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/test/multirepo.test.ts twoRepos
 - web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts MODEL
 - web/components/AskPanel.tsx AskPanel —references→ web/components/AskPanel.tsx Cited
 - web/components/AskPanel.tsx AskPanel —calls→ web/components/AskPanel.tsx AskPanel.ask
@@ -919,75 +991,80 @@
 - web/components/GraphExplorer.tsx GraphExplorer —references→ web/components/GraphExplorer.tsx Sym
 - web/components/GraphExplorer.tsx GraphExplorer —calls→ web/components/GraphExplorer.tsx layout
 - web/components/GraphExplorer.tsx layout —references→ web/components/GraphExplorer.tsx GraphData
+- web/lib/librarian.ts cached —references→ web/lib/librarian.ts Librarian
+- web/lib/librarian.ts openLibrarian —references→ web/lib/librarian.ts Librarian
 - web/lib/librarian.ts openLibrarian —references→ web/lib/librarian.ts cached
 - web/next.config.mjs web/next.config.mjs —references→ web/next.config.mjs nextConfig
 
 ## Unresolved (aggregated)
 
-- 39× join (calls)
-- 37× map (calls)
-- 25× ok (calls)
-- 25× some (calls)
-- 24× equal (calls)
-- 22× prepare (calls)
-- 18× node:fs (imports)
+- 42× join (calls)
+- 42× map (calls)
+- 28× some (calls)
+- 27× ok (calls)
+- 26× equal (calls)
+- 26× prepare (calls)
+- 20× get (calls)
+- 19× node:fs (imports)
+- 18× filter (calls)
+- 18× node:path (imports)
 - 18× push (calls)
-- 17× filter (calls)
-- 17× node:path (imports)
-- 16× get (calls)
 - 16× rmSync (calls)
+- 15× slice (calls)
+- 15× test (calls)
+- 14× all (calls)
 - 14× find (calls)
-- 14× slice (calls)
-- 14× test (calls)
+- 13× deepEqual (calls)
+- 13× split (calls)
+- 13× writeFileSync (calls)
+- 12× Map (calls)
 - 12× Set (calls)
-- 12× all (calls)
-- 12× deepEqual (calls)
-- 12× split (calls)
 - 12× stringify (calls)
-- 12× writeFileSync (calls)
-- 9× Map (calls)
+- 11× mkdtempSync (calls)
+- 11× tmpdir (calls)
+- 10× set (calls)
 - 9× has (calls)
-- 9× mkdtempSync (calls)
+- 9× mkdirSync (calls)
+- 9× node:assert/strict (imports)
+- 9× node:os (imports)
+- 9× node:test (imports)
 - 9× readFileSync (calls)
-- 9× set (calls)
-- 9× tmpdir (calls)
-- 8× mkdirSync (calls)
-- 8× node:assert/strict (imports)
-- 8× node:os (imports)
-- 8× node:test (imports)
-- 8× run (calls)
+- 9× run (calls)
+- 8× Error (calls)
+- 8× resolve (calls)
 - 7× existsSync (calls)
-- 6× Error (calls)
+- 7× match (calls)
+- 7× now (calls)
+- 7× sort (calls)
+- 6× createHash (calls)
+- 6× digest (calls)
 - 6× dirname (calls)
 - 6× json (calls)
-- 6× match (calls)
-- 6× now (calls)
 - 6× parse (calls)
-- 6× resolve (calls)
-- 6× sort (calls)
 - 6× trim (calls)
+- 6× update (calls)
 - 5× @/lib/librarian (imports)
 - 5× Number (calls)
-- 5× createHash (calls)
-- 5× digest (calls)
 - 5× endsWith (calls)
+- 5× exec (calls)
+- 5× includes (calls)
 - 5× max (calls)
 - 5× openLibrarian (calls)
 - 5× relative (calls)
 - 5× spawnSync (calls)
-- 5× update (calls)
 - 4× add (calls)
 - 4× entries (calls)
-- 4× exec (calls)
+- 4× every (calls)
 - 4× fileURLToPath (calls)
-- 4× includes (calls)
 - 4× isIdentifier (calls)
+- 4× keys (calls)
 - 4× next/server (imports)
 - 4× node:child_process (imports)
 - 4× node:crypto (imports)
 - 4× node:url (imports)
 - 4× round (calls)
 - 4× startsWith (calls)
+- 3× close (calls)
 - 3× error (calls)
 - 3× getText (calls)
 - 3× isArrowFunction (calls)
@@ -999,8 +1076,8 @@
 - 3× values (calls)
 - 2× @anthropic-ai/sdk (imports)
 - 2× Anthropic (calls)
+- 2× DatabaseSync (calls)
 - 2× create (calls)
-- 2× every (calls)
 - 2× fetch (calls)
 - 2× findSymbols (calls)
 - 2× flatMap (calls)
@@ -1014,10 +1091,10 @@
 - 2× isJsxSelfClosingElement (calls)
 - 2× isNewExpression (calls)
 - 2× isTypeAliasDeclaration (calls)
-- 2× keys (calls)
 - 2× log (calls)
 - 2× min (calls)
 - 2× neighborhood (calls)
+- 2× node:sqlite (imports)
 - 2× react (imports)
 - 2× symbolById (calls)
 - 2× then (calls)
@@ -1030,18 +1107,18 @@
 - 1× @/components/EvalChart (imports)
 - 1× @/components/GraphExplorer (imports)
 - 1× AskPanel (calls)
-- 1× DatabaseSync (calls)
 - 1× EvalChart (calls)
 - 1× GraphExplorer (calls)
 - 1× Link (calls)
 - 1× Store (calls)
 - 1× String (calls)
 - 1× URLSearchParams (calls)
+- 1× basename (calls)
 - 1× catch (calls)
-- 1× close (calls)
 - 1× cos (calls)
 - 1× createProgram (calls)
 - 1× cwd (calls)
+- 1× doesNotMatch (calls)
 - 1× edgesOf (calls)
 - 1× encodeURIComponent (calls)
 - 1× evalHistory (calls)
@@ -1052,7 +1129,6 @@
 - 1× getEnd (calls)
 - 1× getJSDocCommentsAndTags (calls)
 - 1× getLineAndCharacterOfPosition (calls)
-- 1× getMeta (calls)
 - 1× getSourceFiles (calls)
 - 1× getStart (calls)
 - 1× getSymbolAtLocation (calls)
@@ -1077,11 +1153,13 @@
 - 1× isVariableStatement (calls)
 - 1× lastIndexOf (calls)
 - 1× listPatterns (calls)
+- 1× listRepos (calls)
 - 1× listRetrievals (calls)
 - 1× localeCompare (calls)
 - 1× next (imports)
 - 1× next/link (imports)
-- 1× node:sqlite (imports)
+- 1× notEqual (calls)
+- 1× pop (calls)
 - 1× readdirSync (calls)
 - 1× reduce (calls)
 - 1× replace (calls)
@@ -1089,6 +1167,7 @@
 - 1× splice (calls)
 - 1× sqrt (calls)
 - 1× stats (calls)
+- 1× throws (calls)
 - 1× trimEnd (calls)
 - 1× typescript (imports)
 - 1× useCallback (calls)
