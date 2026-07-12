@@ -77,6 +77,8 @@ dlog の「変更前に `dlog why`」と対になるルール:
 - `docs/architecture.md` — アーキテクチャ設計書(WHY/WHAT)。フェーズ計画・ADR・成功指標。
 - `docs/phase0-report.md` — Phase 0 ベースライン計測と失敗分析。**retrieval を変更したら
   必ず `librarian eval` を回して数値を更新すること(ADR-4)。**
+- `docs/scip-design.md` — SCIP+ 設計(issue #16 / ADR-6 提案)。抽出器⇄store の交換
+  フォーマット。**ext サイドカーが retrieval 信号の正、ベース SCIP は標準準拠の投影。**
 - `src/store.ts` — Knowledge Store(`node:sqlite`)。files/symbols/edges + 再帰 CTE。
 - `src/indexer.ts` — Indexer。TS Compiler API で symbols/edges を抽出。
 - `src/extractor.ts` — Extractor インターフェース(多言語対応の抽象)。実装は TS
@@ -86,6 +88,10 @@ dlog の「変更前に `dlog why`」と対になるルール:
   JSON 契約。ビルド・配布は README の「Go リポジトリのインデックス」。
 - `php-extractor/` — PHP 抽出スクリプト(nikic/php-parser、`vendor/` 同梱)。stdin/stdout
   JSON 契約。インタプリタ実行でビルド不要 — 詳細は README の「PHP リポジトリのインデックス」。
+- `src/scip.ts` — SCIP+ 境界(封筒/ext 型、`.scip` の protobuf encode/decode、Symbol 文法
+  パーサ、moniker⇄id 写像)。protobuf はこのファイルの外に出さない。
+- `src/scip-ingest.ts` — SCIP+ 封筒 → ExtractionResult 写像(native 経路。エッジは ext が正)。
+  Go は SCIP+ emit 済み(issue #16 Step 2)、PHP/TS は旧 ExtractionResult 契約のまま(Step 3)。
 - `eval/fixtures/go-taskflow/` — Go 用正解セットの対象リポジトリ(コミットされた fixture)。
   ベースラインは `docs/go-baseline.md`(`eval/golden/go-taskflow.json`)。
 - `eval/fixtures/php-taskflow/` — PHP 用正解セットの対象リポジトリ(コミットされた fixture)。
