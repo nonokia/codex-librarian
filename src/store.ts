@@ -206,7 +206,14 @@ export class Store {
     }[];
   }
 
-  stats(): { files: number; symbols: number; edges: number; unresolvedEdges: number; byKind: Record<string, number> } {
+  stats(): {
+    files: number;
+    symbols: number;
+    edges: number;
+    unresolvedEdges: number;
+    byKind: Record<string, number>;
+    byExtension: Record<string, number>;
+  } {
     const one = (sql: string) => (this.db.prepare(sql).get() as { n: number }).n;
     const byKind: Record<string, number> = {};
     for (const row of this.db
@@ -214,12 +221,22 @@ export class Store {
       .all() as { kind: string; n: number }[]) {
       byKind[row.kind] = row.n;
     }
+    // language breakdown (#10): which extractor family each indexed file
+    // belongs to is visible from its extension
+    const byExtension: Record<string, number> = {};
+    for (const f of this.listFiles()) {
+      const base = f.path.slice(f.path.lastIndexOf('/') + 1);
+      const dot = base.lastIndexOf('.');
+      const ext = dot <= 0 ? '(none)' : base.slice(dot + 1);
+      byExtension[ext] = (byExtension[ext] ?? 0) + 1;
+    }
     return {
       files: one('SELECT COUNT(*) AS n FROM files'),
       symbols: one('SELECT COUNT(*) AS n FROM symbols'),
       edges: one('SELECT COUNT(*) AS n FROM edges'),
       unresolvedEdges: one('SELECT COUNT(*) AS n FROM edges WHERE resolved = 0'),
       byKind,
+      byExtension,
     };
   }
 
