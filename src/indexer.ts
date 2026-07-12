@@ -21,7 +21,16 @@ import { Store } from './store.js';
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', 'coverage', '.git', '.dlog', '.librarian', 'out']);
 const EXTENSIONS = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'];
 
-export function discoverSourceFiles(rootDir: string): string[] {
+/**
+ * The extractor registry (#10). Language support = appending here; the store,
+ * retrieval, and UI never learn which extractor produced a row. When two
+ * extractors claim the same extension, the first registered wins.
+ */
+export function defaultExtractors(): Extractor[] {
+  return [new TypeScriptExtractor()];
+}
+
+export function discoverSourceFiles(rootDir: string, extensions: string[] = EXTENSIONS): string[] {
   const found: string[] = [];
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -29,13 +38,18 @@ export function discoverSourceFiles(rootDir: string): string[] {
       const full = join(dir, entry.name);
       if (entry.isDirectory()) {
         if (!SKIP_DIRS.has(entry.name)) walk(full);
-      } else if (EXTENSIONS.some((ext) => entry.name.endsWith(ext)) && !entry.name.endsWith('.d.ts')) {
+      } else if (extensions.some((ext) => entry.name.endsWith(ext)) && !entry.name.endsWith('.d.ts')) {
         found.push(full);
       }
     }
   };
   walk(rootDir);
   return found.sort();
+}
+
+/** first registered extractor claiming the file's extension, or null */
+function extractorFor(file: string, extractors: Extractor[]): Extractor | null {
+  return extractors.find((x) => x.extensions.some((ext) => file.endsWith(ext))) ?? null;
 }
 
 export function contentHash(text: string): string {
@@ -386,11 +400,23 @@ export interface IndexReport {
 /**
  * Index `rootDir` into `store`. Incremental at the persistence layer: rows are
  * rewritten only for files whose content hash changed (parse is still whole-
- * program — cross-file resolution needs it; see dlog for the deferral).
+ * program per extractor — cross-file resolution needs it; see dlog for the
+ * deferral).
+ *
+ * Dispatch (#10): files are discovered for the union of the registered
+ * extractors' extensions, routed to the first extractor that claims them,
+ * and every extractor's rows merge into the same store. An extractor only
+ * runs when at least one of ITS files changed.
  */
-export function indexRepo(store: Store, rootDir: string): IndexReport {
+export function indexRepo(
+  store: Store,
+  rootDir: string,
+  opts: { extractors?: Extractor[] } = {}
+): IndexReport {
   const t0 = Date.now();
-  const absFiles = discoverSourceFiles(rootDir);
+  const extractors = opts.extractors ?? defaultExtractors();
+  const allExtensions = [...new Set(extractors.flatMap((x) => x.extensions))];
+  const absFiles = discoverSourceFiles(rootDir, allExtensions);
   const rel = (abs: string) => relative(rootDir, abs).split(sep).join('/');
 
   const hashes = new Map<string, string>();
@@ -400,14 +426,15 @@ export function indexRepo(store: Store, rootDir: string): IndexReport {
   const removed = [...known.keys()].filter((p) => !hashes.has(p));
   store.removeFiles(removed);
 
-  const changed = [...hashes.entries()].filter(([p, h]) => known.get(p) !== h);
+  const changedSet = new Set(
+    [...hashes.entries()].filter(([p, h]) => known.get(p) !== h).map(([p]) => p)
+  );
 
   let indexed = 0;
-  if (changed.length > 0) {
-    const extractor = new TypeScriptExtractor();
-    const results = extractor.extract(rootDir, absFiles);
-    const changedSet = new Set(changed.map(([p]) => p));
-    for (const r of results) {
+  for (const extractor of extractors) {
+    const claimed = absFiles.filter((abs) => extractorFor(rel(abs), extractors) === extractor);
+    if (claimed.length === 0 || !claimed.some((abs) => changedSet.has(rel(abs)))) continue;
+    for (const r of extractor.extract(rootDir, claimed)) {
       if (!changedSet.has(r.file)) continue;
       store.replaceFile(r.file, hashes.get(r.file)!, r.symbols, r.edges);
       indexed++;
