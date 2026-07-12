@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 37
-- symbols: 338
-- edges: 1660 (unresolved: 953)
-- symbols by kind: class=5, function=110, interface=46, method=31, module=37, testblock=59, typealias=6, variable=44
+- files: 38
+- symbols: 343
+- edges: 1690 (unresolved: 962)
+- symbols by kind: class=5, function=112, interface=46, method=31, module=38, testblock=59, typealias=8, variable=44
 
 ## Files
 
@@ -55,15 +55,15 @@
 
 ### src/extractor-go.ts
 
-- variable MAX_OUTPUT L28-28
-- function goExtractorSourceDir L31-33 `(): string`
-- function onPath L35-40 `(name: string): string | null`
-- interface GoCommand L42-46
-- function resolveGoExtractorCommand L48-58 `(): GoCommand | null`
-- function fileLevelOnly L61-89 `(rootDir: string, files: string[]): ExtractionResult[]`
-- function moduleId L92-94 `(file: string): string`
-- class GoExtractor L96-124
-- method GoExtractor.extract L99-123 `(rootDir: string, files: string[]): ExtractionResult[]`
+- variable MAX_OUTPUT L32-32
+- function goExtractorSourceDir L35-37 `(): string`
+- function onPath L39-44 `(name: string): string | null`
+- interface GoCommand L46-50
+- function resolveGoExtractorCommand L52-62 `(): GoCommand | null`
+- function fileLevelOnly L65-93 `(rootDir: string, files: string[]): ExtractionResult[]`
+- function moduleId L96-98 `(file: string): string`
+- class GoExtractor L100-137
+- method GoExtractor.extract L103-136 `(rootDir: string, files: string[]): ExtractionResult[]`
 
 ### src/extractor-php.ts
 
@@ -157,6 +157,13 @@
 - function buildReviewRequest L66-80 `(pack: ReviewPack, model: string)`
 - function generateReview L82-98 `(pack: ReviewPack, opts: { model?: string; client?: Anthropic } = {}): Promise<ReviewResult>`
 - function renderReviewMarkdown L101-125 `(r: ReviewResult): string`
+
+### src/scip-ingest.ts
+
+- typealias ScipDocument L26-26
+- typealias ScipOccurrence L27-27
+- function spanOf L29-34 `(occ: ScipOccurrence | undefined): { spanStart: number; spanEnd: number }`
+- function scipPlusToExtractionResults L36-125 `(index: Index, ext: Ext): ExtractionResult[]`
 
 ### src/scip.ts
 
@@ -473,6 +480,8 @@
 - src/eval.ts → src/retrieval.ts
 - src/eval.ts → src/store.ts
 - src/extractor-go.ts → src/extractor.ts
+- src/extractor-go.ts → src/scip-ingest.ts
+- src/extractor-go.ts → src/scip.ts
 - src/extractor-php.ts → src/extractor.ts
 - src/extractor.ts → src/store.ts
 - src/indexer.ts → src/extractor-go.ts
@@ -487,6 +496,9 @@
 - src/retrieval.ts → src/diff.ts
 - src/retrieval.ts → src/store.ts
 - src/review.ts → src/contextpack.ts
+- src/scip-ingest.ts → src/extractor.ts
+- src/scip-ingest.ts → src/scip.ts
+- src/scip-ingest.ts → src/store.ts
 - src/scip.ts → src/extractor.ts
 - src/scip.ts → src/store.ts
 - src/test/contextpack.test.ts → src/contextpack.ts
@@ -637,6 +649,8 @@
 - src/extractor-go.ts GoExtractor.extract —calls→ src/extractor-go.ts fileLevelOnly
 - src/extractor-go.ts GoExtractor.extract —calls→ src/extractor-go.ts resolveGoExtractorCommand
 - src/extractor-go.ts GoExtractor.extract —references→ src/extractor.ts ExtractionResult
+- src/extractor-go.ts GoExtractor.extract —calls→ src/scip-ingest.ts scipPlusToExtractionResults
+- src/extractor-go.ts GoExtractor.extract —calls→ src/scip.ts parseScipPlus
 - src/extractor-php.ts PhpExtractor —extends→ src/extractor.ts Extractor
 - src/extractor-php.ts PhpExtractor —references→ src/extractor.ts Extractor
 - src/extractor-php.ts fileLevelOnly —calls→ src/extractor-php.ts moduleId
@@ -783,6 +797,20 @@
 - src/review.ts generateReview —references→ src/review.ts ReviewResult
 - src/review.ts generateReview —calls→ src/review.ts buildReviewRequest
 - src/review.ts renderReviewMarkdown —references→ src/review.ts ReviewResult
+- src/scip-ingest.ts ScipOccurrence —references→ src/scip-ingest.ts ScipDocument
+- src/scip-ingest.ts scipPlusToExtractionResults —references→ src/extractor.ts ExtractedSymbol
+- src/scip-ingest.ts scipPlusToExtractionResults —references→ src/extractor.ts ExtractionResult
+- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/extractor.ts symbolId
+- src/scip-ingest.ts scipPlusToExtractionResults —references→ src/scip-ingest.ts ScipOccurrence
+- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/scip-ingest.ts spanOf
+- src/scip-ingest.ts scipPlusToExtractionResults —references→ src/scip.ts Ext
+- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/scip.ts isLocalSymbol
+- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/scip.ts kindFromScip
+- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/scip.ts monikerToId
+- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/scip.ts monikerToParts
+- src/scip-ingest.ts scipPlusToExtractionResults —references→ src/store.ts EdgeRow
+- src/scip-ingest.ts spanOf —references→ src/scip-ingest.ts ScipOccurrence
+- src/scip-ingest.ts spanOf —calls→ src/scip.ts scipRangeToSpan
 - src/scip.ts EDGE_KINDS —references→ src/scip.ts EDGE_KIND_FLAGS
 - src/scip.ts EDGE_KIND_FLAGS —references→ src/store.ts EdgeKind
 - src/scip.ts Ext —references→ src/scip.ts ExtDocument
@@ -1172,17 +1200,17 @@
 
 ## Unresolved (aggregated)
 
-- 48× map (calls)
+- 49× map (calls)
 - 44× join (calls)
 - 36× equal (calls)
 - 29× ok (calls)
 - 28× some (calls)
 - 26× prepare (calls)
-- 21× Error (calls)
-- 21× get (calls)
+- 22× Error (calls)
+- 22× get (calls)
+- 20× push (calls)
 - 19× deepEqual (calls)
 - 19× node:fs (imports)
-- 19× push (calls)
 - 18× filter (calls)
 - 18× node:path (imports)
 - 18× test (calls)
@@ -1190,17 +1218,17 @@
 - 16× rmSync (calls)
 - 16× slice (calls)
 - 15× Set (calls)
+- 14× Map (calls)
 - 14× all (calls)
 - 14× find (calls)
 - 14× split (calls)
-- 13× Map (calls)
+- 13× has (calls)
 - 13× writeFileSync (calls)
-- 12× has (calls)
 - 11× mkdtempSync (calls)
+- 11× set (calls)
 - 11× tmpdir (calls)
 - 10× node:assert/strict (imports)
 - 10× node:test (imports)
-- 10× set (calls)
 - 9× mkdirSync (calls)
 - 9× node:os (imports)
 - 9× readFileSync (calls)
@@ -1226,6 +1254,7 @@
 - 5× endsWith (calls)
 - 5× exec (calls)
 - 5× includes (calls)
+- 5× isArray (calls)
 - 5× node:crypto (imports)
 - 5× openLibrarian (calls)
 - 5× relative (calls)
@@ -1234,12 +1263,12 @@
 - 4× add (calls)
 - 4× every (calls)
 - 4× fileURLToPath (calls)
-- 4× isArray (calls)
 - 4× isIdentifier (calls)
 - 4× next/server (imports)
 - 4× node:child_process (imports)
 - 4× node:url (imports)
 - 4× round (calls)
+- 3× @scip-code/scip (imports)
 - 3× close (calls)
 - 3× create (calls)
 - 3× error (calls)
@@ -1253,7 +1282,6 @@
 - 3× isVariableDeclaration (calls)
 - 3× values (calls)
 - 2× @anthropic-ai/sdk (imports)
-- 2× @scip-code/scip (imports)
 - 2× Anthropic (calls)
 - 2× DatabaseSync (calls)
 - 2× fetch (calls)
