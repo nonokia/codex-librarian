@@ -38,6 +38,10 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
 - **Go 対応実装済み(issue #7)**: `go-extractor/`(`golang.org/x/tools/go/packages`
   ベースの抽出バイナリ)を子プロセスとして呼ぶ第 2 の Extractor。正解セット 12 ケース、
   fixture ベースライン micro recall 95.7% — 詳細は [`docs/go-baseline.md`](docs/go-baseline.md)。
+- **PHP 対応実装済み(issue #8)**: `php-extractor/`(nikic/php-parser + NameResolver ベースの
+  抽出スクリプト、パーサ同梱)を子プロセスとして呼ぶ第 3 の Extractor。namespace + `use`
+  (PSR-4)を第一級で解決。正解セット 12 ケース、fixture ベースライン micro recall 88.1% —
+  詳細は [`docs/php-baseline.md`](docs/php-baseline.md)。
 
 ## Go リポジトリのインデックス
 
@@ -54,6 +58,24 @@ librarian は以下の順でバイナリを探す:
 どれも無い場合、`.go` ファイルはファイルレベルの module シンボルのみに degrade する
 (インデックス全体は失敗しない。警告が stderr に出る)。制約: 対象リポジトリは
 ルートに `go.mod` を持つこと(非モジュール/ネストモジュールはファイルレベルに degrade)。
+
+## PHP リポジトリのインデックス
+
+`.php` ファイルは PHP 製の抽出スクリプト(`php-extractor/extract.php`、nikic/php-parser を
+`php-extractor/vendor/` に同梱)で symbols/edges 化される。**インタプリタ実行なのでビルド
+手順は無く、必要なのは `php` 処理系だけ**。librarian は以下の順でスクリプトを探す:
+
+1. `LIBRARIAN_PHP_EXTRACTOR` 環境変数(`extract.php` へのパス。隣に `vendor/` が必要)
+2. リポジトリ同梱の `php-extractor/extract.php`(既定)
+
+`php` バイナリは `PHP_BINARY` で上書きできる(既定は `$PATH` の `php`)。名前解決は namespace +
+`use`(PSR-4)ベースで、`use App\Store\Store;` 越しの参照も解決される。型推論は行わないので、
+一般のインスタンス呼び出し(`$obj->method()`)・動的ディスパッチ(`$obj->$method()`)・
+マジックメソッドは `resolved=0` + 生名で保持する(`$this->method()` と静的/`new`/`self`・
+`parent`・`static` 呼び出しは解決する)。
+
+`php` もスクリプトも無い場合、`.php` ファイルはファイルレベルの module シンボルのみに
+degrade する(インデックス全体は失敗しない。警告が stderr に出る)。
 
 ## Quick start
 

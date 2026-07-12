@@ -17,6 +17,7 @@ import { join, relative, sep } from 'node:path';
 import type { EdgeKind, EdgeRow, SymbolKind, SymbolRow } from './store.js';
 import type { ExtractionResult, Extractor } from './extractor.js';
 import { GoExtractor } from './extractor-go.js';
+import { PhpExtractor } from './extractor-php.js';
 import { Store } from './store.js';
 
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', 'coverage', '.git', '.dlog', '.librarian', 'out', 'vendor']);
@@ -28,7 +29,7 @@ const EXTENSIONS = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'
  * extractors claim the same extension, the first registered wins.
  */
 export function defaultExtractors(): Extractor[] {
-  return [new TypeScriptExtractor(), new GoExtractor()];
+  return [new TypeScriptExtractor(), new GoExtractor(), new PhpExtractor()];
 }
 
 export function discoverSourceFiles(rootDir: string, extensions: string[] = EXTENSIONS): string[] {
