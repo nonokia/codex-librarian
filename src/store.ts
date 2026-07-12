@@ -44,6 +44,19 @@ export interface EdgeRow {
   resolved: boolean;
 }
 
+export interface EdgeEndpoint {
+  file: string;
+  name: string;
+  container: string | null;
+  kind: SymbolKind;
+}
+
+export interface JoinedEdge {
+  kind: EdgeKind;
+  from: EdgeEndpoint;
+  to: EdgeEndpoint;
+}
+
 export interface NeighborRow extends SymbolRow {
   depth: number;
   edgeKind: EdgeKind;
@@ -432,6 +445,56 @@ export class Store {
     return this.db
       .prepare('SELECT * FROM eval_history ORDER BY id')
       .all() as Record<string, unknown>[];
+  }
+
+  /**
+   * Resolved edges joined to both endpoint symbols, in a stable (BINARY
+   * collation) order — the raw material of `librarian map`. Sorting lives in
+   * SQL so every consumer sees the same deterministic sequence.
+   */
+  resolvedEdgesJoined(): JoinedEdge[] {
+    return this.db
+      .prepare(
+        `SELECT e.kind AS kind,
+                f.file AS from_file, f.name AS from_name, f.container AS from_container, f.kind AS from_kind,
+                t.file AS to_file,   t.name AS to_name,   t.container AS to_container,   t.kind AS to_kind
+         FROM edges e
+         JOIN symbols f ON f.id = e.from_id
+         JOIN symbols t ON t.id = e.to_id
+         WHERE e.resolved = 1
+         ORDER BY f.file, f.container, f.name, t.file, t.container, t.name, e.kind`
+      )
+      .all()
+      .map((r) => {
+        const row = r as Record<string, unknown>;
+        return {
+          kind: row.kind as EdgeKind,
+          from: {
+            file: row.from_file as string,
+            name: row.from_name as string,
+            container: (row.from_container as string | null) ?? null,
+            kind: row.from_kind as SymbolKind,
+          },
+          to: {
+            file: row.to_file as string,
+            name: row.to_name as string,
+            container: (row.to_container as string | null) ?? null,
+            kind: row.to_kind as SymbolKind,
+          },
+        };
+      });
+  }
+
+  /** Unresolved edges aggregated by callee name — the map's "unknown outside world". */
+  unresolvedSummary(): { name: string; kind: EdgeKind; count: number }[] {
+    return this.db
+      .prepare(
+        `SELECT to_name AS name, kind, COUNT(*) AS count
+         FROM edges WHERE resolved = 0
+         GROUP BY to_name, kind
+         ORDER BY count DESC, to_name, kind`
+      )
+      .all() as { name: string; kind: EdgeKind; count: number }[];
   }
 
   symbolById(id: string): SymbolRow | null {

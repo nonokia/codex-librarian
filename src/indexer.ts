@@ -413,13 +413,21 @@ export interface IndexReport {
 export function indexRepo(
   store: Store,
   rootDir: string,
-  opts: { extractors?: Extractor[] } = {}
+  opts: { extractors?: Extractor[]; include?: string[] } = {}
 ): IndexReport {
   const t0 = Date.now();
   const extractors = opts.extractors ?? defaultExtractors();
   const allExtensions = [...new Set(extractors.flatMap((x) => x.extensions))];
-  const absFiles = discoverSourceFiles(rootDir, allExtensions);
   const rel = (abs: string) => relative(rootDir, abs).split(sep).join('/');
+  // --include: keep only files under the given root-relative prefixes
+  // (directory-boundary aware, so `src` does not match `src2/`).
+  const prefixes = opts.include?.map((p) => p.replace(/\/+$/, ''));
+  const included = (abs: string) => {
+    if (!prefixes || prefixes.length === 0) return true;
+    const r = rel(abs);
+    return prefixes.some((p) => r === p || r.startsWith(`${p}/`));
+  };
+  const absFiles = discoverSourceFiles(rootDir, allExtensions).filter(included);
 
   const hashes = new Map<string, string>();
   for (const abs of absFiles) hashes.set(rel(abs), contentHash(readFileSync(abs, 'utf8')));
