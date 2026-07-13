@@ -13,7 +13,7 @@
 import ts from 'typescript';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { basename, dirname, join, relative, resolve, sep } from 'node:path';
+import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
 import type { EdgeKind, EdgeRow, SymbolKind } from './store.js';
 import { symbolId } from './extractor.js';
 import type { ExtractedSymbol, ExtractionResult, Extractor } from './extractor.js';
@@ -435,6 +435,11 @@ export interface IndexReport {
  * extractors' extensions, routed to the first extractor that claims them,
  * and every extractor's rows merge into the same store. An extractor only
  * runs when at least one of ITS files changed.
+ *
+ * Jurisdiction (#16 §4.5): a run only manages — and in particular only
+ * REMOVES — files its extractors claim. Rows of other extensions (e.g. .py
+ * imported from an external .scip) survive a reindex, so `index` and
+ * `import` can coexist in one repo.
  */
 export function indexRepo(
   store: Store,
@@ -460,7 +465,9 @@ export function indexRepo(
   for (const abs of absFiles) hashes.set(rel(abs), contentHash(readFileSync(abs, 'utf8')));
 
   const known = new Map(store.listFiles(repo).map((f) => [f.path, f.hash]));
-  const removed = [...known.keys()].filter((p) => !hashes.has(p));
+  const removed = [...known.keys()].filter(
+    (p) => !hashes.has(p) && extractorFor(p, extractors) !== null
+  );
   store.removeFiles(repo, removed);
 
   const changedSet = new Set(
@@ -508,6 +515,8 @@ export interface ScipImportReport extends IndexReport {
   /** true when no ext sidecar was found and edges were degrade-derived (§4.5) */
   degraded: boolean;
   skippedSymbols: number;
+  /** degrade-route documents dropped because a native extractor claims their extension (§4.5 dispatch) */
+  skippedNativeFiles: number;
 }
 
 /**
@@ -518,11 +527,18 @@ export interface ScipImportReport extends IndexReport {
  * namespacing of ids happens here and only here (multi-repo invariant) — but
  * file hashes cover the rows, not file contents: the source tree may not
  * exist on this machine.
+ *
+ * Dispatch (#16 §4.5, Step 5): native always wins. On the degrade route,
+ * documents whose extension a registered extractor claims are skipped —
+ * `librarian index` is the richer intake for those languages. The sidecar
+ * route is exempt: ext IS the native signal (the export --scip roundtrip).
+ * Removal jurisdiction mirrors indexRepo: an import only removes files of
+ * extensions it actually ingested, so native rows survive a re-import.
  */
 export function importScip(
   store: Store,
   scipPath: string,
-  opts: { repoName?: string; root?: string } = {}
+  opts: { repoName?: string; root?: string; extractors?: Extractor[] } = {}
 ): ScipImportReport {
   const t0 = Date.now();
   const index = decodeScip(readFileSync(scipPath));
@@ -543,6 +559,14 @@ export function importScip(
     degraded = true;
   }
 
+  let skippedNativeFiles = 0;
+  if (degraded) {
+    const extractors = opts.extractors ?? defaultExtractors();
+    const kept = raw.filter((r) => extractorFor(r.file, extractors) === null);
+    skippedNativeFiles = raw.length - kept.length;
+    raw = kept;
+  }
+
   const projectRoot = index.metadata?.projectRoot.replace(/^file:\/\//, '') ?? '';
   const root = resolve(opts.root ?? (projectRoot || dirname(resolve(scipPath))));
   const repo = opts.repoName ?? basename(root);
@@ -550,14 +574,18 @@ export function importScip(
 
   const known = new Map(store.listFiles(repo).map((f) => [f.path, f.hash]));
   const present = new Set(results.map((r) => r.file));
-  const removed = [...known.keys()].filter((p) => !present.has(p));
+  const importedExts = new Set(results.map((r) => extname(r.file)));
+  const removed = [...known.keys()].filter((p) => !present.has(p) && importedExts.has(extname(p)));
   store.removeFiles(repo, removed);
   const changed = results
     .map((r) => ({ r, hash: contentHash(JSON.stringify([r.symbols, r.edges])) }))
     .filter(({ r, hash }) => known.get(r.file) !== hash);
 
   const existing = store.getRepo(repo);
-  const writes = changed.length > 0 || removed.length > 0 || !existing || existing.root !== root;
+  const writes =
+    changed.length > 0 ||
+    removed.length > 0 ||
+    (results.length > 0 && (!existing || existing.root !== root));
   if (writes) store.upsertRepo(repo, root);
   for (const { r, hash } of changed) store.replaceFile(repo, r.file, hash, r.symbols, r.edges);
   if (writes) store.setMeta('last_indexed_at', String(Date.now()));
@@ -568,6 +596,7 @@ export function importScip(
     root,
     degraded,
     skippedSymbols,
+    skippedNativeFiles,
     filesSeen: results.length,
     filesIndexed: changed.length,
     filesUnchanged: results.length - changed.length,
