@@ -403,6 +403,27 @@ export class Store {
     };
   }
 
+  /**
+   * Edges a file owns = edges whose from-symbol lives in it (the same rule
+   * replaceFile deletes by), in a deterministic order for `export --scip`.
+   */
+  edgesFromFile(repo: string, file: string): EdgeRow[] {
+    const rows = this.db
+      .prepare(
+        `SELECT e.* FROM edges e JOIN symbols s ON s.id = e.from_id
+         WHERE s.repo = ? AND s.file = ?
+         ORDER BY s.span_start, e.from_id, e.kind, e.to_name, e.to_id`
+      )
+      .all(repo, file) as Record<string, unknown>[];
+    return rows.map((r) => ({
+      fromId: r.from_id as string,
+      toId: (r.to_id as string) === '' ? null : (r.to_id as string),
+      toName: r.to_name as string,
+      kind: r.kind as EdgeKind,
+      resolved: (r.resolved as number) === 1,
+    }));
+  }
+
   // ---- Phase 4: self-improving retrieval loop (§4-⑤) ----
 
   logRetrieval(entry: {
