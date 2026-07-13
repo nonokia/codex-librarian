@@ -7,9 +7,9 @@
 ## Stats
 
 - files: 42
-- symbols: 386
-- edges: 1983 (unresolved: 1082)
-- symbols by kind: class=5, function=133, interface=49, method=32, module=42, testblock=68, typealias=9, variable=48
+- symbols: 388
+- edges: 2006 (unresolved: 1092)
+- symbols by kind: class=5, function=133, interface=49, method=32, module=42, testblock=69, typealias=10, variable=48
 
 ## Files
 
@@ -104,9 +104,9 @@
 - function dedupeEdges L381-389 `(edges: EdgeRow[]): EdgeRow[]`
 - function namespaceIds L397-413 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
 - interface IndexReport L415-426
-- function indexRepo L439-505 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
-- interface ScipImportReport L507-511
-- function importScip L522-580 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string } = {}): ScipImportReport`
+- function indexRepo L444-512 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
+- interface ScipImportReport L514-520
+- function importScip L538-609 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[] } = {}): ScipImportReport`
 
 ### src/loop.ts
 
@@ -422,9 +422,11 @@
 - testblock test(files without a moniker scheme are reported, not silently dropped) L109-117
 - testblock test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) L119-154
 - variable PY L162-162
-- function pythonishIndex L164-224 `()`
-- testblock test(degrade ingest maps an ext-less index per §4.5) L226-267
-- testblock test(degrade importScip e2e flags the route and persists rows) L269-284
+- typealias DocumentInit L164-164
+- function pythonishIndex L166-227 `(extraDocuments: DocumentInit[] = [])`
+- testblock test(degrade ingest maps an ext-less index per §4.5) L229-270
+- testblock test(degrade importScip e2e flags the route and persists rows) L272-288
+- testblock test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) L290-341
 
 ### src/test/scip.test.ts
 
@@ -763,8 +765,11 @@
 - src/indexer.ts discoverSourceFiles —references→ src/indexer.ts SKIP_DIRS
 - src/indexer.ts extractorFor —references→ src/extractor.ts Extractor
 - src/indexer.ts importScip —references→ src/extractor.ts ExtractionResult
+- src/indexer.ts importScip —references→ src/extractor.ts Extractor
 - src/indexer.ts importScip —references→ src/indexer.ts ScipImportReport
 - src/indexer.ts importScip —calls→ src/indexer.ts contentHash
+- src/indexer.ts importScip —calls→ src/indexer.ts defaultExtractors
+- src/indexer.ts importScip —calls→ src/indexer.ts extractorFor
 - src/indexer.ts importScip —calls→ src/indexer.ts namespaceIds
 - src/indexer.ts importScip —calls→ src/scip-ingest.ts scipIndexToExtractionResults
 - src/indexer.ts importScip —calls→ src/scip-ingest.ts scipPlusToExtractionResults
@@ -1317,10 +1322,12 @@
 - src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/scip-emit.ts extractionResultsToScipPlus
 - src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/scip.ts isLocalSymbol
 - src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/test/scip-emit.test.ts fixture
+- src/test/scip-export.test.ts DocumentInit —references→ src/scip.ts createScipIndex
 - src/test/scip-export.test.ts fixture —references→ src/extractor.ts ExtractionResult
 - src/test/scip-export.test.ts fixture —calls→ src/test/scip-export.test.ts sym
 - src/test/scip-export.test.ts normalize —references→ src/extractor.ts ExtractionResult
 - src/test/scip-export.test.ts pythonishIndex —calls→ src/scip.ts createScipIndex
+- src/test/scip-export.test.ts pythonishIndex —references→ src/test/scip-export.test.ts DocumentInit
 - src/test/scip-export.test.ts pythonishIndex —references→ src/test/scip-export.test.ts PY
 - src/test/scip-export.test.ts seedStore —references→ src/extractor.ts ExtractionResult
 - src/test/scip-export.test.ts seedStore —references→ src/store.ts Store
@@ -1336,6 +1343,14 @@
 - src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/test/scip-export.test.ts pythonishIndex
 - src/test/scip-export.test.ts test(degrade ingest maps an ext-less index per §4.5) —calls→ src/scip-ingest.ts scipIndexToExtractionResults
 - src/test/scip-export.test.ts test(degrade ingest maps an ext-less index per §4.5) —calls→ src/test/scip-export.test.ts pythonishIndex
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/indexer.ts TypeScriptExtractor
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/indexer.ts importScip
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/indexer.ts indexRepo
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/scip.ts encodeScip
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/store.ts Store
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/store.ts Store.close
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/store.ts Store.findSymbols
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/test/scip-export.test.ts pythonishIndex
 - src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/scip-export.ts storeToScipPlus
 - src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/scip-ingest.ts scipPlusToExtractionResults
 - src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/store.ts Store
@@ -1427,14 +1442,14 @@
 
 ## Unresolved (aggregated)
 
-- 58× map (calls)
-- 48× join (calls)
-- 44× equal (calls)
+- 59× map (calls)
+- 49× join (calls)
+- 45× equal (calls)
 - 32× ok (calls)
 - 28× get (calls)
 - 28× some (calls)
 - 27× prepare (calls)
-- 25× deepEqual (calls)
+- 26× deepEqual (calls)
 - 24× Error (calls)
 - 23× push (calls)
 - 21× filter (calls)
@@ -1442,25 +1457,25 @@
 - 20× node:fs (imports)
 - 20× node:path (imports)
 - 20× test (calls)
+- 19× rmSync (calls)
 - 19× stringify (calls)
-- 18× rmSync (calls)
 - 18× slice (calls)
 - 17× Set (calls)
 - 17× find (calls)
-- 16× writeFileSync (calls)
+- 17× writeFileSync (calls)
 - 15× all (calls)
 - 15× has (calls)
+- 14× mkdtempSync (calls)
 - 14× set (calls)
 - 14× split (calls)
-- 13× mkdtempSync (calls)
-- 13× tmpdir (calls)
+- 14× tmpdir (calls)
 - 12× node:assert/strict (imports)
 - 12× node:test (imports)
 - 11× sort (calls)
+- 10× mkdirSync (calls)
 - 10× node:os (imports)
 - 10× readFileSync (calls)
 - 9× endsWith (calls)
-- 9× mkdirSync (calls)
 - 9× parse (calls)
 - 9× resolve (calls)
 - 9× run (calls)
@@ -1514,6 +1529,7 @@
 - 2× DatabaseSync (calls)
 - 2× String (calls)
 - 2× basename (calls)
+- 2× extname (calls)
 - 2× fetch (calls)
 - 2× findSymbols (calls)
 - 2× flatMap (calls)
@@ -1559,7 +1575,6 @@
 - 1× encodeURIComponent (calls)
 - 1× evalHistory (calls)
 - 1× exit (calls)
-- 1× extname (calls)
 - 1× floor (calls)
 - 1× forEachChild (calls)
 - 1× fromBinary (calls)
