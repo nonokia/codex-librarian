@@ -63,7 +63,9 @@ dlog の「変更前に `dlog why`」と対になるルール:
 このリポジトリでは **すべての実装判断を [dlog](https://github.com/nonokia/dlog) に記録する**。
 使い方の詳細は `AGENTS.md` を参照。運用ルール:
 
-1. セッション開始時に identity を export し、`dlog status` で staging の残骸を確認する。
+1. セッション開始時に `dlog status` で staging の残骸を確認する。identity は record の
+   たびに `--agent-role` / `--agent-model` フラグで渡す(dlog 0.2.0。export は不要 —
+   tool 呼び出しの shell は毎回リセットされるため env はあてにならない)。
 2. 設計判断をした瞬間に `dlog record --rationale ... --file <anchor>` する
    (却下した代替案は `--rejected "approach :: reason"`、制約は `--declares-invariant`)。
 3. コミットは `dlog commit -m "..."` を使う(git commit 後に staged decisions を自動 seal)。
