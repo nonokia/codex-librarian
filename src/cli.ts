@@ -3,9 +3,11 @@
  * JSON out by default (agent-first consumers), `--pretty` for humans.
  */
 import { resolve, join } from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { Store, type NeighborRow, type SymbolRow } from './store.js';
-import { indexRepo } from './indexer.js';
+import { importScip, indexRepo } from './indexer.js';
+import { storeToScipPlus } from './scip-export.js';
+import { encodeScip } from './scip.js';
 import { parseUnifiedDiff } from './diff.js';
 import { retrieveForDiff, DEFAULT_BUDGET } from './retrieval.js';
 import { loadGoldenFile, runEval } from './eval.js';
@@ -37,6 +39,8 @@ interface Flags {
   limit: number;
   include: string[];
   json: boolean;
+  /** export format selector (`librarian export --scip`) */
+  scip: boolean;
 }
 
 function parseArgs(argv: string[]): { command: string; positional: string[]; flags: Flags } {
@@ -53,6 +57,7 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     limit: 20,
     include: [],
     json: false,
+    scip: false,
   };
   const positional: string[] = [];
   let command = '';
@@ -67,6 +72,7 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     else if (a === '--limit') flags.limit = Number(argv[++i]);
     else if (a === '--include') flags.include.push(argv[++i]);
     else if (a === '--json') flags.json = true;
+    else if (a === '--scip') flags.scip = true;
     else if (a === '--source') flags.source = true;
     else if (a === '--model') flags.model = argv[++i];
     else if (a === '--dry-run') flags.dryRun = true;
@@ -114,6 +120,14 @@ Usage:
   librarian retrieve <diff-file|-> [--budget N] [--source]
                                               Context pack for a unified diff
   librarian eval <golden.json> [--budget N]   Retrieval match rate vs golden set
+  librarian export --scip [<out[.scip]>] [--repo <name>]
+                                              Write one repo's index as SCIP+:
+                                              <out>.scip (standard SCIP) +
+                                              <out>.scip-ext.json (sidecar)
+  librarian import <index.scip> [--repo-name <name>] [--root <dir>]
+                                              Ingest a SCIP index; reads the
+                                              .scip-ext.json sidecar when present,
+                                              degrades to base-only edges otherwise
   librarian pack <diff-file|->                Sectioned Context Pack (markdown)
   librarian review <diff-file|-> [--model M] [--dry-run] [--markdown]
                                               LLM review grounded in the pack
@@ -272,6 +286,48 @@ function main(): void {
       });
       emit(report, flags.pretty);
       store.close();
+      break;
+    }
+    case 'export': {
+      if (!flags.scip) fail('usage: librarian export --scip [<out[.scip]>] [--repo <name>]');
+      const store = openStore(flags);
+      const repos = store.listRepos();
+      const repo =
+        flags.repo ??
+        (repos.length === 1
+          ? repos[0].name
+          : (store.close(),
+            fail(
+              `index has ${repos.length} repos — pass --repo <name> (${repos.map((r) => r.name).join(', ') || 'none indexed'})`
+            )));
+      const result = storeToScipPlus(store, repo);
+      store.close();
+      const out = positional[0] ?? `${repo}.scip`;
+      const base = out.endsWith('.scip') ? out.slice(0, -'.scip'.length) : out;
+      writeFileSync(`${base}.scip`, encodeScip(result.index));
+      writeFileSync(`${base}.scip-ext.json`, JSON.stringify(result.ext) + '\n');
+      emit(
+        {
+          repo,
+          scip: `${base}.scip`,
+          ext: `${base}.scip-ext.json`,
+          files: result.files,
+          symbols: result.symbols,
+          edges: result.edges,
+          skippedFiles: result.skipped,
+        },
+        flags.pretty
+      );
+      break;
+    }
+    case 'import': {
+      if (!positional[0]) fail('usage: librarian import <index.scip> [--repo-name <name>] [--root <dir>]');
+      const scipPath = resolve(positional[0]);
+      if (!existsSync(scipPath)) fail(`no such file: ${scipPath}`);
+      const store = new Store(flags.db ?? defaultDb());
+      const report = importScip(store, scipPath, { repoName: flags.repoName, root: flags.root });
+      store.close();
+      emit(report, flags.pretty);
       break;
     }
     case 'learn': {

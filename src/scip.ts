@@ -121,7 +121,8 @@ export function parseScipPlus(envelope: unknown): { index: Index; ext: Ext } {
   return { index: scipFromJson(e.scip as JsonValue), ext: parseExt(e.ext) };
 }
 
-function parseExt(raw: unknown): Ext {
+/** Also the parser for a standalone `.scip-ext.json` sidecar (import path). */
+export function parseExt(raw: unknown): Ext {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     throw new Error('ext must be a JSON object');
   }
@@ -243,6 +244,50 @@ const SCIP_TO_KIND = new Map<SymbolInformation_Kind, SymbolKind>(
 
 export function kindFromScip(kind: SymbolInformation_Kind): SymbolKind | null {
   return SCIP_TO_KIND.get(kind) ?? null;
+}
+
+/**
+ * Degrade-path kind mapping (design §4.5) — external producers use a far
+ * wider Kind vocabulary than the strict inverse above. File/Module/Namespace/
+ * Package deliberately map to null: the degrade ingest synthesizes one module
+ * row per document (the librarian convention, name === file), so producer-side
+ * module symbols would only duplicate that anchor. Parameters, type
+ * parameters and other sub-symbol kinds also map to null — they are not
+ * librarian symbols.
+ */
+const DEGRADE_KIND_FROM_SCIP = new Map<SymbolInformation_Kind, SymbolKind>([
+  [SymbolInformation_Kind.Function, 'function'],
+  [SymbolInformation_Kind.Method, 'method'],
+  [SymbolInformation_Kind.AbstractMethod, 'method'],
+  [SymbolInformation_Kind.Constructor, 'method'],
+  [SymbolInformation_Kind.StaticMethod, 'method'],
+  [SymbolInformation_Kind.SingletonMethod, 'method'],
+  [SymbolInformation_Kind.TraitMethod, 'method'],
+  [SymbolInformation_Kind.ProtocolMethod, 'method'],
+  [SymbolInformation_Kind.PureVirtualMethod, 'method'],
+  [SymbolInformation_Kind.Getter, 'method'],
+  [SymbolInformation_Kind.Setter, 'method'],
+  [SymbolInformation_Kind.Accessor, 'method'],
+  [SymbolInformation_Kind.Class, 'class'],
+  [SymbolInformation_Kind.SingletonClass, 'class'],
+  [SymbolInformation_Kind.Struct, 'struct'],
+  [SymbolInformation_Kind.Interface, 'interface'],
+  [SymbolInformation_Kind.Protocol, 'interface'],
+  [SymbolInformation_Kind.Trait, 'trait'],
+  [SymbolInformation_Kind.TypeAlias, 'typealias'],
+  [SymbolInformation_Kind.Enum, 'enum'],
+  [SymbolInformation_Kind.EnumMember, 'variable'],
+  [SymbolInformation_Kind.Variable, 'variable'],
+  [SymbolInformation_Kind.Constant, 'variable'],
+  [SymbolInformation_Kind.StaticVariable, 'variable'],
+  [SymbolInformation_Kind.Field, 'variable'],
+  [SymbolInformation_Kind.StaticField, 'variable'],
+  [SymbolInformation_Kind.Property, 'variable'],
+  [SymbolInformation_Kind.StaticProperty, 'variable'],
+]);
+
+export function degradeKindFromScip(kind: SymbolInformation_Kind): SymbolKind | null {
+  return DEGRADE_KIND_FROM_SCIP.get(kind) ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -488,6 +533,37 @@ export function monikerToParts(moniker: string): LibrarianSymbolKey {
 export function monikerToId(moniker: string, kind: SymbolKind): string {
   const key = monikerToParts(moniker);
   return symbolId(key.file, key.container, key.name, kind);
+}
+
+/**
+ * Best-effort (name, container) for an EXTERNAL moniker (degrade ingest,
+ * design §4.5): the descriptors after the last namespace descriptor —
+ * package/module path is not a librarian container, and the file comes from
+ * the Document, not the moniker. Parameter/type-parameter descriptors are
+ * dropped (they disambiguate, they don't name). Returns null when nothing
+ * name-like remains (pure namespace/package monikers) or the moniker does
+ * not parse.
+ */
+export function externalMonikerKey(
+  moniker: string,
+): { name: string; container: string | null } | null {
+  let parsed: ParsedMoniker;
+  try {
+    parsed = parseMoniker(moniker);
+  } catch {
+    return null;
+  }
+  let start = 0;
+  for (let i = 0; i < parsed.descriptors.length; i++) {
+    if (parsed.descriptors[i].suffix === 'namespace') start = i + 1;
+  }
+  const chain = parsed.descriptors
+    .slice(start)
+    .filter((d) => d.suffix !== 'parameter' && d.suffix !== 'typeParameter');
+  if (chain.length === 0) return null;
+  const name = chain[chain.length - 1].name;
+  const middle = chain.slice(0, -1).map((d) => d.name);
+  return { name, container: middle.length > 0 ? middle.join('.') : null };
 }
 
 // ---------------------------------------------------------------------------

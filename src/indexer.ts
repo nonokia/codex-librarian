@@ -12,13 +12,14 @@
  */
 import ts from 'typescript';
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync } from 'node:fs';
-import { basename, join, relative, resolve, sep } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import type { EdgeKind, EdgeRow, SymbolKind } from './store.js';
 import { symbolId } from './extractor.js';
 import type { ExtractedSymbol, ExtractionResult, Extractor } from './extractor.js';
 import { extractionResultsToScipPlus } from './scip-emit.js';
-import { scipPlusToExtractionResults } from './scip-ingest.js';
+import { scipIndexToExtractionResults, scipPlusToExtractionResults } from './scip-ingest.js';
+import { decodeScip, parseExt } from './scip.js';
 import { GoExtractor } from './extractor-go.js';
 import { PhpExtractor } from './extractor-php.js';
 import { Store } from './store.js';
@@ -495,6 +496,81 @@ export function indexRepo(
     filesSeen: absFiles.length,
     filesIndexed: indexed,
     filesUnchanged: absFiles.length - indexed,
+    filesRemoved: removed.length,
+    symbols: s.symbols,
+    edges: s.edges,
+    unresolvedEdges: s.unresolvedEdges,
+    durationMs: Date.now() - t0,
+  };
+}
+
+export interface ScipImportReport extends IndexReport {
+  /** true when no ext sidecar was found and edges were degrade-derived (§4.5) */
+  degraded: boolean;
+  skippedSymbols: number;
+}
+
+/**
+ * Import a `.scip` file into the store (issue #16 Step 4 — the external
+ * intake, `librarian import`). A `<base>.scip-ext.json` sidecar next to the
+ * file selects the full SCIP+ ingest; without one, edges degrade-derive from
+ * base occurrences (design §4.5). Persistence mirrors indexRepo — repo
+ * namespacing of ids happens here and only here (multi-repo invariant) — but
+ * file hashes cover the rows, not file contents: the source tree may not
+ * exist on this machine.
+ */
+export function importScip(
+  store: Store,
+  scipPath: string,
+  opts: { repoName?: string; root?: string } = {}
+): ScipImportReport {
+  const t0 = Date.now();
+  const index = decodeScip(readFileSync(scipPath));
+  const base = scipPath.endsWith('.scip') ? scipPath.slice(0, -'.scip'.length) : scipPath;
+  const extPath = base + '.scip-ext.json';
+
+  let raw: ExtractionResult[];
+  let degraded: boolean;
+  let skippedSymbols = 0;
+  if (existsSync(extPath)) {
+    const ext = parseExt(JSON.parse(readFileSync(extPath, 'utf8')));
+    raw = scipPlusToExtractionResults(index, ext);
+    degraded = false;
+  } else {
+    const d = scipIndexToExtractionResults(index);
+    raw = d.results;
+    skippedSymbols = d.skippedSymbols;
+    degraded = true;
+  }
+
+  const projectRoot = index.metadata?.projectRoot.replace(/^file:\/\//, '') ?? '';
+  const root = resolve(opts.root ?? (projectRoot || dirname(resolve(scipPath))));
+  const repo = opts.repoName ?? basename(root);
+  const results = namespaceIds(repo, raw);
+
+  const known = new Map(store.listFiles(repo).map((f) => [f.path, f.hash]));
+  const present = new Set(results.map((r) => r.file));
+  const removed = [...known.keys()].filter((p) => !present.has(p));
+  store.removeFiles(repo, removed);
+  const changed = results
+    .map((r) => ({ r, hash: contentHash(JSON.stringify([r.symbols, r.edges])) }))
+    .filter(({ r, hash }) => known.get(r.file) !== hash);
+
+  const existing = store.getRepo(repo);
+  const writes = changed.length > 0 || removed.length > 0 || !existing || existing.root !== root;
+  if (writes) store.upsertRepo(repo, root);
+  for (const { r, hash } of changed) store.replaceFile(repo, r.file, hash, r.symbols, r.edges);
+  if (writes) store.setMeta('last_indexed_at', String(Date.now()));
+
+  const s = store.stats();
+  return {
+    repo,
+    root,
+    degraded,
+    skippedSymbols,
+    filesSeen: results.length,
+    filesIndexed: changed.length,
+    filesUnchanged: results.length - changed.length,
     filesRemoved: removed.length,
     symbols: s.symbols,
     edges: s.edges,
