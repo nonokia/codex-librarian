@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Store } from '../store.js';
-import { indexRepo } from '../indexer.js';
+import { Store } from '../store/store.js';
+import { indexRepo } from '../app/index.js';
 
 function fixtureRepo(): string {
   const root = mkdtempSync(join(tmpdir(), 'librarian-fixture-'));

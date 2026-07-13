@@ -13,8 +13,8 @@
  * be train=test. `learn --holdout` splits each signature group and reports
  * both numbers; the holdout figure is the one that may be claimed.
  */
-import type { Store } from './store.js';
-import { DEFAULT_STRATEGY, type RootResolver, type Strategy } from './retrieval.js';
+import type { Store } from '../store/store.js';
+import { DEFAULT_STRATEGY, type RootResolver, type Strategy } from '../core/retrieval.js';
 import { runEval, type GoldenCase } from './eval.js';
 import type { ReviewResult } from './review.js';
 

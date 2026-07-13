@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Store } from '../store.js';
-import { indexRepo } from '../indexer.js';
-import { parseUnifiedDiff } from '../diff.js';
-import { retrieveForDiff } from '../retrieval.js';
-import { assembleReviewPack, renderReviewPack } from '../contextpack.js';
-import { buildReviewRequest, renderReviewMarkdown, type ReviewResult } from '../review.js';
+import { Store } from '../store/store.js';
+import { indexRepo } from '../app/index.js';
+import { parseUnifiedDiff } from '../core/diff.js';
+import { retrieveForDiff } from '../core/retrieval.js';
+import { assembleReviewPack, renderReviewPack } from '../core/contextpack.js';
+import { buildReviewRequest, renderReviewMarkdown, type ReviewResult } from '../app/review.js';
 
 function fixtureRepo(): string {
   const root = mkdtempSync(join(tmpdir(), 'librarian-pack-'));

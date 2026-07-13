@@ -4,17 +4,17 @@
  */
 import { resolve, join } from 'node:path';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { Store, type NeighborRow, type SymbolRow } from './store.js';
-import { importScip, indexRepo } from './indexer.js';
-import { storeToScipPlus } from './scip-export.js';
-import { encodeScip } from './scip.js';
-import { parseUnifiedDiff } from './diff.js';
-import { retrieveForDiff, DEFAULT_BUDGET } from './retrieval.js';
-import { loadGoldenFile, runEval } from './eval.js';
-import { assembleReviewPack, renderReviewPack } from './contextpack.js';
-import { generateReview, buildReviewRequest, renderReviewMarkdown, DEFAULT_MODEL } from './review.js';
-import { learn, recordReviewOutcome } from './loop.js';
-import { buildMap, renderMapMarkdown } from './map.js';
+import { Store, type NeighborRow, type SymbolRow } from './store/store.js';
+import { importScip, indexRepo } from './app/index.js';
+import { storeToScipPlus } from './protocol/scip-export.js';
+import { encodeScip } from './protocol/scip.js';
+import { parseUnifiedDiff } from './core/diff.js';
+import { retrieveForDiff, DEFAULT_BUDGET } from './core/retrieval.js';
+import { loadGoldenFile, runEval } from './app/eval.js';
+import { assembleReviewPack, renderReviewPack } from './core/contextpack.js';
+import { generateReview, buildReviewRequest, renderReviewMarkdown, DEFAULT_MODEL } from './app/review.js';
+import { learn, recordReviewOutcome } from './app/loop.js';
+import { buildMap, renderMapMarkdown } from './core/map.js';
 
 interface Flags {
   db?: string;

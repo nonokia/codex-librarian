@@ -5,11 +5,11 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { Store } from '../store.js';
-import { indexRepo } from '../indexer.js';
-import { parseUnifiedDiff } from '../diff.js';
-import { retrieveForDiff } from '../retrieval.js';
-import { buildMap, renderMapMarkdown } from '../map.js';
+import { Store } from '../store/store.js';
+import { indexRepo } from '../app/index.js';
+import { parseUnifiedDiff } from '../core/diff.js';
+import { retrieveForDiff } from '../core/retrieval.js';
+import { buildMap, renderMapMarkdown } from '../core/map.js';
 
 /** Two repos deliberately sharing the same path (src/index.ts) and a symbol name. */
 function twoRepos(): { alphaRoot: string; betaRoot: string } {

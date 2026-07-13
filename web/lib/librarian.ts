@@ -9,7 +9,7 @@
  */
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { Store, type RepoRow } from '../../dist/store.js';
+import { Store, type RepoRow } from '../../dist/store/store.js';
 
 export interface Librarian {
   store: Store;
@@ -40,4 +40,4 @@ export function openLibrarian(): Librarian {
   return cached;
 }
 
-export type { SymbolRow, NeighborRow, RepoRow } from '../../dist/store.js';
+export type { SymbolRow, NeighborRow, RepoRow } from '../../dist/store/store.js';

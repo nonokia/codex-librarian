@@ -5,12 +5,12 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Store } from '../store.js';
-import { indexRepo } from '../indexer.js';
-import { PhpExtractor } from '../extractor-php.js';
-import { parseUnifiedDiff } from '../diff.js';
-import { retrieveForDiff } from '../retrieval.js';
-import { assembleReviewPack } from '../contextpack.js';
+import { Store } from '../store/store.js';
+import { indexRepo } from '../app/index.js';
+import { PhpExtractor } from '../extractors/php.js';
+import { parseUnifiedDiff } from '../core/diff.js';
+import { retrieveForDiff } from '../core/retrieval.js';
+import { assembleReviewPack } from '../core/contextpack.js';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const fixture = join(repoRoot, 'eval', 'fixtures', 'php-taskflow');

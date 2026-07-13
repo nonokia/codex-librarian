@@ -13,7 +13,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { FileRanges } from './diff.js';
-import type { EdgeKind, Store, SymbolRow } from './store.js';
+import type { EdgeKind, Store, SymbolRow } from '../store/store.js';
 
 /**
  * A retrieval strategy: everything the deterministic expansion can vary.

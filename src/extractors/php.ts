@@ -26,15 +26,15 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { delimiter, dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { ExtractionResult, Extractor } from './extractor.js';
-import { parseScipPlus } from './scip.js';
-import { scipPlusToExtractionResults } from './scip-ingest.js';
+import type { ExtractionResult, Extractor } from '../protocol/extractor.js';
+import { parseScipPlus } from '../protocol/scip.js';
+import { scipPlusToExtractionResults } from '../protocol/scip-ingest.js';
 
 const MAX_OUTPUT = 512 * 1024 * 1024;
 
 /** repo checkout location of the extractor's PHP source + vendored parser */
 function phpExtractorDir(): string {
-  return resolve(dirname(fileURLToPath(import.meta.url)), '..', 'php-extractor');
+  return resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'php-extractor');
 }
 
 function onPath(name: string): string | null {

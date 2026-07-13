@@ -6,43 +6,14 @@
 
 ## Stats
 
-- files: 42
-- symbols: 388
-- edges: 2006 (unresolved: 1092)
-- symbols by kind: class=5, function=133, interface=49, method=32, module=42, testblock=69, typealias=10, variable=48
+- files: 43
+- symbols: 389
+- edges: 2013 (unresolved: 1093)
+- symbols by kind: class=5, function=133, interface=49, method=32, module=43, testblock=69, typealias=10, variable=48
 
 ## Files
 
-### src/cli.ts
-
-- interface Flags L19-44
-- function parseArgs L46-91 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
-- function defaultDb L93-96 `(repoRoot?: string): string`
-- function emit L98-100 `(value: unknown, pretty: boolean): void`
-- function fail L102-105 `(message: string): never`
-- variable HELP L107-149
-- function openStore L151-155 `(flags: Flags): Store`
-- function compactSymbol L157-167 `(s: SymbolRow)`
-- function rootResolver L173-181 `(store: Store, flags: Flags): (repo: string) => string | null`
-- function main L183-446 `(): void`
-
-### src/contextpack.ts
-
-- interface ReviewPack L12-23
-- variable TEST_FILE L25-25
-- function isTest L27-29 `(item: ContextItem): boolean`
-- function section L36-41 `(item: ContextItem): 'callers' | 'callees' | 'tests' | 'related'`
-- function assembleReviewPack L43-58 `(diff: string, pack: ContextPack): ReviewPack`
-- function renderItems L60-67 `(items: ContextItem[]): string`
-- function renderReviewPack L70-90 `(p: ReviewPack): string`
-
-### src/diff.ts
-
-- interface FileRanges L6-10
-- function parseUnifiedDiff L12-39 `(text: string): FileRanges[]`
-- function stripPrefix L42-46 `(path: string): string | null`
-
-### src/eval.ts
+### src/app/eval.ts
 
 - interface ExpectedEntry L17-21
 - interface GoldenCase L23-36
@@ -53,62 +24,20 @@
 - function matches L94-98 `(item: ContextItem, exp: ExpectedEntry): boolean`
 - function runEval L100-167 `(store: Store, rootDir: RootResolver, cases: GoldenCase[], opts: { hops?: number; budget?: number; strategy?: Strategy; useCache?: boolean } = {}): EvalReport`
 
-### src/extractor-go.ts
+### src/app/index.ts
 
-- variable MAX_OUTPUT L32-32
-- function goExtractorSourceDir L35-37 `(): string`
-- function onPath L39-44 `(name: string): string | null`
-- interface GoCommand L46-50
-- function resolveGoExtractorCommand L52-62 `(): GoCommand | null`
-- function fileLevelOnly L65-93 `(rootDir: string, files: string[]): ExtractionResult[]`
-- function moduleId L96-98 `(file: string): string`
-- class GoExtractor L100-137
-- method GoExtractor.extract L103-136 `(rootDir: string, files: string[]): ExtractionResult[]`
+- variable SKIP_DIRS L17-17
+- function defaultExtractors L24-26 `(): Extractor[]`
+- function discoverSourceFiles L28-43 `(rootDir: string, extensions: string[] = EXTENSIONS): string[]`
+- function extractorFor L46-48 `(file: string, extractors: Extractor[]): Extractor | null`
+- function contentHash L50-52 `(text: string): string`
+- function namespaceIds L60-76 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
+- interface IndexReport L78-89
+- function indexRepo L107-175 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
+- interface ScipImportReport L177-183
+- function importScip L201-272 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[] } = {}): ScipImportReport`
 
-### src/extractor-php.ts
-
-- variable MAX_OUTPUT L33-33
-- function phpExtractorDir L36-38 `(): string`
-- function onPath L40-45 `(name: string): string | null`
-- interface PhpCommand L47-50
-- function resolvePhpExtractorCommand L52-60 `(): PhpCommand | null`
-- function fileLevelOnly L63-91 `(rootDir: string, files: string[]): ExtractionResult[]`
-- function moduleId L94-96 `(file: string): string`
-- class PhpExtractor L98-134
-- method PhpExtractor.extract L101-133 `(rootDir: string, files: string[]): ExtractionResult[]`
-
-### src/extractor.ts
-
-- function symbolId L17-27 `(file: string, container: string | null, name: string, kind: string): string`
-- typealias ExtractedSymbol L35-35
-- interface ExtractionResult L37-42
-- interface Extractor L44-53
-
-### src/indexer.ts
-
-- variable SKIP_DIRS L27-27
-- variable EXTENSIONS L28-28
-- function defaultExtractors L35-37 `(): Extractor[]`
-- function discoverSourceFiles L39-54 `(rootDir: string, extensions: string[] = EXTENSIONS): string[]`
-- function extractorFor L57-59 `(file: string, extractors: Extractor[]): Extractor | null`
-- function contentHash L61-63 `(text: string): string`
-- class TypeScriptExtractor L65-248
-- method TypeScriptExtractor.extract L68-247 `(rootDir: string, files: string[]): ExtractionResult[]`
-- variable TEST_BLOCK_CALLEES L257-257
-- function testBlockCall L259-275 `(node: ts.Node): { name: string; body: ts.Node } | null`
-- function classifyDeclaration L277-312 `(node: ts.Node): { name: string; kind: SymbolKind; nameNode: ts.Node | null } | null`
-- function calleeNameNode L315-319 `(expr: ts.Expression): ts.Node | null`
-- function isBareReference L326-352 `(node: ts.Identifier): boolean`
-- function signatureOf L354-369 `(node: ts.Node, sf: ts.SourceFile): string | null`
-- function docOf L371-379 `(node: ts.Node): string | null`
-- function dedupeEdges L381-389 `(edges: EdgeRow[]): EdgeRow[]`
-- function namespaceIds L397-413 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
-- interface IndexReport L415-426
-- function indexRepo L444-512 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
-- interface ScipImportReport L514-520
-- function importScip L538-609 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[] } = {}): ScipImportReport`
-
-### src/loop.ts
+### src/app/loop.ts
 
 - interface NamedStrategy L21-24
 - variable W L26-26
@@ -124,7 +53,47 @@
 - function recordReviewOutcome L150-158 `(store: Store, logId: number, result: ReviewResult): void`
 - function round L160-162 `(x: number): number`
 
-### src/map.ts
+### src/app/review.ts
+
+- variable DEFAULT_MODEL L12-12
+- interface ReviewFinding L14-22
+- interface ReviewResult L24-28
+- variable SYSTEM_PROMPT L30-38
+- variable OUTPUT_SCHEMA L40-64
+- function buildReviewRequest L66-80 `(pack: ReviewPack, model: string)`
+- function generateReview L82-98 `(pack: ReviewPack, opts: { model?: string; client?: Anthropic } = {}): Promise<ReviewResult>`
+- function renderReviewMarkdown L101-125 `(r: ReviewResult): string`
+
+### src/cli.ts
+
+- interface Flags L19-44
+- function parseArgs L46-91 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
+- function defaultDb L93-96 `(repoRoot?: string): string`
+- function emit L98-100 `(value: unknown, pretty: boolean): void`
+- function fail L102-105 `(message: string): never`
+- variable HELP L107-149
+- function openStore L151-155 `(flags: Flags): Store`
+- function compactSymbol L157-167 `(s: SymbolRow)`
+- function rootResolver L173-181 `(store: Store, flags: Flags): (repo: string) => string | null`
+- function main L183-446 `(): void`
+
+### src/core/contextpack.ts
+
+- interface ReviewPack L12-23
+- variable TEST_FILE L25-25
+- function isTest L27-29 `(item: ContextItem): boolean`
+- function section L36-41 `(item: ContextItem): 'callers' | 'callees' | 'tests' | 'related'`
+- function assembleReviewPack L43-58 `(diff: string, pack: ContextPack): ReviewPack`
+- function renderItems L60-67 `(items: ContextItem[]): string`
+- function renderReviewPack L70-90 `(p: ReviewPack): string`
+
+### src/core/diff.ts
+
+- interface FileRanges L6-10
+- function parseUnifiedDiff L12-39 `(text: string): FileRanges[]`
+- function stripPrefix L42-46 `(path: string): string | null`
+
+### src/core/map.ts
 
 - interface MapFile L13-21
 - interface CodebaseMap L23-40
@@ -133,7 +102,7 @@
 - function sortedRecord L104-108 `(rec: Record<string, number>): Record<string, number>`
 - function renderMapMarkdown L110-170 `(map: CodebaseMap): string`
 
-### src/retrieval.ts
+### src/core/retrieval.ts
 
 - interface Strategy L23-28
 - variable DEFAULT_STRATEGY L30-35
@@ -149,30 +118,64 @@
 - function expandContext L149-274 `(store: Store, roots: RootResolver, seeds: Seed[], opts: { strategy?: Strategy; hops?: number; budget?: number; withSource?: boolean } = {}): ContextPack`
 - function retrieveForDiff L282-306 `(store: Store, roots: RootResolver, hunks: FileRanges[], opts: { strategy?: Strategy; useCache?: boolean; hops?: number; budget?: number; withSource?: boolean; repo?: string } = {}): ContextPack`
 
-### src/review.ts
+### src/extractors/go.ts
 
-- variable DEFAULT_MODEL L12-12
-- interface ReviewFinding L14-22
-- interface ReviewResult L24-28
-- variable SYSTEM_PROMPT L30-38
-- variable OUTPUT_SCHEMA L40-64
-- function buildReviewRequest L66-80 `(pack: ReviewPack, model: string)`
-- function generateReview L82-98 `(pack: ReviewPack, opts: { model?: string; client?: Anthropic } = {}): Promise<ReviewResult>`
-- function renderReviewMarkdown L101-125 `(r: ReviewResult): string`
+- variable MAX_OUTPUT L32-32
+- function goExtractorSourceDir L35-37 `(): string`
+- function onPath L39-44 `(name: string): string | null`
+- interface GoCommand L46-50
+- function resolveGoExtractorCommand L52-62 `(): GoCommand | null`
+- function fileLevelOnly L65-93 `(rootDir: string, files: string[]): ExtractionResult[]`
+- function moduleId L96-98 `(file: string): string`
+- class GoExtractor L100-137
+- method GoExtractor.extract L103-136 `(rootDir: string, files: string[]): ExtractionResult[]`
 
-### src/scip-emit.ts
+### src/extractors/php.ts
+
+- variable MAX_OUTPUT L33-33
+- function phpExtractorDir L36-38 `(): string`
+- function onPath L40-45 `(name: string): string | null`
+- interface PhpCommand L47-50
+- function resolvePhpExtractorCommand L52-60 `(): PhpCommand | null`
+- function fileLevelOnly L63-91 `(rootDir: string, files: string[]): ExtractionResult[]`
+- function moduleId L94-96 `(file: string): string`
+- class PhpExtractor L98-134
+- method PhpExtractor.extract L101-133 `(rootDir: string, files: string[]): ExtractionResult[]`
+
+### src/extractors/ts.ts
+
+- variable EXTENSIONS L21-21
+- class TypeScriptExtractor L23-206
+- method TypeScriptExtractor.extract L26-205 `(rootDir: string, files: string[]): ExtractionResult[]`
+- variable TEST_BLOCK_CALLEES L215-215
+- function testBlockCall L217-233 `(node: ts.Node): { name: string; body: ts.Node } | null`
+- function classifyDeclaration L235-270 `(node: ts.Node): { name: string; kind: SymbolKind; nameNode: ts.Node | null } | null`
+- function calleeNameNode L273-277 `(expr: ts.Expression): ts.Node | null`
+- function isBareReference L284-310 `(node: ts.Identifier): boolean`
+- function signatureOf L312-327 `(node: ts.Node, sf: ts.SourceFile): string | null`
+- function docOf L329-337 `(node: ts.Node): string | null`
+- function dedupeEdges L339-347 `(edges: EdgeRow[]): EdgeRow[]`
+
+### src/protocol/extractor.ts
+
+- function symbolId L17-27 `(file: string, container: string | null, name: string, kind: string): string`
+- typealias ExtractedSymbol L35-35
+- interface ExtractionResult L37-42
+- interface Extractor L44-53
+
+### src/protocol/scip-emit.ts
 
 - variable LANGUAGE L37-41
 - function parentOf L44-53 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
 - function extractionResultsToScipPlus L55-185 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
 
-### src/scip-export.ts
+### src/protocol/scip-export.ts
 
 - variable SCHEME_BY_EXTENSION L22-33
 - interface ScipExportResult L35-47
 - function storeToScipPlus L49-107 `(store: Store, repo: string): ScipExportResult`
 
-### src/scip-ingest.ts
+### src/protocol/scip-ingest.ts
 
 - typealias ScipDocument L34-34
 - typealias ScipOccurrence L35-35
@@ -191,7 +194,7 @@
 }): { signature: string | null; doc: string | null }`
 - function innermostEnclosing L424-438 `(rows: ExtractedSymbol[], moduleRow: ExtractedSymbol, start: number, end: number): ExtractedSymbol`
 
-### src/scip.ts
+### src/protocol/scip.ts
 
 - interface ScipPlusEnvelope L40-43
 - interface Ext L51-54
@@ -243,7 +246,7 @@
 - function spanToScipRange L601-606 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
 - function scipRangeToSpan L608-619 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
 
-### src/store.ts
+### src/store/store.ts
 
 - typealias SymbolKind L12-23
 - typealias EdgeKind L25-25
@@ -324,12 +327,12 @@
 
 ### src/test/dispatch.test.ts
 
-- class FooExtractor L20-72
-- method FooExtractor.extract L24-71 `(rootDir: string, files: string[]): ExtractionResult[]`
-- function polyglotRepo L74-81 `(): string`
-- testblock test(files route to their extractor and results merge into one store) L83-108
-- testblock test(an extractor only runs when one of its files changed) L110-126
-- testblock test(diff hunks in files no extractor claims fall into unknownFiles) L128-140
+- class FooExtractor L21-73
+- method FooExtractor.extract L25-72 `(rootDir: string, files: string[]): ExtractionResult[]`
+- function polyglotRepo L75-82 `(): string`
+- testblock test(files route to their extractor and results merge into one store) L84-109
+- testblock test(an extractor only runs when one of its files changed) L111-127
+- testblock test(diff hunks in files no extractor claims fall into unknownFiles) L129-141
 
 ### src/test/eval.test.ts
 
@@ -413,20 +416,20 @@
 
 ### src/test/scip-export.test.ts
 
-- function sym L15-26 `(file: string, container: string | null, name: string, kind: ExtractionResult['symbols'][number]['kind'], spanStart: number, spanEnd: number, signature: string | null = null, doc: string | null = null)`
-- function fixture L29-60 `(): ExtractionResult[]`
-- function seedStore L62-65 `(store: Store, repo: string, results: ExtractionResult[]): void`
-- function normalize L68-78 `(results: ExtractionResult[])`
-- testblock test(export → full ingest roundtrips store rows exactly (Step 4 export half)) L80-88
-- testblock test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) L90-107
-- testblock test(files without a moniker scheme are reported, not silently dropped) L109-117
-- testblock test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) L119-154
-- variable PY L162-162
-- typealias DocumentInit L164-164
-- function pythonishIndex L166-227 `(extraDocuments: DocumentInit[] = [])`
-- testblock test(degrade ingest maps an ext-less index per §4.5) L229-270
-- testblock test(degrade importScip e2e flags the route and persists rows) L272-288
-- testblock test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) L290-341
+- function sym L16-27 `(file: string, container: string | null, name: string, kind: ExtractionResult['symbols'][number]['kind'], spanStart: number, spanEnd: number, signature: string | null = null, doc: string | null = null)`
+- function fixture L30-61 `(): ExtractionResult[]`
+- function seedStore L63-66 `(store: Store, repo: string, results: ExtractionResult[]): void`
+- function normalize L69-79 `(results: ExtractionResult[])`
+- testblock test(export → full ingest roundtrips store rows exactly (Step 4 export half)) L81-89
+- testblock test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) L91-108
+- testblock test(files without a moniker scheme are reported, not silently dropped) L110-118
+- testblock test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) L120-155
+- variable PY L163-163
+- typealias DocumentInit L165-165
+- function pythonishIndex L167-228 `(extraDocuments: DocumentInit[] = [])`
+- testblock test(degrade ingest maps an ext-less index per §4.5) L230-271
+- testblock test(degrade importScip e2e flags the route and persists rows) L273-289
+- testblock test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) L291-342
 
 ### src/test/scip.test.ts
 
@@ -522,116 +525,236 @@
 
 ## Imports (file → file)
 
-- src/cli.ts → src/contextpack.ts
-- src/cli.ts → src/diff.ts
-- src/cli.ts → src/eval.ts
-- src/cli.ts → src/indexer.ts
-- src/cli.ts → src/loop.ts
-- src/cli.ts → src/map.ts
-- src/cli.ts → src/retrieval.ts
-- src/cli.ts → src/review.ts
-- src/cli.ts → src/scip-export.ts
-- src/cli.ts → src/scip.ts
-- src/cli.ts → src/store.ts
-- src/contextpack.ts → src/retrieval.ts
-- src/eval.ts → src/diff.ts
-- src/eval.ts → src/retrieval.ts
-- src/eval.ts → src/store.ts
-- src/extractor-go.ts → src/extractor.ts
-- src/extractor-go.ts → src/scip-ingest.ts
-- src/extractor-go.ts → src/scip.ts
-- src/extractor-php.ts → src/extractor.ts
-- src/extractor-php.ts → src/scip-ingest.ts
-- src/extractor-php.ts → src/scip.ts
-- src/extractor.ts → src/store.ts
-- src/indexer.ts → src/extractor-go.ts
-- src/indexer.ts → src/extractor-php.ts
-- src/indexer.ts → src/extractor.ts
-- src/indexer.ts → src/scip-emit.ts
-- src/indexer.ts → src/scip-ingest.ts
-- src/indexer.ts → src/scip.ts
-- src/indexer.ts → src/store.ts
-- src/loop.ts → src/eval.ts
-- src/loop.ts → src/retrieval.ts
-- src/loop.ts → src/review.ts
-- src/loop.ts → src/store.ts
-- src/map.ts → src/store.ts
-- src/retrieval.ts → src/diff.ts
-- src/retrieval.ts → src/store.ts
-- src/review.ts → src/contextpack.ts
-- src/scip-emit.ts → src/extractor.ts
-- src/scip-emit.ts → src/scip.ts
-- src/scip-export.ts → src/extractor.ts
-- src/scip-export.ts → src/scip-emit.ts
-- src/scip-export.ts → src/scip.ts
-- src/scip-export.ts → src/store.ts
-- src/scip-ingest.ts → src/extractor.ts
-- src/scip-ingest.ts → src/scip.ts
-- src/scip-ingest.ts → src/store.ts
-- src/scip.ts → src/extractor.ts
-- src/scip.ts → src/store.ts
-- src/test/contextpack.test.ts → src/contextpack.ts
-- src/test/contextpack.test.ts → src/diff.ts
-- src/test/contextpack.test.ts → src/indexer.ts
-- src/test/contextpack.test.ts → src/retrieval.ts
-- src/test/contextpack.test.ts → src/review.ts
-- src/test/contextpack.test.ts → src/store.ts
-- src/test/dispatch.test.ts → src/diff.ts
-- src/test/dispatch.test.ts → src/extractor.ts
-- src/test/dispatch.test.ts → src/indexer.ts
-- src/test/dispatch.test.ts → src/retrieval.ts
-- src/test/dispatch.test.ts → src/store.ts
-- src/test/eval.test.ts → src/diff.ts
-- src/test/eval.test.ts → src/eval.ts
-- src/test/eval.test.ts → src/indexer.ts
-- src/test/eval.test.ts → src/retrieval.ts
-- src/test/eval.test.ts → src/store.ts
-- src/test/extractor-go.test.ts → src/contextpack.ts
-- src/test/extractor-go.test.ts → src/diff.ts
-- src/test/extractor-go.test.ts → src/extractor-go.ts
-- src/test/extractor-go.test.ts → src/indexer.ts
-- src/test/extractor-go.test.ts → src/retrieval.ts
-- src/test/extractor-go.test.ts → src/store.ts
-- src/test/extractor-php.test.ts → src/contextpack.ts
-- src/test/extractor-php.test.ts → src/diff.ts
-- src/test/extractor-php.test.ts → src/extractor-php.ts
-- src/test/extractor-php.test.ts → src/indexer.ts
-- src/test/extractor-php.test.ts → src/retrieval.ts
-- src/test/extractor-php.test.ts → src/store.ts
-- src/test/indexer.test.ts → src/indexer.ts
-- src/test/indexer.test.ts → src/store.ts
-- src/test/loop.test.ts → src/diff.ts
-- src/test/loop.test.ts → src/eval.ts
-- src/test/loop.test.ts → src/indexer.ts
-- src/test/loop.test.ts → src/loop.ts
-- src/test/loop.test.ts → src/retrieval.ts
-- src/test/loop.test.ts → src/review.ts
-- src/test/loop.test.ts → src/store.ts
-- src/test/map.test.ts → src/indexer.ts
-- src/test/map.test.ts → src/map.ts
-- src/test/map.test.ts → src/store.ts
-- src/test/multirepo.test.ts → src/diff.ts
-- src/test/multirepo.test.ts → src/indexer.ts
-- src/test/multirepo.test.ts → src/map.ts
-- src/test/multirepo.test.ts → src/retrieval.ts
-- src/test/multirepo.test.ts → src/store.ts
-- src/test/scip-emit.test.ts → src/extractor.ts
-- src/test/scip-emit.test.ts → src/scip-emit.ts
-- src/test/scip-emit.test.ts → src/scip-ingest.ts
-- src/test/scip-emit.test.ts → src/scip.ts
-- src/test/scip-export.test.ts → src/extractor.ts
-- src/test/scip-export.test.ts → src/indexer.ts
-- src/test/scip-export.test.ts → src/scip-export.ts
-- src/test/scip-export.test.ts → src/scip-ingest.ts
-- src/test/scip-export.test.ts → src/scip.ts
-- src/test/scip-export.test.ts → src/store.ts
-- src/test/scip.test.ts → src/extractor.ts
-- src/test/scip.test.ts → src/scip.ts
-- src/test/scip.test.ts → src/store.ts
+- src/app/eval.ts → src/core/diff.ts
+- src/app/eval.ts → src/core/retrieval.ts
+- src/app/eval.ts → src/store/store.ts
+- src/app/index.ts → src/extractors/go.ts
+- src/app/index.ts → src/extractors/php.ts
+- src/app/index.ts → src/extractors/ts.ts
+- src/app/index.ts → src/protocol/extractor.ts
+- src/app/index.ts → src/protocol/scip-ingest.ts
+- src/app/index.ts → src/protocol/scip.ts
+- src/app/index.ts → src/store/store.ts
+- src/app/loop.ts → src/app/eval.ts
+- src/app/loop.ts → src/app/review.ts
+- src/app/loop.ts → src/core/retrieval.ts
+- src/app/loop.ts → src/store/store.ts
+- src/app/review.ts → src/core/contextpack.ts
+- src/cli.ts → src/app/eval.ts
+- src/cli.ts → src/app/index.ts
+- src/cli.ts → src/app/loop.ts
+- src/cli.ts → src/app/review.ts
+- src/cli.ts → src/core/contextpack.ts
+- src/cli.ts → src/core/diff.ts
+- src/cli.ts → src/core/map.ts
+- src/cli.ts → src/core/retrieval.ts
+- src/cli.ts → src/protocol/scip-export.ts
+- src/cli.ts → src/protocol/scip.ts
+- src/cli.ts → src/store/store.ts
+- src/core/contextpack.ts → src/core/retrieval.ts
+- src/core/map.ts → src/store/store.ts
+- src/core/retrieval.ts → src/core/diff.ts
+- src/core/retrieval.ts → src/store/store.ts
+- src/extractors/go.ts → src/protocol/extractor.ts
+- src/extractors/go.ts → src/protocol/scip-ingest.ts
+- src/extractors/go.ts → src/protocol/scip.ts
+- src/extractors/php.ts → src/protocol/extractor.ts
+- src/extractors/php.ts → src/protocol/scip-ingest.ts
+- src/extractors/php.ts → src/protocol/scip.ts
+- src/extractors/ts.ts → src/protocol/extractor.ts
+- src/extractors/ts.ts → src/protocol/scip-emit.ts
+- src/extractors/ts.ts → src/protocol/scip-ingest.ts
+- src/extractors/ts.ts → src/store/store.ts
+- src/protocol/extractor.ts → src/store/store.ts
+- src/protocol/scip-emit.ts → src/protocol/extractor.ts
+- src/protocol/scip-emit.ts → src/protocol/scip.ts
+- src/protocol/scip-export.ts → src/protocol/extractor.ts
+- src/protocol/scip-export.ts → src/protocol/scip-emit.ts
+- src/protocol/scip-export.ts → src/protocol/scip.ts
+- src/protocol/scip-export.ts → src/store/store.ts
+- src/protocol/scip-ingest.ts → src/protocol/extractor.ts
+- src/protocol/scip-ingest.ts → src/protocol/scip.ts
+- src/protocol/scip-ingest.ts → src/store/store.ts
+- src/protocol/scip.ts → src/protocol/extractor.ts
+- src/protocol/scip.ts → src/store/store.ts
+- src/test/contextpack.test.ts → src/app/index.ts
+- src/test/contextpack.test.ts → src/app/review.ts
+- src/test/contextpack.test.ts → src/core/contextpack.ts
+- src/test/contextpack.test.ts → src/core/diff.ts
+- src/test/contextpack.test.ts → src/core/retrieval.ts
+- src/test/contextpack.test.ts → src/store/store.ts
+- src/test/dispatch.test.ts → src/app/index.ts
+- src/test/dispatch.test.ts → src/core/diff.ts
+- src/test/dispatch.test.ts → src/core/retrieval.ts
+- src/test/dispatch.test.ts → src/extractors/ts.ts
+- src/test/dispatch.test.ts → src/protocol/extractor.ts
+- src/test/dispatch.test.ts → src/store/store.ts
+- src/test/eval.test.ts → src/app/eval.ts
+- src/test/eval.test.ts → src/app/index.ts
+- src/test/eval.test.ts → src/core/diff.ts
+- src/test/eval.test.ts → src/core/retrieval.ts
+- src/test/eval.test.ts → src/store/store.ts
+- src/test/extractor-go.test.ts → src/app/index.ts
+- src/test/extractor-go.test.ts → src/core/contextpack.ts
+- src/test/extractor-go.test.ts → src/core/diff.ts
+- src/test/extractor-go.test.ts → src/core/retrieval.ts
+- src/test/extractor-go.test.ts → src/extractors/go.ts
+- src/test/extractor-go.test.ts → src/store/store.ts
+- src/test/extractor-php.test.ts → src/app/index.ts
+- src/test/extractor-php.test.ts → src/core/contextpack.ts
+- src/test/extractor-php.test.ts → src/core/diff.ts
+- src/test/extractor-php.test.ts → src/core/retrieval.ts
+- src/test/extractor-php.test.ts → src/extractors/php.ts
+- src/test/extractor-php.test.ts → src/store/store.ts
+- src/test/indexer.test.ts → src/app/index.ts
+- src/test/indexer.test.ts → src/store/store.ts
+- src/test/loop.test.ts → src/app/eval.ts
+- src/test/loop.test.ts → src/app/index.ts
+- src/test/loop.test.ts → src/app/loop.ts
+- src/test/loop.test.ts → src/app/review.ts
+- src/test/loop.test.ts → src/core/diff.ts
+- src/test/loop.test.ts → src/core/retrieval.ts
+- src/test/loop.test.ts → src/store/store.ts
+- src/test/map.test.ts → src/app/index.ts
+- src/test/map.test.ts → src/core/map.ts
+- src/test/map.test.ts → src/store/store.ts
+- src/test/multirepo.test.ts → src/app/index.ts
+- src/test/multirepo.test.ts → src/core/diff.ts
+- src/test/multirepo.test.ts → src/core/map.ts
+- src/test/multirepo.test.ts → src/core/retrieval.ts
+- src/test/multirepo.test.ts → src/store/store.ts
+- src/test/scip-emit.test.ts → src/protocol/extractor.ts
+- src/test/scip-emit.test.ts → src/protocol/scip-emit.ts
+- src/test/scip-emit.test.ts → src/protocol/scip-ingest.ts
+- src/test/scip-emit.test.ts → src/protocol/scip.ts
+- src/test/scip-export.test.ts → src/app/index.ts
+- src/test/scip-export.test.ts → src/extractors/ts.ts
+- src/test/scip-export.test.ts → src/protocol/extractor.ts
+- src/test/scip-export.test.ts → src/protocol/scip-export.ts
+- src/test/scip-export.test.ts → src/protocol/scip-ingest.ts
+- src/test/scip-export.test.ts → src/protocol/scip.ts
+- src/test/scip-export.test.ts → src/store/store.ts
+- src/test/scip.test.ts → src/protocol/extractor.ts
+- src/test/scip.test.ts → src/protocol/scip.ts
+- src/test/scip.test.ts → src/store/store.ts
 
 ## Edges (symbol → symbol, resolved)
 
-- src/cli.ts compactSymbol —references→ src/store.ts SymbolRow
+- src/app/eval.ts CaseResult —references→ src/app/eval.ts ExpectedEntry
+- src/app/eval.ts EvalReport —references→ src/app/eval.ts CaseResult
+- src/app/eval.ts GoldenCase —references→ src/app/eval.ts ExpectedEntry
+- src/app/eval.ts hunksForCase —references→ src/app/eval.ts GoldenCase
+- src/app/eval.ts hunksForCase —calls→ src/core/diff.ts parseUnifiedDiff
+- src/app/eval.ts hunksForCase —references→ src/store/store.ts Store
+- src/app/eval.ts hunksForCase —calls→ src/store/store.ts Store.symbolsInFile
+- src/app/eval.ts loadGoldenFile —references→ src/app/eval.ts GoldenCase
+- src/app/eval.ts matches —references→ src/app/eval.ts ExpectedEntry
+- src/app/eval.ts matches —references→ src/core/retrieval.ts ContextItem
+- src/app/eval.ts runEval —references→ src/app/eval.ts CaseResult
+- src/app/eval.ts runEval —references→ src/app/eval.ts EvalReport
+- src/app/eval.ts runEval —references→ src/app/eval.ts ExpectedEntry
+- src/app/eval.ts runEval —references→ src/app/eval.ts GoldenCase
+- src/app/eval.ts runEval —calls→ src/app/eval.ts hunksForCase
+- src/app/eval.ts runEval —calls→ src/app/eval.ts matches
+- src/app/eval.ts runEval —references→ src/core/retrieval.ts ContextPack
+- src/app/eval.ts runEval —references→ src/core/retrieval.ts RootResolver
+- src/app/eval.ts runEval —references→ src/core/retrieval.ts Strategy
+- src/app/eval.ts runEval —calls→ src/core/retrieval.ts retrieveForDiff
+- src/app/eval.ts runEval —references→ src/store/store.ts Store
+- src/app/index.ts ScipImportReport —extends→ src/app/index.ts IndexReport
+- src/app/index.ts ScipImportReport —references→ src/app/index.ts IndexReport
+- src/app/index.ts defaultExtractors —calls→ src/extractors/go.ts GoExtractor
+- src/app/index.ts defaultExtractors —calls→ src/extractors/php.ts PhpExtractor
+- src/app/index.ts defaultExtractors —calls→ src/extractors/ts.ts TypeScriptExtractor
+- src/app/index.ts defaultExtractors —references→ src/protocol/extractor.ts Extractor
+- src/app/index.ts discoverSourceFiles —references→ src/app/index.ts SKIP_DIRS
+- src/app/index.ts discoverSourceFiles —references→ src/extractors/ts.ts EXTENSIONS
+- src/app/index.ts extractorFor —references→ src/protocol/extractor.ts Extractor
+- src/app/index.ts importScip —references→ src/app/index.ts ScipImportReport
+- src/app/index.ts importScip —calls→ src/app/index.ts contentHash
+- src/app/index.ts importScip —calls→ src/app/index.ts defaultExtractors
+- src/app/index.ts importScip —calls→ src/app/index.ts extractorFor
+- src/app/index.ts importScip —calls→ src/app/index.ts namespaceIds
+- src/app/index.ts importScip —references→ src/protocol/extractor.ts ExtractionResult
+- src/app/index.ts importScip —references→ src/protocol/extractor.ts Extractor
+- src/app/index.ts importScip —calls→ src/protocol/scip-ingest.ts scipIndexToExtractionResults
+- src/app/index.ts importScip —calls→ src/protocol/scip-ingest.ts scipPlusToExtractionResults
+- src/app/index.ts importScip —calls→ src/protocol/scip.ts decodeScip
+- src/app/index.ts importScip —calls→ src/protocol/scip.ts parseExt
+- src/app/index.ts importScip —references→ src/store/store.ts Store
+- src/app/index.ts importScip —calls→ src/store/store.ts Store.getRepo
+- src/app/index.ts importScip —calls→ src/store/store.ts Store.listFiles
+- src/app/index.ts importScip —calls→ src/store/store.ts Store.removeFiles
+- src/app/index.ts importScip —calls→ src/store/store.ts Store.replaceFile
+- src/app/index.ts importScip —calls→ src/store/store.ts Store.setMeta
+- src/app/index.ts importScip —calls→ src/store/store.ts Store.stats
+- src/app/index.ts importScip —calls→ src/store/store.ts Store.upsertRepo
+- src/app/index.ts indexRepo —references→ src/app/index.ts IndexReport
+- src/app/index.ts indexRepo —calls→ src/app/index.ts contentHash
+- src/app/index.ts indexRepo —calls→ src/app/index.ts defaultExtractors
+- src/app/index.ts indexRepo —calls→ src/app/index.ts discoverSourceFiles
+- src/app/index.ts indexRepo —calls→ src/app/index.ts extractorFor
+- src/app/index.ts indexRepo —calls→ src/app/index.ts namespaceIds
+- src/app/index.ts indexRepo —calls→ src/protocol/extractor.ts Extractor
+- src/app/index.ts indexRepo —references→ src/protocol/extractor.ts Extractor
+- src/app/index.ts indexRepo —references→ src/store/store.ts Store
+- src/app/index.ts indexRepo —calls→ src/store/store.ts Store.getRepo
+- src/app/index.ts indexRepo —calls→ src/store/store.ts Store.listFiles
+- src/app/index.ts indexRepo —calls→ src/store/store.ts Store.removeFiles
+- src/app/index.ts indexRepo —calls→ src/store/store.ts Store.replaceFile
+- src/app/index.ts indexRepo —calls→ src/store/store.ts Store.setMeta
+- src/app/index.ts indexRepo —calls→ src/store/store.ts Store.stats
+- src/app/index.ts indexRepo —calls→ src/store/store.ts Store.upsertRepo
+- src/app/index.ts namespaceIds —references→ src/protocol/extractor.ts ExtractionResult
+- src/app/loop.ts CANDIDATE_STRATEGIES —references→ src/app/loop.ts NamedStrategy
+- src/app/loop.ts CANDIDATE_STRATEGIES —references→ src/app/loop.ts W
+- src/app/loop.ts CANDIDATE_STRATEGIES —references→ src/core/retrieval.ts DEFAULT_STRATEGY
+- src/app/loop.ts NamedStrategy —references→ src/core/retrieval.ts Strategy
+- src/app/loop.ts W —references→ src/core/retrieval.ts DEFAULT_STRATEGY
+- src/app/loop.ts caseSignature —references→ src/app/eval.ts GoldenCase
+- src/app/loop.ts caseSignature —calls→ src/app/eval.ts runEval
+- src/app/loop.ts caseSignature —references→ src/core/retrieval.ts DEFAULT_STRATEGY
+- src/app/loop.ts caseSignature —references→ src/core/retrieval.ts RootResolver
+- src/app/loop.ts caseSignature —references→ src/store/store.ts Store
+- src/app/loop.ts learn —references→ src/app/eval.ts GoldenCase
+- src/app/loop.ts learn —references→ src/app/loop.ts CANDIDATE_STRATEGIES
+- src/app/loop.ts learn —references→ src/app/loop.ts LearnReport
+- src/app/loop.ts learn —calls→ src/app/loop.ts caseSignature
+- src/app/loop.ts learn —calls→ src/app/loop.ts microRecall
+- src/app/loop.ts learn —calls→ src/app/loop.ts round
+- src/app/loop.ts learn —references→ src/core/retrieval.ts DEFAULT_STRATEGY
+- src/app/loop.ts learn —references→ src/core/retrieval.ts RootResolver
+- src/app/loop.ts learn —references→ src/core/retrieval.ts Strategy
+- src/app/loop.ts learn —references→ src/store/store.ts Store
+- src/app/loop.ts learn —calls→ src/store/store.ts Store.putPattern
+- src/app/loop.ts microRecall —references→ src/app/eval.ts GoldenCase
+- src/app/loop.ts microRecall —calls→ src/app/eval.ts runEval
+- src/app/loop.ts microRecall —references→ src/core/retrieval.ts RootResolver
+- src/app/loop.ts microRecall —references→ src/core/retrieval.ts Strategy
+- src/app/loop.ts microRecall —references→ src/store/store.ts Store
+- src/app/loop.ts recordReviewOutcome —references→ src/app/review.ts ReviewResult
+- src/app/loop.ts recordReviewOutcome —references→ src/store/store.ts Store
+- src/app/loop.ts recordReviewOutcome —calls→ src/store/store.ts Store.updateRetrievalOutcome
+- src/app/review.ts ReviewResult —references→ src/app/review.ts ReviewFinding
+- src/app/review.ts buildReviewRequest —references→ src/app/review.ts OUTPUT_SCHEMA
+- src/app/review.ts buildReviewRequest —references→ src/app/review.ts SYSTEM_PROMPT
+- src/app/review.ts buildReviewRequest —references→ src/core/contextpack.ts ReviewPack
+- src/app/review.ts buildReviewRequest —calls→ src/core/contextpack.ts renderReviewPack
+- src/app/review.ts generateReview —references→ src/app/review.ts DEFAULT_MODEL
+- src/app/review.ts generateReview —references→ src/app/review.ts ReviewResult
+- src/app/review.ts generateReview —calls→ src/app/review.ts buildReviewRequest
+- src/app/review.ts generateReview —references→ src/core/contextpack.ts ReviewPack
+- src/app/review.ts renderReviewMarkdown —references→ src/app/review.ts ReviewResult
+- src/cli.ts compactSymbol —references→ src/store/store.ts SymbolRow
+- src/cli.ts main —calls→ src/app/eval.ts loadGoldenFile
+- src/cli.ts main —calls→ src/app/eval.ts runEval
+- src/cli.ts main —calls→ src/app/index.ts importScip
+- src/cli.ts main —calls→ src/app/index.ts indexRepo
+- src/cli.ts main —calls→ src/app/loop.ts learn
+- src/cli.ts main —calls→ src/app/loop.ts recordReviewOutcome
+- src/cli.ts main —calls→ src/app/review.ts buildReviewRequest
+- src/cli.ts main —calls→ src/app/review.ts generateReview
+- src/cli.ts main —calls→ src/app/review.ts renderReviewMarkdown
 - src/cli.ts main —references→ src/cli.ts HELP
 - src/cli.ts main —calls→ src/cli.ts compactSymbol
 - src/cli.ts main —references→ src/cli.ts compactSymbol
@@ -641,784 +764,670 @@
 - src/cli.ts main —calls→ src/cli.ts openStore
 - src/cli.ts main —calls→ src/cli.ts parseArgs
 - src/cli.ts main —calls→ src/cli.ts rootResolver
-- src/cli.ts main —calls→ src/contextpack.ts assembleReviewPack
-- src/cli.ts main —calls→ src/contextpack.ts renderReviewPack
-- src/cli.ts main —calls→ src/diff.ts parseUnifiedDiff
-- src/cli.ts main —calls→ src/eval.ts loadGoldenFile
-- src/cli.ts main —calls→ src/eval.ts runEval
-- src/cli.ts main —calls→ src/indexer.ts importScip
-- src/cli.ts main —calls→ src/indexer.ts indexRepo
-- src/cli.ts main —calls→ src/loop.ts learn
-- src/cli.ts main —calls→ src/loop.ts recordReviewOutcome
-- src/cli.ts main —calls→ src/map.ts buildMap
-- src/cli.ts main —calls→ src/map.ts renderMapMarkdown
-- src/cli.ts main —calls→ src/retrieval.ts retrieveForDiff
-- src/cli.ts main —calls→ src/review.ts buildReviewRequest
-- src/cli.ts main —calls→ src/review.ts generateReview
-- src/cli.ts main —calls→ src/review.ts renderReviewMarkdown
-- src/cli.ts main —calls→ src/scip-export.ts storeToScipPlus
-- src/cli.ts main —calls→ src/scip.ts encodeScip
-- src/cli.ts main —references→ src/store.ts NeighborRow
-- src/cli.ts main —calls→ src/store.ts Store
-- src/cli.ts main —calls→ src/store.ts Store.close
-- src/cli.ts main —calls→ src/store.ts Store.edgesOf
-- src/cli.ts main —calls→ src/store.ts Store.evalHistory
-- src/cli.ts main —calls→ src/store.ts Store.findSymbols
-- src/cli.ts main —calls→ src/store.ts Store.listPatterns
-- src/cli.ts main —calls→ src/store.ts Store.listRepos
-- src/cli.ts main —calls→ src/store.ts Store.listRetrievals
-- src/cli.ts main —calls→ src/store.ts Store.logRetrieval
-- src/cli.ts main —calls→ src/store.ts Store.neighborhood
-- src/cli.ts main —calls→ src/store.ts Store.recordEval
-- src/cli.ts main —calls→ src/store.ts Store.stats
-- src/cli.ts main —calls→ src/store.ts Store.symbolsInFile
-- src/cli.ts main —calls→ src/store.ts Store.updateRetrievalOutcome
+- src/cli.ts main —calls→ src/core/contextpack.ts assembleReviewPack
+- src/cli.ts main —calls→ src/core/contextpack.ts renderReviewPack
+- src/cli.ts main —calls→ src/core/diff.ts parseUnifiedDiff
+- src/cli.ts main —calls→ src/core/map.ts buildMap
+- src/cli.ts main —calls→ src/core/map.ts renderMapMarkdown
+- src/cli.ts main —calls→ src/core/retrieval.ts retrieveForDiff
+- src/cli.ts main —calls→ src/protocol/scip-export.ts storeToScipPlus
+- src/cli.ts main —calls→ src/protocol/scip.ts encodeScip
+- src/cli.ts main —references→ src/store/store.ts NeighborRow
+- src/cli.ts main —calls→ src/store/store.ts Store
+- src/cli.ts main —calls→ src/store/store.ts Store.close
+- src/cli.ts main —calls→ src/store/store.ts Store.edgesOf
+- src/cli.ts main —calls→ src/store/store.ts Store.evalHistory
+- src/cli.ts main —calls→ src/store/store.ts Store.findSymbols
+- src/cli.ts main —calls→ src/store/store.ts Store.listPatterns
+- src/cli.ts main —calls→ src/store/store.ts Store.listRepos
+- src/cli.ts main —calls→ src/store/store.ts Store.listRetrievals
+- src/cli.ts main —calls→ src/store/store.ts Store.logRetrieval
+- src/cli.ts main —calls→ src/store/store.ts Store.neighborhood
+- src/cli.ts main —calls→ src/store/store.ts Store.recordEval
+- src/cli.ts main —calls→ src/store/store.ts Store.stats
+- src/cli.ts main —calls→ src/store/store.ts Store.symbolsInFile
+- src/cli.ts main —calls→ src/store/store.ts Store.updateRetrievalOutcome
 - src/cli.ts openStore —references→ src/cli.ts Flags
 - src/cli.ts openStore —calls→ src/cli.ts defaultDb
 - src/cli.ts openStore —calls→ src/cli.ts fail
-- src/cli.ts openStore —calls→ src/store.ts Store
-- src/cli.ts openStore —references→ src/store.ts Store
+- src/cli.ts openStore —calls→ src/store/store.ts Store
+- src/cli.ts openStore —references→ src/store/store.ts Store
+- src/cli.ts parseArgs —references→ src/app/review.ts DEFAULT_MODEL
 - src/cli.ts parseArgs —references→ src/cli.ts Flags
-- src/cli.ts parseArgs —references→ src/retrieval.ts DEFAULT_BUDGET
-- src/cli.ts parseArgs —references→ src/review.ts DEFAULT_MODEL
+- src/cli.ts parseArgs —references→ src/core/retrieval.ts DEFAULT_BUDGET
 - src/cli.ts rootResolver —references→ src/cli.ts Flags
 - src/cli.ts rootResolver —calls→ src/cli.ts fail
-- src/cli.ts rootResolver —references→ src/store.ts Store
-- src/cli.ts rootResolver —calls→ src/store.ts Store.listRepos
+- src/cli.ts rootResolver —references→ src/store/store.ts Store
+- src/cli.ts rootResolver —calls→ src/store/store.ts Store.listRepos
 - src/cli.ts src/cli.ts —calls→ src/cli.ts main
-- src/contextpack.ts ReviewPack —references→ src/retrieval.ts ContextItem
-- src/contextpack.ts assembleReviewPack —references→ src/contextpack.ts ReviewPack
-- src/contextpack.ts assembleReviewPack —calls→ src/contextpack.ts section
-- src/contextpack.ts assembleReviewPack —references→ src/retrieval.ts ContextPack
-- src/contextpack.ts isTest —references→ src/contextpack.ts TEST_FILE
-- src/contextpack.ts isTest —references→ src/retrieval.ts ContextItem
-- src/contextpack.ts renderItems —references→ src/retrieval.ts ContextItem
-- src/contextpack.ts renderReviewPack —references→ src/contextpack.ts ReviewPack
-- src/contextpack.ts renderReviewPack —calls→ src/contextpack.ts renderItems
-- src/contextpack.ts section —calls→ src/contextpack.ts isTest
-- src/contextpack.ts section —references→ src/retrieval.ts ContextItem
-- src/diff.ts parseUnifiedDiff —references→ src/diff.ts FileRanges
-- src/diff.ts parseUnifiedDiff —calls→ src/diff.ts stripPrefix
-- src/eval.ts CaseResult —references→ src/eval.ts ExpectedEntry
-- src/eval.ts EvalReport —references→ src/eval.ts CaseResult
-- src/eval.ts GoldenCase —references→ src/eval.ts ExpectedEntry
-- src/eval.ts hunksForCase —calls→ src/diff.ts parseUnifiedDiff
-- src/eval.ts hunksForCase —references→ src/eval.ts GoldenCase
-- src/eval.ts hunksForCase —references→ src/store.ts Store
-- src/eval.ts hunksForCase —calls→ src/store.ts Store.symbolsInFile
-- src/eval.ts loadGoldenFile —references→ src/eval.ts GoldenCase
-- src/eval.ts matches —references→ src/eval.ts ExpectedEntry
-- src/eval.ts matches —references→ src/retrieval.ts ContextItem
-- src/eval.ts runEval —references→ src/eval.ts CaseResult
-- src/eval.ts runEval —references→ src/eval.ts EvalReport
-- src/eval.ts runEval —references→ src/eval.ts ExpectedEntry
-- src/eval.ts runEval —references→ src/eval.ts GoldenCase
-- src/eval.ts runEval —calls→ src/eval.ts hunksForCase
-- src/eval.ts runEval —calls→ src/eval.ts matches
-- src/eval.ts runEval —references→ src/retrieval.ts ContextPack
-- src/eval.ts runEval —references→ src/retrieval.ts RootResolver
-- src/eval.ts runEval —references→ src/retrieval.ts Strategy
-- src/eval.ts runEval —calls→ src/retrieval.ts retrieveForDiff
-- src/eval.ts runEval —references→ src/store.ts Store
-- src/extractor-go.ts GoExtractor —extends→ src/extractor.ts Extractor
-- src/extractor-go.ts GoExtractor —references→ src/extractor.ts Extractor
-- src/extractor-go.ts fileLevelOnly —calls→ src/extractor-go.ts moduleId
-- src/extractor-go.ts fileLevelOnly —references→ src/extractor.ts ExtractionResult
-- src/extractor-go.ts resolveGoExtractorCommand —references→ src/extractor-go.ts GoCommand
-- src/extractor-go.ts resolveGoExtractorCommand —calls→ src/extractor-go.ts goExtractorSourceDir
-- src/extractor-go.ts resolveGoExtractorCommand —calls→ src/extractor-go.ts onPath
-- src/extractor-go.ts GoExtractor.extract —references→ src/extractor-go.ts MAX_OUTPUT
-- src/extractor-go.ts GoExtractor.extract —calls→ src/extractor-go.ts fileLevelOnly
-- src/extractor-go.ts GoExtractor.extract —calls→ src/extractor-go.ts resolveGoExtractorCommand
-- src/extractor-go.ts GoExtractor.extract —references→ src/extractor.ts ExtractionResult
-- src/extractor-go.ts GoExtractor.extract —calls→ src/scip-ingest.ts scipPlusToExtractionResults
-- src/extractor-go.ts GoExtractor.extract —calls→ src/scip.ts parseScipPlus
-- src/extractor-php.ts PhpExtractor —extends→ src/extractor.ts Extractor
-- src/extractor-php.ts PhpExtractor —references→ src/extractor.ts Extractor
-- src/extractor-php.ts fileLevelOnly —calls→ src/extractor-php.ts moduleId
-- src/extractor-php.ts fileLevelOnly —references→ src/extractor.ts ExtractionResult
-- src/extractor-php.ts resolvePhpExtractorCommand —references→ src/extractor-php.ts PhpCommand
-- src/extractor-php.ts resolvePhpExtractorCommand —calls→ src/extractor-php.ts onPath
-- src/extractor-php.ts resolvePhpExtractorCommand —calls→ src/extractor-php.ts phpExtractorDir
-- src/extractor-php.ts PhpExtractor.extract —references→ src/extractor-php.ts MAX_OUTPUT
-- src/extractor-php.ts PhpExtractor.extract —calls→ src/extractor-php.ts fileLevelOnly
-- src/extractor-php.ts PhpExtractor.extract —calls→ src/extractor-php.ts resolvePhpExtractorCommand
-- src/extractor-php.ts PhpExtractor.extract —references→ src/extractor.ts ExtractionResult
-- src/extractor-php.ts PhpExtractor.extract —calls→ src/scip-ingest.ts scipPlusToExtractionResults
-- src/extractor-php.ts PhpExtractor.extract —calls→ src/scip.ts parseScipPlus
-- src/extractor.ts ExtractedSymbol —references→ src/store.ts SymbolRow
-- src/extractor.ts ExtractionResult —references→ src/extractor.ts ExtractedSymbol
-- src/extractor.ts ExtractionResult —references→ src/store.ts EdgeRow
-- src/extractor.ts Extractor —references→ src/extractor.ts ExtractionResult
-- src/indexer.ts ScipImportReport —extends→ src/indexer.ts IndexReport
-- src/indexer.ts ScipImportReport —references→ src/indexer.ts IndexReport
-- src/indexer.ts TypeScriptExtractor —extends→ src/extractor.ts Extractor
-- src/indexer.ts TypeScriptExtractor —references→ src/extractor.ts Extractor
-- src/indexer.ts TypeScriptExtractor —references→ src/indexer.ts EXTENSIONS
-- src/indexer.ts classifyDeclaration —references→ src/store.ts SymbolKind
-- src/indexer.ts dedupeEdges —references→ src/store.ts EdgeRow
-- src/indexer.ts defaultExtractors —calls→ src/extractor-go.ts GoExtractor
-- src/indexer.ts defaultExtractors —calls→ src/extractor-php.ts PhpExtractor
-- src/indexer.ts defaultExtractors —references→ src/extractor.ts Extractor
-- src/indexer.ts defaultExtractors —calls→ src/indexer.ts TypeScriptExtractor
-- src/indexer.ts discoverSourceFiles —references→ src/indexer.ts EXTENSIONS
-- src/indexer.ts discoverSourceFiles —references→ src/indexer.ts SKIP_DIRS
-- src/indexer.ts extractorFor —references→ src/extractor.ts Extractor
-- src/indexer.ts importScip —references→ src/extractor.ts ExtractionResult
-- src/indexer.ts importScip —references→ src/extractor.ts Extractor
-- src/indexer.ts importScip —references→ src/indexer.ts ScipImportReport
-- src/indexer.ts importScip —calls→ src/indexer.ts contentHash
-- src/indexer.ts importScip —calls→ src/indexer.ts defaultExtractors
-- src/indexer.ts importScip —calls→ src/indexer.ts extractorFor
-- src/indexer.ts importScip —calls→ src/indexer.ts namespaceIds
-- src/indexer.ts importScip —calls→ src/scip-ingest.ts scipIndexToExtractionResults
-- src/indexer.ts importScip —calls→ src/scip-ingest.ts scipPlusToExtractionResults
-- src/indexer.ts importScip —calls→ src/scip.ts decodeScip
-- src/indexer.ts importScip —calls→ src/scip.ts parseExt
-- src/indexer.ts importScip —references→ src/store.ts Store
-- src/indexer.ts importScip —calls→ src/store.ts Store.getRepo
-- src/indexer.ts importScip —calls→ src/store.ts Store.listFiles
-- src/indexer.ts importScip —calls→ src/store.ts Store.removeFiles
-- src/indexer.ts importScip —calls→ src/store.ts Store.replaceFile
-- src/indexer.ts importScip —calls→ src/store.ts Store.setMeta
-- src/indexer.ts importScip —calls→ src/store.ts Store.stats
-- src/indexer.ts importScip —calls→ src/store.ts Store.upsertRepo
-- src/indexer.ts indexRepo —calls→ src/extractor.ts Extractor
-- src/indexer.ts indexRepo —references→ src/extractor.ts Extractor
-- src/indexer.ts indexRepo —references→ src/indexer.ts IndexReport
-- src/indexer.ts indexRepo —calls→ src/indexer.ts contentHash
-- src/indexer.ts indexRepo —calls→ src/indexer.ts defaultExtractors
-- src/indexer.ts indexRepo —calls→ src/indexer.ts discoverSourceFiles
-- src/indexer.ts indexRepo —calls→ src/indexer.ts extractorFor
-- src/indexer.ts indexRepo —calls→ src/indexer.ts namespaceIds
-- src/indexer.ts indexRepo —references→ src/store.ts Store
-- src/indexer.ts indexRepo —calls→ src/store.ts Store.getRepo
-- src/indexer.ts indexRepo —calls→ src/store.ts Store.listFiles
-- src/indexer.ts indexRepo —calls→ src/store.ts Store.removeFiles
-- src/indexer.ts indexRepo —calls→ src/store.ts Store.replaceFile
-- src/indexer.ts indexRepo —calls→ src/store.ts Store.setMeta
-- src/indexer.ts indexRepo —calls→ src/store.ts Store.stats
-- src/indexer.ts indexRepo —calls→ src/store.ts Store.upsertRepo
-- src/indexer.ts namespaceIds —references→ src/extractor.ts ExtractionResult
-- src/indexer.ts testBlockCall —references→ src/indexer.ts TEST_BLOCK_CALLEES
-- src/indexer.ts TypeScriptExtractor.extract —references→ src/extractor.ts ExtractedSymbol
-- src/indexer.ts TypeScriptExtractor.extract —references→ src/extractor.ts ExtractionResult
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/extractor.ts symbolId
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts calleeNameNode
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts classifyDeclaration
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts dedupeEdges
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts docOf
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts isBareReference
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts signatureOf
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts testBlockCall
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/scip-emit.ts extractionResultsToScipPlus
-- src/indexer.ts TypeScriptExtractor.extract —calls→ src/scip-ingest.ts scipPlusToExtractionResults
-- src/indexer.ts TypeScriptExtractor.extract —references→ src/store.ts EdgeKind
-- src/indexer.ts TypeScriptExtractor.extract —references→ src/store.ts EdgeRow
-- src/loop.ts CANDIDATE_STRATEGIES —references→ src/loop.ts NamedStrategy
-- src/loop.ts CANDIDATE_STRATEGIES —references→ src/loop.ts W
-- src/loop.ts CANDIDATE_STRATEGIES —references→ src/retrieval.ts DEFAULT_STRATEGY
-- src/loop.ts NamedStrategy —references→ src/retrieval.ts Strategy
-- src/loop.ts W —references→ src/retrieval.ts DEFAULT_STRATEGY
-- src/loop.ts caseSignature —references→ src/eval.ts GoldenCase
-- src/loop.ts caseSignature —calls→ src/eval.ts runEval
-- src/loop.ts caseSignature —references→ src/retrieval.ts DEFAULT_STRATEGY
-- src/loop.ts caseSignature —references→ src/retrieval.ts RootResolver
-- src/loop.ts caseSignature —references→ src/store.ts Store
-- src/loop.ts learn —references→ src/eval.ts GoldenCase
-- src/loop.ts learn —references→ src/loop.ts CANDIDATE_STRATEGIES
-- src/loop.ts learn —references→ src/loop.ts LearnReport
-- src/loop.ts learn —calls→ src/loop.ts caseSignature
-- src/loop.ts learn —calls→ src/loop.ts microRecall
-- src/loop.ts learn —calls→ src/loop.ts round
-- src/loop.ts learn —references→ src/retrieval.ts DEFAULT_STRATEGY
-- src/loop.ts learn —references→ src/retrieval.ts RootResolver
-- src/loop.ts learn —references→ src/retrieval.ts Strategy
-- src/loop.ts learn —references→ src/store.ts Store
-- src/loop.ts learn —calls→ src/store.ts Store.putPattern
-- src/loop.ts microRecall —references→ src/eval.ts GoldenCase
-- src/loop.ts microRecall —calls→ src/eval.ts runEval
-- src/loop.ts microRecall —references→ src/retrieval.ts RootResolver
-- src/loop.ts microRecall —references→ src/retrieval.ts Strategy
-- src/loop.ts microRecall —references→ src/store.ts Store
-- src/loop.ts recordReviewOutcome —references→ src/review.ts ReviewResult
-- src/loop.ts recordReviewOutcome —references→ src/store.ts Store
-- src/loop.ts recordReviewOutcome —calls→ src/store.ts Store.updateRetrievalOutcome
-- src/map.ts CodebaseMap —references→ src/map.ts MapFile
-- src/map.ts CodebaseMap —references→ src/store.ts EdgeKind
-- src/map.ts buildMap —references→ src/map.ts CodebaseMap
-- src/map.ts buildMap —references→ src/map.ts MapFile
-- src/map.ts buildMap —calls→ src/map.ts display
-- src/map.ts buildMap —calls→ src/map.ts sortedRecord
-- src/map.ts buildMap —references→ src/store.ts Store
-- src/map.ts buildMap —references→ src/store.ts SymbolRow
-- src/map.ts buildMap —calls→ src/store.ts Store.listFiles
-- src/map.ts buildMap —calls→ src/store.ts Store.resolvedEdgesJoined
-- src/map.ts buildMap —calls→ src/store.ts Store.stats
-- src/map.ts buildMap —calls→ src/store.ts Store.symbolsInFile
-- src/map.ts buildMap —calls→ src/store.ts Store.unresolvedSummary
-- src/map.ts renderMapMarkdown —references→ src/map.ts CodebaseMap
-- src/retrieval.ts Candidate —references→ src/store.ts SymbolRow
-- src/retrieval.ts ContextPack —references→ src/retrieval.ts ContextItem
-- src/retrieval.ts ContextPack —references→ src/retrieval.ts Strategy
-- src/retrieval.ts DEFAULT_STRATEGY —references→ src/retrieval.ts Strategy
-- src/retrieval.ts Seed —references→ src/store.ts SymbolRow
-- src/retrieval.ts Strategy —references→ src/store.ts EdgeKind
-- src/retrieval.ts diffSignature —references→ src/retrieval.ts Seed
-- src/retrieval.ts expandContext —references→ src/retrieval.ts Candidate
-- src/retrieval.ts expandContext —references→ src/retrieval.ts ContextItem
-- src/retrieval.ts expandContext —references→ src/retrieval.ts ContextPack
-- src/retrieval.ts expandContext —references→ src/retrieval.ts DEFAULT_BUDGET
-- src/retrieval.ts expandContext —references→ src/retrieval.ts DEFAULT_STRATEGY
-- src/retrieval.ts expandContext —references→ src/retrieval.ts RootResolver
-- src/retrieval.ts expandContext —references→ src/retrieval.ts Seed
-- src/retrieval.ts expandContext —references→ src/retrieval.ts Strategy
-- src/retrieval.ts expandContext —calls→ src/retrieval.ts diffSignature
-- src/retrieval.ts expandContext —calls→ src/retrieval.ts rootOf
-- src/retrieval.ts expandContext —references→ src/store.ts Store
-- src/retrieval.ts expandContext —references→ src/store.ts SymbolRow
-- src/retrieval.ts expandContext —calls→ src/store.ts Store.edgesOf
-- src/retrieval.ts expandContext —references→ src/store.ts Store.edgesOf
-- src/retrieval.ts expandContext —calls→ src/store.ts Store.symbolById
-- src/retrieval.ts retrieveForDiff —references→ src/diff.ts FileRanges
-- src/retrieval.ts retrieveForDiff —references→ src/retrieval.ts ContextPack
-- src/retrieval.ts retrieveForDiff —references→ src/retrieval.ts RootResolver
-- src/retrieval.ts retrieveForDiff —references→ src/retrieval.ts Strategy
-- src/retrieval.ts retrieveForDiff —calls→ src/retrieval.ts diffSignature
-- src/retrieval.ts retrieveForDiff —calls→ src/retrieval.ts expandContext
-- src/retrieval.ts retrieveForDiff —calls→ src/retrieval.ts seedsFromDiff
-- src/retrieval.ts retrieveForDiff —references→ src/store.ts Store
-- src/retrieval.ts retrieveForDiff —calls→ src/store.ts Store.getPattern
-- src/retrieval.ts rootOf —references→ src/retrieval.ts RootResolver
-- src/retrieval.ts seedsFromDiff —references→ src/diff.ts FileRanges
-- src/retrieval.ts seedsFromDiff —references→ src/retrieval.ts Seed
-- src/retrieval.ts seedsFromDiff —references→ src/store.ts Store
-- src/retrieval.ts seedsFromDiff —calls→ src/store.ts Store.symbolsInFile
-- src/review.ts ReviewResult —references→ src/review.ts ReviewFinding
-- src/review.ts buildReviewRequest —references→ src/contextpack.ts ReviewPack
-- src/review.ts buildReviewRequest —calls→ src/contextpack.ts renderReviewPack
-- src/review.ts buildReviewRequest —references→ src/review.ts OUTPUT_SCHEMA
-- src/review.ts buildReviewRequest —references→ src/review.ts SYSTEM_PROMPT
-- src/review.ts generateReview —references→ src/contextpack.ts ReviewPack
-- src/review.ts generateReview —references→ src/review.ts DEFAULT_MODEL
-- src/review.ts generateReview —references→ src/review.ts ReviewResult
-- src/review.ts generateReview —calls→ src/review.ts buildReviewRequest
-- src/review.ts renderReviewMarkdown —references→ src/review.ts ReviewResult
-- src/scip-emit.ts LANGUAGE —references→ src/scip.ts LibrarianScheme
-- src/scip-emit.ts extractionResultsToScipPlus —references→ src/extractor.ts ExtractionResult
-- src/scip-emit.ts extractionResultsToScipPlus —references→ src/scip-emit.ts LANGUAGE
-- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip-emit.ts parentOf
-- src/scip-emit.ts extractionResultsToScipPlus —references→ src/scip.ts Ext
-- src/scip-emit.ts extractionResultsToScipPlus —references→ src/scip.ts ExtDocument
-- src/scip-emit.ts extractionResultsToScipPlus —references→ src/scip.ts KIND_TO_SCIP
-- src/scip-emit.ts extractionResultsToScipPlus —references→ src/scip.ts LibrarianScheme
-- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip.ts createScipIndex
-- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip.ts formatLocal
-- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip.ts formatMoniker
-- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip.ts isLocalSymbol
-- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip.ts spanToScipRange
-- src/scip-emit.ts parentOf —references→ src/extractor.ts ExtractedSymbol
-- src/scip-export.ts SCHEME_BY_EXTENSION —references→ src/scip.ts LibrarianScheme
-- src/scip-export.ts ScipExportResult —references→ src/scip.ts Ext
-- src/scip-export.ts storeToScipPlus —references→ src/extractor.ts ExtractionResult
-- src/scip-export.ts storeToScipPlus —calls→ src/scip-emit.ts extractionResultsToScipPlus
-- src/scip-export.ts storeToScipPlus —references→ src/scip-export.ts SCHEME_BY_EXTENSION
-- src/scip-export.ts storeToScipPlus —references→ src/scip-export.ts ScipExportResult
-- src/scip-export.ts storeToScipPlus —references→ src/scip.ts ExtDocument
-- src/scip-export.ts storeToScipPlus —references→ src/scip.ts LibrarianScheme
-- src/scip-export.ts storeToScipPlus —calls→ src/scip.ts createScipIndex
-- src/scip-export.ts storeToScipPlus —references→ src/store.ts Store
-- src/scip-export.ts storeToScipPlus —references→ src/store.ts SymbolRow
-- src/scip-export.ts storeToScipPlus —calls→ src/store.ts Store.edgesFromFile
-- src/scip-export.ts storeToScipPlus —calls→ src/store.ts Store.getRepo
-- src/scip-export.ts storeToScipPlus —calls→ src/store.ts Store.listFiles
-- src/scip-export.ts storeToScipPlus —calls→ src/store.ts Store.symbolsInFile
-- src/scip-ingest.ts DegradeIngest —references→ src/extractor.ts ExtractionResult
-- src/scip-ingest.ts ScipOccurrence —references→ src/scip-ingest.ts ScipDocument
-- src/scip-ingest.ts definitionSpan —references→ src/scip-ingest.ts ScipOccurrence
-- src/scip-ingest.ts definitionSpan —calls→ src/scip-ingest.ts legacyRangeToSpan
-- src/scip-ingest.ts definitionSpan —calls→ src/scip-ingest.ts occurrenceSpan
-- src/scip-ingest.ts definitionSpan —calls→ src/scip.ts scipRangeToSpan
-- src/scip-ingest.ts innermostEnclosing —references→ src/extractor.ts ExtractedSymbol
-- src/scip-ingest.ts kindFromSuffix —references→ src/scip.ts ExternalMonikerKey
-- src/scip-ingest.ts kindFromSuffix —references→ src/store.ts SymbolKind
-- src/scip-ingest.ts monikerDisplayName —calls→ src/scip.ts parseMoniker
-- src/scip-ingest.ts occurrenceSpan —references→ src/scip-ingest.ts ScipOccurrence
-- src/scip-ingest.ts occurrenceSpan —calls→ src/scip-ingest.ts legacyRangeToSpan
-- src/scip-ingest.ts occurrenceSpan —calls→ src/scip.ts scipRangeToSpan
-- src/scip-ingest.ts scipIndexToExtractionResults —references→ src/extractor.ts ExtractedSymbol
-- src/scip-ingest.ts scipIndexToExtractionResults —calls→ src/extractor.ts symbolId
-- src/scip-ingest.ts scipIndexToExtractionResults —references→ src/scip-ingest.ts DegradeIngest
-- src/scip-ingest.ts scipIndexToExtractionResults —references→ src/scip-ingest.ts ScipOccurrence
-- src/scip-ingest.ts scipIndexToExtractionResults —calls→ src/scip-ingest.ts definitionSpan
-- src/scip-ingest.ts scipIndexToExtractionResults —calls→ src/scip-ingest.ts docAndSignature
-- src/scip-ingest.ts scipIndexToExtractionResults —references→ src/scip-ingest.ts docAndSignature
-- src/scip-ingest.ts scipIndexToExtractionResults —calls→ src/scip-ingest.ts innermostEnclosing
-- src/scip-ingest.ts scipIndexToExtractionResults —calls→ src/scip-ingest.ts kindFromSuffix
-- src/scip-ingest.ts scipIndexToExtractionResults —calls→ src/scip-ingest.ts monikerDisplayName
-- src/scip-ingest.ts scipIndexToExtractionResults —calls→ src/scip-ingest.ts occurrenceSpan
-- src/scip-ingest.ts scipIndexToExtractionResults —calls→ src/scip.ts degradeKindFromScip
-- src/scip-ingest.ts scipIndexToExtractionResults —calls→ src/scip.ts externalMonikerKey
-- src/scip-ingest.ts scipIndexToExtractionResults —calls→ src/scip.ts isLocalSymbol
-- src/scip-ingest.ts scipIndexToExtractionResults —references→ src/store.ts EdgeKind
-- src/scip-ingest.ts scipIndexToExtractionResults —references→ src/store.ts EdgeRow
-- src/scip-ingest.ts scipPlusToExtractionResults —references→ src/extractor.ts ExtractedSymbol
-- src/scip-ingest.ts scipPlusToExtractionResults —references→ src/extractor.ts ExtractionResult
-- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/extractor.ts symbolId
-- src/scip-ingest.ts scipPlusToExtractionResults —references→ src/scip-ingest.ts ScipOccurrence
-- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/scip-ingest.ts spanOf
-- src/scip-ingest.ts scipPlusToExtractionResults —references→ src/scip.ts Ext
-- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/scip.ts isLocalSymbol
-- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/scip.ts kindFromScip
-- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/scip.ts monikerToId
-- src/scip-ingest.ts scipPlusToExtractionResults —calls→ src/scip.ts monikerToParts
-- src/scip-ingest.ts scipPlusToExtractionResults —references→ src/store.ts EdgeRow
-- src/scip-ingest.ts spanOf —references→ src/scip-ingest.ts ScipOccurrence
-- src/scip-ingest.ts spanOf —calls→ src/scip.ts scipRangeToSpan
-- src/scip.ts DEGRADE_KIND_FROM_SCIP —references→ src/store.ts SymbolKind
-- src/scip.ts EDGE_KINDS —references→ src/scip.ts EDGE_KIND_FLAGS
-- src/scip.ts EDGE_KIND_FLAGS —references→ src/store.ts EdgeKind
-- src/scip.ts Ext —references→ src/scip.ts ExtDocument
-- src/scip.ts ExtDocument —references→ src/scip.ts ExtEdge
-- src/scip.ts ExtDocument —references→ src/scip.ts ExtSymbol
-- src/scip.ts ExtEdge —references→ src/store.ts EdgeKind
-- src/scip.ts ExtSymbol —references→ src/store.ts SymbolKind
-- src/scip.ts ExternalMonikerKey —references→ src/scip.ts DescriptorSuffix
-- src/scip.ts KIND_TO_SCIP —references→ src/store.ts SymbolKind
-- src/scip.ts MonikerParts —references→ src/store.ts SymbolKind
-- src/scip.ts ParsedDescriptor —references→ src/scip.ts DescriptorSuffix
-- src/scip.ts ParsedMoniker —references→ src/scip.ts ParsedDescriptor
-- src/scip.ts SCIP_TO_KIND —references→ src/scip.ts KIND_TO_SCIP
-- src/scip.ts SCIP_TO_KIND —references→ src/store.ts SymbolKind
-- src/scip.ts SYMBOL_KINDS —references→ src/scip.ts SYMBOL_KIND_FLAGS
-- src/scip.ts SYMBOL_KIND_FLAGS —references→ src/store.ts SymbolKind
-- src/scip.ts ScipPlusEnvelope —references→ src/scip.ts Ext
-- src/scip.ts TYPE_KINDS —references→ src/store.ts SymbolKind
-- src/scip.ts degradeKindFromScip —references→ src/scip.ts DEGRADE_KIND_FROM_SCIP
-- src/scip.ts degradeKindFromScip —references→ src/store.ts SymbolKind
-- src/scip.ts descriptorFor —references→ src/scip.ts TYPE_KINDS
-- src/scip.ts descriptorFor —calls→ src/scip.ts escapeIdent
-- src/scip.ts descriptorFor —references→ src/store.ts SymbolKind
-- src/scip.ts escapeIdent —references→ src/scip.ts SIMPLE_IDENT
-- src/scip.ts externalMonikerKey —references→ src/scip.ts ExternalMonikerKey
-- src/scip.ts externalMonikerKey —references→ src/scip.ts ParsedMoniker
-- src/scip.ts externalMonikerKey —calls→ src/scip.ts parseMoniker
-- src/scip.ts formatMoniker —references→ src/scip.ts LibrarianScheme
-- src/scip.ts formatMoniker —references→ src/scip.ts MonikerParts
-- src/scip.ts formatMoniker —calls→ src/scip.ts descriptorFor
-- src/scip.ts formatMoniker —calls→ src/scip.ts escapeIdent
-- src/scip.ts kindFromScip —references→ src/scip.ts SCIP_TO_KIND
-- src/scip.ts kindFromScip —references→ src/store.ts SymbolKind
-- src/scip.ts monikerToId —calls→ src/extractor.ts symbolId
-- src/scip.ts monikerToId —calls→ src/scip.ts monikerToParts
-- src/scip.ts monikerToId —references→ src/store.ts SymbolKind
-- src/scip.ts monikerToParts —references→ src/scip.ts LibrarianSymbolKey
-- src/scip.ts monikerToParts —calls→ src/scip.ts parseMoniker
-- src/scip.ts parseExt —references→ src/scip.ts Ext
-- src/scip.ts parseExt —references→ src/scip.ts parseExtDocument
-- src/scip.ts parseExtDocument —references→ src/scip.ts ExtDocument
-- src/scip.ts parseExtDocument —calls→ src/scip.ts parseExtEdge
-- src/scip.ts parseExtDocument —calls→ src/scip.ts parseExtSymbol
-- src/scip.ts parseExtEdge —references→ src/scip.ts EDGE_KINDS
-- src/scip.ts parseExtEdge —references→ src/scip.ts ExtEdge
-- src/scip.ts parseExtEdge —references→ src/store.ts EdgeKind
-- src/scip.ts parseExtSymbol —references→ src/scip.ts ExtSymbol
-- src/scip.ts parseExtSymbol —references→ src/scip.ts SYMBOL_KINDS
-- src/scip.ts parseExtSymbol —references→ src/store.ts SymbolKind
-- src/scip.ts parseMoniker —references→ src/scip.ts ParsedDescriptor
-- src/scip.ts parseMoniker —references→ src/scip.ts ParsedMoniker
-- src/scip.ts parseMoniker —calls→ src/scip.ts isLocalSymbol
-- src/scip.ts parseMoniker —calls→ src/scip.ts readHeaderField
-- src/scip.ts parseMoniker —calls→ src/scip.ts readIdent
-- src/scip.ts parseScipPlus —references→ src/scip.ts Ext
-- src/scip.ts parseScipPlus —calls→ src/scip.ts parseExt
-- src/scip.ts parseScipPlus —calls→ src/scip.ts scipFromJson
-- src/scip.ts readIdent —references→ src/scip.ts IDENT_CHAR
-- src/scip.ts scipRangeToSpan —references→ src/scip.ts ScipMultiLineRange
-- src/scip.ts scipRangeToSpan —references→ src/scip.ts ScipSingleLineRange
-- src/scip.ts spanToScipRange —references→ src/scip.ts ScipMultiLineRange
-- src/store.ts EdgeEndpoint —references→ src/store.ts SymbolKind
-- src/store.ts EdgeRow —references→ src/store.ts EdgeKind
-- src/store.ts JoinedEdge —references→ src/store.ts EdgeEndpoint
-- src/store.ts JoinedEdge —references→ src/store.ts EdgeKind
-- src/store.ts NeighborRow —references→ src/store.ts EdgeKind
-- src/store.ts NeighborRow —extends→ src/store.ts SymbolRow
-- src/store.ts NeighborRow —references→ src/store.ts SymbolRow
-- src/store.ts SymbolRow —references→ src/store.ts SymbolKind
-- src/store.ts rowToSymbol —references→ src/store.ts SymbolKind
-- src/store.ts rowToSymbol —references→ src/store.ts SymbolRow
-- src/store.ts Store.constructor —references→ src/store.ts SCHEMA
-- src/store.ts Store.constructor —references→ src/store.ts SCHEMA_VERSION
-- src/store.ts Store.constructor —calls→ src/store.ts Store.getMeta
-- src/store.ts Store.constructor —calls→ src/store.ts Store.setMeta
-- src/store.ts Store.edgesFromFile —references→ src/store.ts EdgeKind
-- src/store.ts Store.edgesFromFile —references→ src/store.ts EdgeRow
-- src/store.ts Store.edgesOf —references→ src/store.ts EdgeKind
-- src/store.ts Store.edgesOf —references→ src/store.ts EdgeRow
-- src/store.ts Store.findSymbols —references→ src/store.ts SymbolRow
-- src/store.ts Store.findSymbols —references→ src/store.ts rowToSymbol
-- src/store.ts Store.getRepo —references→ src/store.ts RepoRow
-- src/store.ts Store.listRepos —references→ src/store.ts RepoRow
-- src/store.ts Store.neighborhood —references→ src/store.ts EdgeKind
-- src/store.ts Store.neighborhood —references→ src/store.ts NeighborRow
-- src/store.ts Store.neighborhood —calls→ src/store.ts rowToSymbol
-- src/store.ts Store.replaceFile —references→ src/store.ts EdgeRow
-- src/store.ts Store.replaceFile —references→ src/store.ts SymbolRow
-- src/store.ts Store.resolvedEdgesJoined —references→ src/store.ts EdgeKind
-- src/store.ts Store.resolvedEdgesJoined —references→ src/store.ts JoinedEdge
-- src/store.ts Store.resolvedEdgesJoined —references→ src/store.ts SymbolKind
-- src/store.ts Store.stats —calls→ src/store.ts Store.listFiles
-- src/store.ts Store.symbolById —references→ src/store.ts SymbolRow
-- src/store.ts Store.symbolById —calls→ src/store.ts rowToSymbol
-- src/store.ts Store.symbolsInFile —references→ src/store.ts SymbolRow
-- src/store.ts Store.symbolsInFile —references→ src/store.ts rowToSymbol
-- src/store.ts Store.unresolvedSummary —references→ src/store.ts EdgeKind
-- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/contextpack.ts assembleReviewPack
-- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/contextpack.ts renderReviewPack
-- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/diff.ts parseUnifiedDiff
-- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/indexer.ts indexRepo
-- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/retrieval.ts retrieveForDiff
-- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/store.ts Store
-- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/store.ts Store.close
+- src/core/contextpack.ts ReviewPack —references→ src/core/retrieval.ts ContextItem
+- src/core/contextpack.ts assembleReviewPack —references→ src/core/contextpack.ts ReviewPack
+- src/core/contextpack.ts assembleReviewPack —calls→ src/core/contextpack.ts section
+- src/core/contextpack.ts assembleReviewPack —references→ src/core/retrieval.ts ContextPack
+- src/core/contextpack.ts isTest —references→ src/core/contextpack.ts TEST_FILE
+- src/core/contextpack.ts isTest —references→ src/core/retrieval.ts ContextItem
+- src/core/contextpack.ts renderItems —references→ src/core/retrieval.ts ContextItem
+- src/core/contextpack.ts renderReviewPack —references→ src/core/contextpack.ts ReviewPack
+- src/core/contextpack.ts renderReviewPack —calls→ src/core/contextpack.ts renderItems
+- src/core/contextpack.ts section —calls→ src/core/contextpack.ts isTest
+- src/core/contextpack.ts section —references→ src/core/retrieval.ts ContextItem
+- src/core/diff.ts parseUnifiedDiff —references→ src/core/diff.ts FileRanges
+- src/core/diff.ts parseUnifiedDiff —calls→ src/core/diff.ts stripPrefix
+- src/core/map.ts CodebaseMap —references→ src/core/map.ts MapFile
+- src/core/map.ts CodebaseMap —references→ src/store/store.ts EdgeKind
+- src/core/map.ts buildMap —references→ src/core/map.ts CodebaseMap
+- src/core/map.ts buildMap —references→ src/core/map.ts MapFile
+- src/core/map.ts buildMap —calls→ src/core/map.ts display
+- src/core/map.ts buildMap —calls→ src/core/map.ts sortedRecord
+- src/core/map.ts buildMap —references→ src/store/store.ts Store
+- src/core/map.ts buildMap —references→ src/store/store.ts SymbolRow
+- src/core/map.ts buildMap —calls→ src/store/store.ts Store.listFiles
+- src/core/map.ts buildMap —calls→ src/store/store.ts Store.resolvedEdgesJoined
+- src/core/map.ts buildMap —calls→ src/store/store.ts Store.stats
+- src/core/map.ts buildMap —calls→ src/store/store.ts Store.symbolsInFile
+- src/core/map.ts buildMap —calls→ src/store/store.ts Store.unresolvedSummary
+- src/core/map.ts renderMapMarkdown —references→ src/core/map.ts CodebaseMap
+- src/core/retrieval.ts Candidate —references→ src/store/store.ts SymbolRow
+- src/core/retrieval.ts ContextPack —references→ src/core/retrieval.ts ContextItem
+- src/core/retrieval.ts ContextPack —references→ src/core/retrieval.ts Strategy
+- src/core/retrieval.ts DEFAULT_STRATEGY —references→ src/core/retrieval.ts Strategy
+- src/core/retrieval.ts Seed —references→ src/store/store.ts SymbolRow
+- src/core/retrieval.ts Strategy —references→ src/store/store.ts EdgeKind
+- src/core/retrieval.ts diffSignature —references→ src/core/retrieval.ts Seed
+- src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts Candidate
+- src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts ContextItem
+- src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts ContextPack
+- src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts DEFAULT_BUDGET
+- src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts DEFAULT_STRATEGY
+- src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts RootResolver
+- src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts Seed
+- src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts Strategy
+- src/core/retrieval.ts expandContext —calls→ src/core/retrieval.ts diffSignature
+- src/core/retrieval.ts expandContext —calls→ src/core/retrieval.ts rootOf
+- src/core/retrieval.ts expandContext —references→ src/store/store.ts Store
+- src/core/retrieval.ts expandContext —references→ src/store/store.ts SymbolRow
+- src/core/retrieval.ts expandContext —calls→ src/store/store.ts Store.edgesOf
+- src/core/retrieval.ts expandContext —references→ src/store/store.ts Store.edgesOf
+- src/core/retrieval.ts expandContext —calls→ src/store/store.ts Store.symbolById
+- src/core/retrieval.ts retrieveForDiff —references→ src/core/diff.ts FileRanges
+- src/core/retrieval.ts retrieveForDiff —references→ src/core/retrieval.ts ContextPack
+- src/core/retrieval.ts retrieveForDiff —references→ src/core/retrieval.ts RootResolver
+- src/core/retrieval.ts retrieveForDiff —references→ src/core/retrieval.ts Strategy
+- src/core/retrieval.ts retrieveForDiff —calls→ src/core/retrieval.ts diffSignature
+- src/core/retrieval.ts retrieveForDiff —calls→ src/core/retrieval.ts expandContext
+- src/core/retrieval.ts retrieveForDiff —calls→ src/core/retrieval.ts seedsFromDiff
+- src/core/retrieval.ts retrieveForDiff —references→ src/store/store.ts Store
+- src/core/retrieval.ts retrieveForDiff —calls→ src/store/store.ts Store.getPattern
+- src/core/retrieval.ts rootOf —references→ src/core/retrieval.ts RootResolver
+- src/core/retrieval.ts seedsFromDiff —references→ src/core/diff.ts FileRanges
+- src/core/retrieval.ts seedsFromDiff —references→ src/core/retrieval.ts Seed
+- src/core/retrieval.ts seedsFromDiff —references→ src/store/store.ts Store
+- src/core/retrieval.ts seedsFromDiff —calls→ src/store/store.ts Store.symbolsInFile
+- src/extractors/go.ts GoExtractor —extends→ src/protocol/extractor.ts Extractor
+- src/extractors/go.ts GoExtractor —references→ src/protocol/extractor.ts Extractor
+- src/extractors/go.ts fileLevelOnly —calls→ src/extractors/go.ts moduleId
+- src/extractors/go.ts fileLevelOnly —references→ src/protocol/extractor.ts ExtractionResult
+- src/extractors/go.ts resolveGoExtractorCommand —references→ src/extractors/go.ts GoCommand
+- src/extractors/go.ts resolveGoExtractorCommand —calls→ src/extractors/go.ts goExtractorSourceDir
+- src/extractors/go.ts resolveGoExtractorCommand —calls→ src/extractors/go.ts onPath
+- src/extractors/go.ts GoExtractor.extract —references→ src/extractors/go.ts MAX_OUTPUT
+- src/extractors/go.ts GoExtractor.extract —calls→ src/extractors/go.ts fileLevelOnly
+- src/extractors/go.ts GoExtractor.extract —calls→ src/extractors/go.ts resolveGoExtractorCommand
+- src/extractors/go.ts GoExtractor.extract —references→ src/protocol/extractor.ts ExtractionResult
+- src/extractors/go.ts GoExtractor.extract —calls→ src/protocol/scip-ingest.ts scipPlusToExtractionResults
+- src/extractors/go.ts GoExtractor.extract —calls→ src/protocol/scip.ts parseScipPlus
+- src/extractors/php.ts PhpExtractor —extends→ src/protocol/extractor.ts Extractor
+- src/extractors/php.ts PhpExtractor —references→ src/protocol/extractor.ts Extractor
+- src/extractors/php.ts fileLevelOnly —calls→ src/extractors/php.ts moduleId
+- src/extractors/php.ts fileLevelOnly —references→ src/protocol/extractor.ts ExtractionResult
+- src/extractors/php.ts resolvePhpExtractorCommand —references→ src/extractors/php.ts PhpCommand
+- src/extractors/php.ts resolvePhpExtractorCommand —calls→ src/extractors/php.ts onPath
+- src/extractors/php.ts resolvePhpExtractorCommand —calls→ src/extractors/php.ts phpExtractorDir
+- src/extractors/php.ts PhpExtractor.extract —references→ src/extractors/php.ts MAX_OUTPUT
+- src/extractors/php.ts PhpExtractor.extract —calls→ src/extractors/php.ts fileLevelOnly
+- src/extractors/php.ts PhpExtractor.extract —calls→ src/extractors/php.ts resolvePhpExtractorCommand
+- src/extractors/php.ts PhpExtractor.extract —references→ src/protocol/extractor.ts ExtractionResult
+- src/extractors/php.ts PhpExtractor.extract —calls→ src/protocol/scip-ingest.ts scipPlusToExtractionResults
+- src/extractors/php.ts PhpExtractor.extract —calls→ src/protocol/scip.ts parseScipPlus
+- src/extractors/ts.ts TypeScriptExtractor —references→ src/extractors/ts.ts EXTENSIONS
+- src/extractors/ts.ts TypeScriptExtractor —extends→ src/protocol/extractor.ts Extractor
+- src/extractors/ts.ts TypeScriptExtractor —references→ src/protocol/extractor.ts Extractor
+- src/extractors/ts.ts classifyDeclaration —references→ src/store/store.ts SymbolKind
+- src/extractors/ts.ts dedupeEdges —references→ src/store/store.ts EdgeRow
+- src/extractors/ts.ts testBlockCall —references→ src/extractors/ts.ts TEST_BLOCK_CALLEES
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts calleeNameNode
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts classifyDeclaration
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts dedupeEdges
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts docOf
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts isBareReference
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts signatureOf
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts testBlockCall
+- src/extractors/ts.ts TypeScriptExtractor.extract —references→ src/protocol/extractor.ts ExtractedSymbol
+- src/extractors/ts.ts TypeScriptExtractor.extract —references→ src/protocol/extractor.ts ExtractionResult
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/protocol/extractor.ts symbolId
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/protocol/scip-emit.ts extractionResultsToScipPlus
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/protocol/scip-ingest.ts scipPlusToExtractionResults
+- src/extractors/ts.ts TypeScriptExtractor.extract —references→ src/store/store.ts EdgeKind
+- src/extractors/ts.ts TypeScriptExtractor.extract —references→ src/store/store.ts EdgeRow
+- src/protocol/extractor.ts ExtractedSymbol —references→ src/store/store.ts SymbolRow
+- src/protocol/extractor.ts ExtractionResult —references→ src/protocol/extractor.ts ExtractedSymbol
+- src/protocol/extractor.ts ExtractionResult —references→ src/store/store.ts EdgeRow
+- src/protocol/extractor.ts Extractor —references→ src/protocol/extractor.ts ExtractionResult
+- src/protocol/scip-emit.ts LANGUAGE —references→ src/protocol/scip.ts LibrarianScheme
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —references→ src/protocol/extractor.ts ExtractionResult
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —references→ src/protocol/scip-emit.ts LANGUAGE
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —calls→ src/protocol/scip-emit.ts parentOf
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —references→ src/protocol/scip.ts Ext
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —references→ src/protocol/scip.ts ExtDocument
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —references→ src/protocol/scip.ts KIND_TO_SCIP
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —references→ src/protocol/scip.ts LibrarianScheme
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —calls→ src/protocol/scip.ts createScipIndex
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —calls→ src/protocol/scip.ts formatLocal
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —calls→ src/protocol/scip.ts formatMoniker
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —calls→ src/protocol/scip.ts isLocalSymbol
+- src/protocol/scip-emit.ts extractionResultsToScipPlus —calls→ src/protocol/scip.ts spanToScipRange
+- src/protocol/scip-emit.ts parentOf —references→ src/protocol/extractor.ts ExtractedSymbol
+- src/protocol/scip-export.ts SCHEME_BY_EXTENSION —references→ src/protocol/scip.ts LibrarianScheme
+- src/protocol/scip-export.ts ScipExportResult —references→ src/protocol/scip.ts Ext
+- src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/extractor.ts ExtractionResult
+- src/protocol/scip-export.ts storeToScipPlus —calls→ src/protocol/scip-emit.ts extractionResultsToScipPlus
+- src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/scip-export.ts SCHEME_BY_EXTENSION
+- src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/scip-export.ts ScipExportResult
+- src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/scip.ts ExtDocument
+- src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/scip.ts LibrarianScheme
+- src/protocol/scip-export.ts storeToScipPlus —calls→ src/protocol/scip.ts createScipIndex
+- src/protocol/scip-export.ts storeToScipPlus —references→ src/store/store.ts Store
+- src/protocol/scip-export.ts storeToScipPlus —references→ src/store/store.ts SymbolRow
+- src/protocol/scip-export.ts storeToScipPlus —calls→ src/store/store.ts Store.edgesFromFile
+- src/protocol/scip-export.ts storeToScipPlus —calls→ src/store/store.ts Store.getRepo
+- src/protocol/scip-export.ts storeToScipPlus —calls→ src/store/store.ts Store.listFiles
+- src/protocol/scip-export.ts storeToScipPlus —calls→ src/store/store.ts Store.symbolsInFile
+- src/protocol/scip-ingest.ts DegradeIngest —references→ src/protocol/extractor.ts ExtractionResult
+- src/protocol/scip-ingest.ts ScipOccurrence —references→ src/protocol/scip-ingest.ts ScipDocument
+- src/protocol/scip-ingest.ts definitionSpan —references→ src/protocol/scip-ingest.ts ScipOccurrence
+- src/protocol/scip-ingest.ts definitionSpan —calls→ src/protocol/scip-ingest.ts legacyRangeToSpan
+- src/protocol/scip-ingest.ts definitionSpan —calls→ src/protocol/scip-ingest.ts occurrenceSpan
+- src/protocol/scip-ingest.ts definitionSpan —calls→ src/protocol/scip.ts scipRangeToSpan
+- src/protocol/scip-ingest.ts innermostEnclosing —references→ src/protocol/extractor.ts ExtractedSymbol
+- src/protocol/scip-ingest.ts kindFromSuffix —references→ src/protocol/scip.ts ExternalMonikerKey
+- src/protocol/scip-ingest.ts kindFromSuffix —references→ src/store/store.ts SymbolKind
+- src/protocol/scip-ingest.ts monikerDisplayName —calls→ src/protocol/scip.ts parseMoniker
+- src/protocol/scip-ingest.ts occurrenceSpan —references→ src/protocol/scip-ingest.ts ScipOccurrence
+- src/protocol/scip-ingest.ts occurrenceSpan —calls→ src/protocol/scip-ingest.ts legacyRangeToSpan
+- src/protocol/scip-ingest.ts occurrenceSpan —calls→ src/protocol/scip.ts scipRangeToSpan
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —references→ src/protocol/extractor.ts ExtractedSymbol
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —calls→ src/protocol/extractor.ts symbolId
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —references→ src/protocol/scip-ingest.ts DegradeIngest
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —references→ src/protocol/scip-ingest.ts ScipOccurrence
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —calls→ src/protocol/scip-ingest.ts definitionSpan
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —calls→ src/protocol/scip-ingest.ts docAndSignature
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —references→ src/protocol/scip-ingest.ts docAndSignature
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —calls→ src/protocol/scip-ingest.ts innermostEnclosing
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —calls→ src/protocol/scip-ingest.ts kindFromSuffix
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —calls→ src/protocol/scip-ingest.ts monikerDisplayName
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —calls→ src/protocol/scip-ingest.ts occurrenceSpan
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —calls→ src/protocol/scip.ts degradeKindFromScip
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —calls→ src/protocol/scip.ts externalMonikerKey
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —calls→ src/protocol/scip.ts isLocalSymbol
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —references→ src/store/store.ts EdgeKind
+- src/protocol/scip-ingest.ts scipIndexToExtractionResults —references→ src/store/store.ts EdgeRow
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —references→ src/protocol/extractor.ts ExtractedSymbol
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —references→ src/protocol/extractor.ts ExtractionResult
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —calls→ src/protocol/extractor.ts symbolId
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —references→ src/protocol/scip-ingest.ts ScipOccurrence
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —calls→ src/protocol/scip-ingest.ts spanOf
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —references→ src/protocol/scip.ts Ext
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —calls→ src/protocol/scip.ts isLocalSymbol
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —calls→ src/protocol/scip.ts kindFromScip
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —calls→ src/protocol/scip.ts monikerToId
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —calls→ src/protocol/scip.ts monikerToParts
+- src/protocol/scip-ingest.ts scipPlusToExtractionResults —references→ src/store/store.ts EdgeRow
+- src/protocol/scip-ingest.ts spanOf —references→ src/protocol/scip-ingest.ts ScipOccurrence
+- src/protocol/scip-ingest.ts spanOf —calls→ src/protocol/scip.ts scipRangeToSpan
+- src/protocol/scip.ts DEGRADE_KIND_FROM_SCIP —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts EDGE_KINDS —references→ src/protocol/scip.ts EDGE_KIND_FLAGS
+- src/protocol/scip.ts EDGE_KIND_FLAGS —references→ src/store/store.ts EdgeKind
+- src/protocol/scip.ts Ext —references→ src/protocol/scip.ts ExtDocument
+- src/protocol/scip.ts ExtDocument —references→ src/protocol/scip.ts ExtEdge
+- src/protocol/scip.ts ExtDocument —references→ src/protocol/scip.ts ExtSymbol
+- src/protocol/scip.ts ExtEdge —references→ src/store/store.ts EdgeKind
+- src/protocol/scip.ts ExtSymbol —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts ExternalMonikerKey —references→ src/protocol/scip.ts DescriptorSuffix
+- src/protocol/scip.ts KIND_TO_SCIP —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts MonikerParts —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts ParsedDescriptor —references→ src/protocol/scip.ts DescriptorSuffix
+- src/protocol/scip.ts ParsedMoniker —references→ src/protocol/scip.ts ParsedDescriptor
+- src/protocol/scip.ts SCIP_TO_KIND —references→ src/protocol/scip.ts KIND_TO_SCIP
+- src/protocol/scip.ts SCIP_TO_KIND —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts SYMBOL_KINDS —references→ src/protocol/scip.ts SYMBOL_KIND_FLAGS
+- src/protocol/scip.ts SYMBOL_KIND_FLAGS —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts ScipPlusEnvelope —references→ src/protocol/scip.ts Ext
+- src/protocol/scip.ts TYPE_KINDS —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts degradeKindFromScip —references→ src/protocol/scip.ts DEGRADE_KIND_FROM_SCIP
+- src/protocol/scip.ts degradeKindFromScip —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts descriptorFor —references→ src/protocol/scip.ts TYPE_KINDS
+- src/protocol/scip.ts descriptorFor —calls→ src/protocol/scip.ts escapeIdent
+- src/protocol/scip.ts descriptorFor —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts escapeIdent —references→ src/protocol/scip.ts SIMPLE_IDENT
+- src/protocol/scip.ts externalMonikerKey —references→ src/protocol/scip.ts ExternalMonikerKey
+- src/protocol/scip.ts externalMonikerKey —references→ src/protocol/scip.ts ParsedMoniker
+- src/protocol/scip.ts externalMonikerKey —calls→ src/protocol/scip.ts parseMoniker
+- src/protocol/scip.ts formatMoniker —references→ src/protocol/scip.ts LibrarianScheme
+- src/protocol/scip.ts formatMoniker —references→ src/protocol/scip.ts MonikerParts
+- src/protocol/scip.ts formatMoniker —calls→ src/protocol/scip.ts descriptorFor
+- src/protocol/scip.ts formatMoniker —calls→ src/protocol/scip.ts escapeIdent
+- src/protocol/scip.ts kindFromScip —references→ src/protocol/scip.ts SCIP_TO_KIND
+- src/protocol/scip.ts kindFromScip —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts monikerToId —calls→ src/protocol/extractor.ts symbolId
+- src/protocol/scip.ts monikerToId —calls→ src/protocol/scip.ts monikerToParts
+- src/protocol/scip.ts monikerToId —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts monikerToParts —references→ src/protocol/scip.ts LibrarianSymbolKey
+- src/protocol/scip.ts monikerToParts —calls→ src/protocol/scip.ts parseMoniker
+- src/protocol/scip.ts parseExt —references→ src/protocol/scip.ts Ext
+- src/protocol/scip.ts parseExt —references→ src/protocol/scip.ts parseExtDocument
+- src/protocol/scip.ts parseExtDocument —references→ src/protocol/scip.ts ExtDocument
+- src/protocol/scip.ts parseExtDocument —calls→ src/protocol/scip.ts parseExtEdge
+- src/protocol/scip.ts parseExtDocument —calls→ src/protocol/scip.ts parseExtSymbol
+- src/protocol/scip.ts parseExtEdge —references→ src/protocol/scip.ts EDGE_KINDS
+- src/protocol/scip.ts parseExtEdge —references→ src/protocol/scip.ts ExtEdge
+- src/protocol/scip.ts parseExtEdge —references→ src/store/store.ts EdgeKind
+- src/protocol/scip.ts parseExtSymbol —references→ src/protocol/scip.ts ExtSymbol
+- src/protocol/scip.ts parseExtSymbol —references→ src/protocol/scip.ts SYMBOL_KINDS
+- src/protocol/scip.ts parseExtSymbol —references→ src/store/store.ts SymbolKind
+- src/protocol/scip.ts parseMoniker —references→ src/protocol/scip.ts ParsedDescriptor
+- src/protocol/scip.ts parseMoniker —references→ src/protocol/scip.ts ParsedMoniker
+- src/protocol/scip.ts parseMoniker —calls→ src/protocol/scip.ts isLocalSymbol
+- src/protocol/scip.ts parseMoniker —calls→ src/protocol/scip.ts readHeaderField
+- src/protocol/scip.ts parseMoniker —calls→ src/protocol/scip.ts readIdent
+- src/protocol/scip.ts parseScipPlus —references→ src/protocol/scip.ts Ext
+- src/protocol/scip.ts parseScipPlus —calls→ src/protocol/scip.ts parseExt
+- src/protocol/scip.ts parseScipPlus —calls→ src/protocol/scip.ts scipFromJson
+- src/protocol/scip.ts readIdent —references→ src/protocol/scip.ts IDENT_CHAR
+- src/protocol/scip.ts scipRangeToSpan —references→ src/protocol/scip.ts ScipMultiLineRange
+- src/protocol/scip.ts scipRangeToSpan —references→ src/protocol/scip.ts ScipSingleLineRange
+- src/protocol/scip.ts spanToScipRange —references→ src/protocol/scip.ts ScipMultiLineRange
+- src/store/store.ts EdgeEndpoint —references→ src/store/store.ts SymbolKind
+- src/store/store.ts EdgeRow —references→ src/store/store.ts EdgeKind
+- src/store/store.ts JoinedEdge —references→ src/store/store.ts EdgeEndpoint
+- src/store/store.ts JoinedEdge —references→ src/store/store.ts EdgeKind
+- src/store/store.ts NeighborRow —references→ src/store/store.ts EdgeKind
+- src/store/store.ts NeighborRow —extends→ src/store/store.ts SymbolRow
+- src/store/store.ts NeighborRow —references→ src/store/store.ts SymbolRow
+- src/store/store.ts SymbolRow —references→ src/store/store.ts SymbolKind
+- src/store/store.ts rowToSymbol —references→ src/store/store.ts SymbolKind
+- src/store/store.ts rowToSymbol —references→ src/store/store.ts SymbolRow
+- src/store/store.ts Store.constructor —references→ src/store/store.ts SCHEMA
+- src/store/store.ts Store.constructor —references→ src/store/store.ts SCHEMA_VERSION
+- src/store/store.ts Store.constructor —calls→ src/store/store.ts Store.getMeta
+- src/store/store.ts Store.constructor —calls→ src/store/store.ts Store.setMeta
+- src/store/store.ts Store.edgesFromFile —references→ src/store/store.ts EdgeKind
+- src/store/store.ts Store.edgesFromFile —references→ src/store/store.ts EdgeRow
+- src/store/store.ts Store.edgesOf —references→ src/store/store.ts EdgeKind
+- src/store/store.ts Store.edgesOf —references→ src/store/store.ts EdgeRow
+- src/store/store.ts Store.findSymbols —references→ src/store/store.ts SymbolRow
+- src/store/store.ts Store.findSymbols —references→ src/store/store.ts rowToSymbol
+- src/store/store.ts Store.getRepo —references→ src/store/store.ts RepoRow
+- src/store/store.ts Store.listRepos —references→ src/store/store.ts RepoRow
+- src/store/store.ts Store.neighborhood —references→ src/store/store.ts EdgeKind
+- src/store/store.ts Store.neighborhood —references→ src/store/store.ts NeighborRow
+- src/store/store.ts Store.neighborhood —calls→ src/store/store.ts rowToSymbol
+- src/store/store.ts Store.replaceFile —references→ src/store/store.ts EdgeRow
+- src/store/store.ts Store.replaceFile —references→ src/store/store.ts SymbolRow
+- src/store/store.ts Store.resolvedEdgesJoined —references→ src/store/store.ts EdgeKind
+- src/store/store.ts Store.resolvedEdgesJoined —references→ src/store/store.ts JoinedEdge
+- src/store/store.ts Store.resolvedEdgesJoined —references→ src/store/store.ts SymbolKind
+- src/store/store.ts Store.stats —calls→ src/store/store.ts Store.listFiles
+- src/store/store.ts Store.symbolById —references→ src/store/store.ts SymbolRow
+- src/store/store.ts Store.symbolById —calls→ src/store/store.ts rowToSymbol
+- src/store/store.ts Store.symbolsInFile —references→ src/store/store.ts SymbolRow
+- src/store/store.ts Store.symbolsInFile —references→ src/store/store.ts rowToSymbol
+- src/store/store.ts Store.unresolvedSummary —references→ src/store/store.ts EdgeKind
+- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/app/index.ts indexRepo
+- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/core/contextpack.ts assembleReviewPack
+- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/core/contextpack.ts renderReviewPack
+- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/store/store.ts Store
+- src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/store/store.ts Store.close
 - src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —references→ src/test/contextpack.test.ts DIFF
 - src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/test/contextpack.test.ts fixtureRepo
-- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/contextpack.ts assembleReviewPack
-- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/diff.ts parseUnifiedDiff
-- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/indexer.ts indexRepo
-- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/retrieval.ts retrieveForDiff
-- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/review.ts buildReviewRequest
-- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/store.ts Store
-- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/store.ts Store.close
+- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/app/index.ts indexRepo
+- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/app/review.ts buildReviewRequest
+- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/core/contextpack.ts assembleReviewPack
+- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/store/store.ts Store
+- src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/store/store.ts Store.close
 - src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —references→ src/test/contextpack.test.ts DIFF
 - src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/test/contextpack.test.ts fixtureRepo
-- src/test/contextpack.test.ts test(renderReviewMarkdown counts graph-grounded findings) —references→ src/review.ts ReviewResult
-- src/test/contextpack.test.ts test(renderReviewMarkdown counts graph-grounded findings) —calls→ src/review.ts renderReviewMarkdown
-- src/test/dispatch.test.ts FooExtractor —extends→ src/extractor.ts Extractor
-- src/test/dispatch.test.ts FooExtractor —references→ src/extractor.ts Extractor
-- src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/indexer.ts TypeScriptExtractor
-- src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/indexer.ts indexRepo
-- src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/store.ts Store
-- src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/store.ts Store.close
+- src/test/contextpack.test.ts test(renderReviewMarkdown counts graph-grounded findings) —references→ src/app/review.ts ReviewResult
+- src/test/contextpack.test.ts test(renderReviewMarkdown counts graph-grounded findings) —calls→ src/app/review.ts renderReviewMarkdown
+- src/test/dispatch.test.ts FooExtractor —extends→ src/protocol/extractor.ts Extractor
+- src/test/dispatch.test.ts FooExtractor —references→ src/protocol/extractor.ts Extractor
+- src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/app/index.ts indexRepo
+- src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/extractors/ts.ts TypeScriptExtractor
+- src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/store/store.ts Store
+- src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/store/store.ts Store.close
 - src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/test/dispatch.test.ts FooExtractor
 - src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/test/dispatch.test.ts polyglotRepo
-- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/diff.ts parseUnifiedDiff
-- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/indexer.ts TypeScriptExtractor
-- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/indexer.ts indexRepo
-- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/retrieval.ts retrieveForDiff
-- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/store.ts Store
-- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/store.ts Store.close
+- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/app/index.ts indexRepo
+- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/extractors/ts.ts TypeScriptExtractor
+- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/store/store.ts Store
+- src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/store/store.ts Store.close
 - src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/test/dispatch.test.ts FooExtractor
 - src/test/dispatch.test.ts test(diff hunks in files no extractor claims fall into unknownFiles) —calls→ src/test/dispatch.test.ts polyglotRepo
-- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/indexer.ts TypeScriptExtractor
-- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/indexer.ts indexRepo
-- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/store.ts Store
-- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/store.ts Store.close
-- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/store.ts Store.edgesOf
-- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/store.ts Store.findSymbols
-- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/store.ts Store.stats
+- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/app/index.ts indexRepo
+- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/extractors/ts.ts TypeScriptExtractor
+- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/store/store.ts Store
+- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/store/store.ts Store.close
+- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/store/store.ts Store.edgesOf
+- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/store/store.ts Store.findSymbols
+- src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/store/store.ts Store.stats
 - src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/test/dispatch.test.ts FooExtractor
 - src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/test/dispatch.test.ts polyglotRepo
-- src/test/dispatch.test.ts FooExtractor.extract —references→ src/extractor.ts ExtractionResult
-- src/test/eval.test.ts test(parseUnifiedDiff extracts new-side ranges per file) —calls→ src/diff.ts parseUnifiedDiff
-- src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/indexer.ts indexRepo
-- src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/retrieval.ts retrieveForDiff
-- src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/store.ts Store
-- src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/store.ts Store.close
+- src/test/dispatch.test.ts FooExtractor.extract —references→ src/protocol/extractor.ts ExtractionResult
+- src/test/eval.test.ts test(parseUnifiedDiff extracts new-side ranges per file) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/app/index.ts indexRepo
+- src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/store/store.ts Store
+- src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/store/store.ts Store.close
 - src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/test/eval.test.ts fixtureRepo
-- src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —references→ src/eval.ts GoldenCase
-- src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —calls→ src/eval.ts runEval
-- src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —calls→ src/indexer.ts indexRepo
-- src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —calls→ src/store.ts Store
-- src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —calls→ src/store.ts Store.close
+- src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —references→ src/app/eval.ts GoldenCase
+- src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —calls→ src/app/eval.ts runEval
+- src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —calls→ src/app/index.ts indexRepo
+- src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —calls→ src/store/store.ts Store
+- src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —calls→ src/store/store.ts Store.close
 - src/test/eval.test.ts test(runEval scores golden cases (diff and target styles)) —calls→ src/test/eval.test.ts fixtureRepo
-- src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/indexer.ts indexRepo
-- src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/retrieval.ts seedsFromDiff
-- src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/store.ts Store
-- src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/store.ts Store.close
+- src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/app/index.ts indexRepo
+- src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/core/retrieval.ts seedsFromDiff
+- src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/store/store.ts Store
+- src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/store/store.ts Store.close
 - src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/test/eval.test.ts fixtureRepo
 - src/test/extractor-go.test.ts builtBinary —references→ src/test/extractor-go.test.ts binary
 - src/test/extractor-go.test.ts builtBinary —references→ src/test/extractor-go.test.ts goExtractorDir
 - src/test/extractor-go.test.ts fixture —references→ src/test/extractor-go.test.ts repoRoot
 - src/test/extractor-go.test.ts goExtractorDir —references→ src/test/extractor-go.test.ts repoRoot
-- src/test/extractor-go.test.ts indexedFixture —calls→ src/indexer.ts indexRepo
-- src/test/extractor-go.test.ts indexedFixture —calls→ src/store.ts Store
-- src/test/extractor-go.test.ts indexedFixture —references→ src/store.ts Store
+- src/test/extractor-go.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
+- src/test/extractor-go.test.ts indexedFixture —calls→ src/store/store.ts Store
+- src/test/extractor-go.test.ts indexedFixture —references→ src/store/store.ts Store
 - src/test/extractor-go.test.ts indexedFixture —calls→ src/test/extractor-go.test.ts builtBinary
 - src/test/extractor-go.test.ts indexedFixture —references→ src/test/extractor-go.test.ts fixture
-- src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store.ts Store.close
-- src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store.ts Store.edgesOf
-- src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store.ts Store.findSymbols
-- src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store.ts Store.symbolsInFile
+- src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store/store.ts Store.close
+- src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store/store.ts Store.symbolsInFile
 - src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —references→ src/test/extractor-go.test.ts hasGo
 - src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/test/extractor-go.test.ts indexedFixture
-- src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/contextpack.ts assembleReviewPack
-- src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/diff.ts parseUnifiedDiff
-- src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/retrieval.ts retrieveForDiff
-- src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/store.ts Store.close
-- src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/store.ts Store.findSymbols
+- src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/core/contextpack.ts assembleReviewPack
+- src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/store/store.ts Store.close
+- src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/store/store.ts Store.findSymbols
 - src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —references→ src/test/extractor-go.test.ts fixture
 - src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —references→ src/test/extractor-go.test.ts hasGo
 - src/test/extractor-go.test.ts test(a diff against a Go method seeds retrieval and packs its callers) —calls→ src/test/extractor-go.test.ts indexedFixture
-- src/test/extractor-go.test.ts test(calls resolve through the type checker; unresolved keep raw names) —calls→ src/store.ts Store.close
-- src/test/extractor-go.test.ts test(calls resolve through the type checker; unresolved keep raw names) —calls→ src/store.ts Store.edgesOf
-- src/test/extractor-go.test.ts test(calls resolve through the type checker; unresolved keep raw names) —calls→ src/store.ts Store.findSymbols
+- src/test/extractor-go.test.ts test(calls resolve through the type checker; unresolved keep raw names) —calls→ src/store/store.ts Store.close
+- src/test/extractor-go.test.ts test(calls resolve through the type checker; unresolved keep raw names) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-go.test.ts test(calls resolve through the type checker; unresolved keep raw names) —calls→ src/store/store.ts Store.findSymbols
 - src/test/extractor-go.test.ts test(calls resolve through the type checker; unresolved keep raw names) —references→ src/test/extractor-go.test.ts hasGo
 - src/test/extractor-go.test.ts test(calls resolve through the type checker; unresolved keep raw names) —calls→ src/test/extractor-go.test.ts indexedFixture
-- src/test/extractor-go.test.ts test(extends covers interface satisfaction and embedding) —calls→ src/store.ts Store.close
-- src/test/extractor-go.test.ts test(extends covers interface satisfaction and embedding) —calls→ src/store.ts Store.edgesOf
-- src/test/extractor-go.test.ts test(extends covers interface satisfaction and embedding) —calls→ src/store.ts Store.findSymbols
+- src/test/extractor-go.test.ts test(extends covers interface satisfaction and embedding) —calls→ src/store/store.ts Store.close
+- src/test/extractor-go.test.ts test(extends covers interface satisfaction and embedding) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-go.test.ts test(extends covers interface satisfaction and embedding) —calls→ src/store/store.ts Store.findSymbols
 - src/test/extractor-go.test.ts test(extends covers interface satisfaction and embedding) —references→ src/test/extractor-go.test.ts hasGo
 - src/test/extractor-go.test.ts test(extends covers interface satisfaction and embedding) —calls→ src/test/extractor-go.test.ts indexedFixture
-- src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —calls→ src/store.ts Store.close
-- src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —calls→ src/store.ts Store.findSymbols
-- src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —calls→ src/store.ts Store.stats
+- src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —calls→ src/store/store.ts Store.close
+- src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —calls→ src/store/store.ts Store.stats
 - src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —references→ src/test/extractor-go.test.ts hasGo
 - src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —calls→ src/test/extractor-go.test.ts indexedFixture
-- src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractor-go.ts GoExtractor
-- src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractor-go.ts GoExtractor.extract
+- src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/go.ts GoExtractor
+- src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/go.ts GoExtractor.extract
 - src/test/extractor-php.test.ts fixture —references→ src/test/extractor-php.test.ts repoRoot
-- src/test/extractor-php.test.ts indexedFixture —calls→ src/indexer.ts indexRepo
-- src/test/extractor-php.test.ts indexedFixture —calls→ src/store.ts Store
-- src/test/extractor-php.test.ts indexedFixture —references→ src/store.ts Store
+- src/test/extractor-php.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
+- src/test/extractor-php.test.ts indexedFixture —calls→ src/store/store.ts Store
+- src/test/extractor-php.test.ts indexedFixture —references→ src/store/store.ts Store
 - src/test/extractor-php.test.ts indexedFixture —references→ src/test/extractor-php.test.ts fixture
-- src/test/extractor-php.test.ts test(PHPUnit test methods become testblock symbols (test* and #[Test])) —calls→ src/store.ts Store.close
-- src/test/extractor-php.test.ts test(PHPUnit test methods become testblock symbols (test* and #[Test])) —calls→ src/store.ts Store.symbolsInFile
+- src/test/extractor-php.test.ts test(PHPUnit test methods become testblock symbols (test* and #[Test])) —calls→ src/store/store.ts Store.close
+- src/test/extractor-php.test.ts test(PHPUnit test methods become testblock symbols (test* and #[Test])) —calls→ src/store/store.ts Store.symbolsInFile
 - src/test/extractor-php.test.ts test(PHPUnit test methods become testblock symbols (test* and #[Test])) —references→ src/test/extractor-php.test.ts hasPhp
 - src/test/extractor-php.test.ts test(PHPUnit test methods become testblock symbols (test* and #[Test])) —calls→ src/test/extractor-php.test.ts indexedFixture
-- src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/contextpack.ts assembleReviewPack
-- src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/diff.ts parseUnifiedDiff
-- src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/retrieval.ts retrieveForDiff
-- src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/store.ts Store.close
-- src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/store.ts Store.findSymbols
+- src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/core/contextpack.ts assembleReviewPack
+- src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/store/store.ts Store.close
+- src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/store/store.ts Store.findSymbols
 - src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —references→ src/test/extractor-php.test.ts fixture
 - src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —references→ src/test/extractor-php.test.ts hasPhp
 - src/test/extractor-php.test.ts test(a diff against a php method seeds retrieval and packs its test context) —calls→ src/test/extractor-php.test.ts indexedFixture
-- src/test/extractor-php.test.ts test(calls: $this-> / new / static resolve; dynamic dispatch stays raw) —calls→ src/store.ts Store.close
-- src/test/extractor-php.test.ts test(calls: $this-> / new / static resolve; dynamic dispatch stays raw) —calls→ src/store.ts Store.edgesOf
-- src/test/extractor-php.test.ts test(calls: $this-> / new / static resolve; dynamic dispatch stays raw) —calls→ src/store.ts Store.findSymbols
+- src/test/extractor-php.test.ts test(calls: $this-> / new / static resolve; dynamic dispatch stays raw) —calls→ src/store/store.ts Store.close
+- src/test/extractor-php.test.ts test(calls: $this-> / new / static resolve; dynamic dispatch stays raw) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-php.test.ts test(calls: $this-> / new / static resolve; dynamic dispatch stays raw) —calls→ src/store/store.ts Store.findSymbols
 - src/test/extractor-php.test.ts test(calls: $this-> / new / static resolve; dynamic dispatch stays raw) —references→ src/test/extractor-php.test.ts hasPhp
 - src/test/extractor-php.test.ts test(calls: $this-> / new / static resolve; dynamic dispatch stays raw) —calls→ src/test/extractor-php.test.ts indexedFixture
-- src/test/extractor-php.test.ts test(extends covers implements, interface-extends and trait use) —calls→ src/store.ts Store.close
-- src/test/extractor-php.test.ts test(extends covers implements, interface-extends and trait use) —calls→ src/store.ts Store.edgesOf
-- src/test/extractor-php.test.ts test(extends covers implements, interface-extends and trait use) —calls→ src/store.ts Store.findSymbols
+- src/test/extractor-php.test.ts test(extends covers implements, interface-extends and trait use) —calls→ src/store/store.ts Store.close
+- src/test/extractor-php.test.ts test(extends covers implements, interface-extends and trait use) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-php.test.ts test(extends covers implements, interface-extends and trait use) —calls→ src/store/store.ts Store.findSymbols
 - src/test/extractor-php.test.ts test(extends covers implements, interface-extends and trait use) —references→ src/test/extractor-php.test.ts hasPhp
 - src/test/extractor-php.test.ts test(extends covers implements, interface-extends and trait use) —calls→ src/test/extractor-php.test.ts indexedFixture
-- src/test/extractor-php.test.ts test(php fixture indexes with the full symbol taxonomy) —calls→ src/store.ts Store.close
-- src/test/extractor-php.test.ts test(php fixture indexes with the full symbol taxonomy) —calls→ src/store.ts Store.findSymbols
-- src/test/extractor-php.test.ts test(php fixture indexes with the full symbol taxonomy) —calls→ src/store.ts Store.stats
+- src/test/extractor-php.test.ts test(php fixture indexes with the full symbol taxonomy) —calls→ src/store/store.ts Store.close
+- src/test/extractor-php.test.ts test(php fixture indexes with the full symbol taxonomy) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-php.test.ts test(php fixture indexes with the full symbol taxonomy) —calls→ src/store/store.ts Store.stats
 - src/test/extractor-php.test.ts test(php fixture indexes with the full symbol taxonomy) —references→ src/test/extractor-php.test.ts hasPhp
 - src/test/extractor-php.test.ts test(php fixture indexes with the full symbol taxonomy) —calls→ src/test/extractor-php.test.ts indexedFixture
-- src/test/extractor-php.test.ts test(type hints become references to repo types) —calls→ src/store.ts Store.close
-- src/test/extractor-php.test.ts test(type hints become references to repo types) —calls→ src/store.ts Store.edgesOf
-- src/test/extractor-php.test.ts test(type hints become references to repo types) —calls→ src/store.ts Store.findSymbols
+- src/test/extractor-php.test.ts test(type hints become references to repo types) —calls→ src/store/store.ts Store.close
+- src/test/extractor-php.test.ts test(type hints become references to repo types) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-php.test.ts test(type hints become references to repo types) —calls→ src/store/store.ts Store.findSymbols
 - src/test/extractor-php.test.ts test(type hints become references to repo types) —references→ src/test/extractor-php.test.ts hasPhp
 - src/test/extractor-php.test.ts test(type hints become references to repo types) —calls→ src/test/extractor-php.test.ts indexedFixture
-- src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractor-php.ts PhpExtractor
-- src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractor-php.ts PhpExtractor.extract
-- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/indexer.ts indexRepo
-- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store.ts Store
-- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store.ts Store.close
-- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store.ts Store.edgesOf
-- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store.ts Store.findSymbols
-- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store.ts Store.neighborhood
-- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store.ts Store.symbolsInFile
+- src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/php.ts PhpExtractor
+- src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/php.ts PhpExtractor.extract
+- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/app/index.ts indexRepo
+- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store/store.ts Store
+- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store/store.ts Store.close
+- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store/store.ts Store.edgesOf
+- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store/store.ts Store.findSymbols
+- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store/store.ts Store.neighborhood
+- src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store/store.ts Store.symbolsInFile
 - src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/test/indexer.test.ts fixtureRepo
-- src/test/indexer.test.ts test(re-index is incremental: unchanged files are not rewritten) —calls→ src/indexer.ts indexRepo
-- src/test/indexer.test.ts test(re-index is incremental: unchanged files are not rewritten) —calls→ src/store.ts Store
-- src/test/indexer.test.ts test(re-index is incremental: unchanged files are not rewritten) —calls→ src/store.ts Store.close
-- src/test/indexer.test.ts test(re-index is incremental: unchanged files are not rewritten) —calls→ src/store.ts Store.findSymbols
+- src/test/indexer.test.ts test(re-index is incremental: unchanged files are not rewritten) —calls→ src/app/index.ts indexRepo
+- src/test/indexer.test.ts test(re-index is incremental: unchanged files are not rewritten) —calls→ src/store/store.ts Store
+- src/test/indexer.test.ts test(re-index is incremental: unchanged files are not rewritten) —calls→ src/store/store.ts Store.close
+- src/test/indexer.test.ts test(re-index is incremental: unchanged files are not rewritten) —calls→ src/store/store.ts Store.findSymbols
 - src/test/indexer.test.ts test(re-index is incremental: unchanged files are not rewritten) —calls→ src/test/indexer.test.ts fixtureRepo
-- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/indexer.ts indexRepo
-- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store.ts Store
-- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store.ts Store.close
-- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store.ts Store.edgesOf
-- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store.ts Store.findSymbols
-- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store.ts Store.symbolsInFile
+- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/app/index.ts indexRepo
+- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store/store.ts Store
+- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store/store.ts Store.close
+- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store/store.ts Store.edgesOf
+- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store/store.ts Store.findSymbols
+- src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store/store.ts Store.symbolsInFile
 - src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/test/indexer.test.ts fixtureRepo
-- src/test/loop.test.ts CHAIN_CASES —references→ src/eval.ts GoldenCase
-- src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/diff.ts parseUnifiedDiff
-- src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/indexer.ts indexRepo
-- src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/retrieval.ts retrieveForDiff
-- src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/store.ts Store
-- src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/store.ts Store.close
+- src/test/loop.test.ts CHAIN_CASES —references→ src/app/eval.ts GoldenCase
+- src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/app/index.ts indexRepo
+- src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/store/store.ts Store
+- src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/store/store.ts Store.close
 - src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/test/loop.test.ts chainRepo
-- src/test/loop.test.ts test(eval history accumulates a time series) —calls→ src/store.ts Store
-- src/test/loop.test.ts test(eval history accumulates a time series) —calls→ src/store.ts Store.close
-- src/test/loop.test.ts test(eval history accumulates a time series) —calls→ src/store.ts Store.evalHistory
-- src/test/loop.test.ts test(eval history accumulates a time series) —calls→ src/store.ts Store.recordEval
-- src/test/loop.test.ts test(holdout split keeps selection and claim separate) —calls→ src/indexer.ts indexRepo
-- src/test/loop.test.ts test(holdout split keeps selection and claim separate) —calls→ src/loop.ts learn
-- src/test/loop.test.ts test(holdout split keeps selection and claim separate) —calls→ src/store.ts Store
-- src/test/loop.test.ts test(holdout split keeps selection and claim separate) —calls→ src/store.ts Store.close
+- src/test/loop.test.ts test(eval history accumulates a time series) —calls→ src/store/store.ts Store
+- src/test/loop.test.ts test(eval history accumulates a time series) —calls→ src/store/store.ts Store.close
+- src/test/loop.test.ts test(eval history accumulates a time series) —calls→ src/store/store.ts Store.evalHistory
+- src/test/loop.test.ts test(eval history accumulates a time series) —calls→ src/store/store.ts Store.recordEval
+- src/test/loop.test.ts test(holdout split keeps selection and claim separate) —calls→ src/app/index.ts indexRepo
+- src/test/loop.test.ts test(holdout split keeps selection and claim separate) —calls→ src/app/loop.ts learn
+- src/test/loop.test.ts test(holdout split keeps selection and claim separate) —calls→ src/store/store.ts Store
+- src/test/loop.test.ts test(holdout split keeps selection and claim separate) —calls→ src/store/store.ts Store.close
 - src/test/loop.test.ts test(holdout split keeps selection and claim separate) —references→ src/test/loop.test.ts CHAIN_CASES
 - src/test/loop.test.ts test(holdout split keeps selection and claim separate) —calls→ src/test/loop.test.ts chainRepo
-- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/eval.ts runEval
-- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/indexer.ts indexRepo
-- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/loop.ts learn
-- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —references→ src/retrieval.ts DEFAULT_STRATEGY
-- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/store.ts Store
-- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/store.ts Store.close
+- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/app/eval.ts runEval
+- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/app/index.ts indexRepo
+- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/app/loop.ts learn
+- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —references→ src/core/retrieval.ts DEFAULT_STRATEGY
+- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/store/store.ts Store
+- src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/store/store.ts Store.close
 - src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —references→ src/test/loop.test.ts CHAIN_CASES
 - src/test/loop.test.ts test(learn promotes a deeper strategy and the cache is applied on retrieval) —calls→ src/test/loop.test.ts chainRepo
-- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/loop.ts recordReviewOutcome
-- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —references→ src/retrieval.ts DEFAULT_STRATEGY
-- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —references→ src/review.ts ReviewResult
-- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/store.ts Store
-- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/store.ts Store.close
-- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/store.ts Store.listRetrievals
-- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/store.ts Store.logRetrieval
-- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/store.ts Store.updateRetrievalOutcome
-- src/test/map.test.ts test(buildMap covers files, imports, symbol edges, and unresolved summary) —calls→ src/indexer.ts indexRepo
-- src/test/map.test.ts test(buildMap covers files, imports, symbol edges, and unresolved summary) —calls→ src/map.ts buildMap
-- src/test/map.test.ts test(buildMap covers files, imports, symbol edges, and unresolved summary) —calls→ src/store.ts Store
+- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/app/loop.ts recordReviewOutcome
+- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —references→ src/app/review.ts ReviewResult
+- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —references→ src/core/retrieval.ts DEFAULT_STRATEGY
+- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/store/store.ts Store
+- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/store/store.ts Store.close
+- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/store/store.ts Store.listRetrievals
+- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/store/store.ts Store.logRetrieval
+- src/test/loop.test.ts test(retrieval log captures outcomes: review evidence and human feedback) —calls→ src/store/store.ts Store.updateRetrievalOutcome
+- src/test/map.test.ts test(buildMap covers files, imports, symbol edges, and unresolved summary) —calls→ src/app/index.ts indexRepo
+- src/test/map.test.ts test(buildMap covers files, imports, symbol edges, and unresolved summary) —calls→ src/core/map.ts buildMap
+- src/test/map.test.ts test(buildMap covers files, imports, symbol edges, and unresolved summary) —calls→ src/store/store.ts Store
 - src/test/map.test.ts test(buildMap covers files, imports, symbol edges, and unresolved summary) —calls→ src/test/map.test.ts fixtureRepo
-- src/test/map.test.ts test(index --include restricts to path prefixes (directory-boundary aware)) —calls→ src/indexer.ts indexRepo
-- src/test/map.test.ts test(index --include restricts to path prefixes (directory-boundary aware)) —calls→ src/store.ts Store
-- src/test/map.test.ts test(index --include restricts to path prefixes (directory-boundary aware)) —calls→ src/store.ts Store.listFiles
+- src/test/map.test.ts test(index --include restricts to path prefixes (directory-boundary aware)) —calls→ src/app/index.ts indexRepo
+- src/test/map.test.ts test(index --include restricts to path prefixes (directory-boundary aware)) —calls→ src/store/store.ts Store
+- src/test/map.test.ts test(index --include restricts to path prefixes (directory-boundary aware)) —calls→ src/store/store.ts Store.listFiles
 - src/test/map.test.ts test(index --include restricts to path prefixes (directory-boundary aware)) —calls→ src/test/map.test.ts fixtureRepo
-- src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/indexer.ts indexRepo
-- src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/map.ts buildMap
-- src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/map.ts renderMapMarkdown
-- src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/store.ts Store
-- src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/store.ts Store.close
+- src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/app/index.ts indexRepo
+- src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/core/map.ts buildMap
+- src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/core/map.ts renderMapMarkdown
+- src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/store/store.ts Store
+- src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/store/store.ts Store.close
 - src/test/map.test.ts test(map is deterministic: reindex from scratch renders byte-identical output) —calls→ src/test/map.test.ts fixtureRepo
-- src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/indexer.ts indexRepo
-- src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/store.ts Store
-- src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/store.ts Store.getMeta
+- src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/app/index.ts indexRepo
+- src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/store/store.ts Store
+- src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/store/store.ts Store.getMeta
 - src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/test/map.test.ts fixtureRepo
-- src/test/multirepo.test.ts test(a pre-v2 (single-repo) db is rejected with re-index guidance) —calls→ src/store.ts Store
-- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/indexer.ts indexRepo
-- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/map.ts buildMap
-- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/map.ts renderMapMarkdown
-- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/store.ts Store
+- src/test/multirepo.test.ts test(a pre-v2 (single-repo) db is rejected with re-index guidance) —calls→ src/store/store.ts Store
+- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/app/index.ts indexRepo
+- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/core/map.ts buildMap
+- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/core/map.ts renderMapMarkdown
+- src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/store/store.ts Store
 - src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/test/multirepo.test.ts twoRepos
-- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/diff.ts parseUnifiedDiff
-- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/indexer.ts indexRepo
-- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/retrieval.ts retrieveForDiff
-- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/store.ts Store
+- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/app/index.ts indexRepo
+- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/store/store.ts Store
 - src/test/multirepo.test.ts test(retrieval scopes seeds by repo and reads source from the right root) —calls→ src/test/multirepo.test.ts twoRepos
-- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/indexer.ts indexRepo
-- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/store.ts Store
-- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/store.ts Store.findSymbols
-- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/store.ts Store.listRepos
+- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/app/index.ts indexRepo
+- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/store/store.ts Store
+- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/store/store.ts Store.findSymbols
+- src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/store/store.ts Store.listRepos
 - src/test/multirepo.test.ts test(single-repo flow keeps working without --repo-name (basename default)) —calls→ src/test/multirepo.test.ts twoRepos
-- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/indexer.ts indexRepo
-- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store
-- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.edgesOf
-- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.findSymbols
-- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.listRepos
-- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.neighborhood
-- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.stats
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/app/index.ts indexRepo
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store/store.ts Store
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store/store.ts Store.edgesOf
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store/store.ts Store.findSymbols
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store/store.ts Store.listRepos
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store/store.ts Store.neighborhood
+- src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store/store.ts Store.stats
 - src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/test/multirepo.test.ts twoRepos
-- src/test/scip-emit.test.ts fixture —references→ src/extractor.ts ExtractionResult
+- src/test/scip-emit.test.ts fixture —references→ src/protocol/extractor.ts ExtractionResult
 - src/test/scip-emit.test.ts fixture —calls→ src/test/scip-emit.test.ts sym
-- src/test/scip-emit.test.ts sym —references→ src/extractor.ts ExtractionResult
-- src/test/scip-emit.test.ts sym —calls→ src/extractor.ts symbolId
-- src/test/scip-emit.test.ts test(emit → ingest roundtrips rows exactly (the Step 3 property)) —calls→ src/scip-emit.ts extractionResultsToScipPlus
-- src/test/scip-emit.test.ts test(emit → ingest roundtrips rows exactly (the Step 3 property)) —calls→ src/scip-ingest.ts scipPlusToExtractionResults
+- src/test/scip-emit.test.ts sym —references→ src/protocol/extractor.ts ExtractionResult
+- src/test/scip-emit.test.ts sym —calls→ src/protocol/extractor.ts symbolId
+- src/test/scip-emit.test.ts test(emit → ingest roundtrips rows exactly (the Step 3 property)) —calls→ src/protocol/scip-emit.ts extractionResultsToScipPlus
+- src/test/scip-emit.test.ts test(emit → ingest roundtrips rows exactly (the Step 3 property)) —calls→ src/protocol/scip-ingest.ts scipPlusToExtractionResults
 - src/test/scip-emit.test.ts test(emit → ingest roundtrips rows exactly (the Step 3 property)) —calls→ src/test/scip-emit.test.ts fixture
-- src/test/scip-emit.test.ts test(extends edges project as is_implementation relationships, not occurrences) —calls→ src/scip-emit.ts extractionResultsToScipPlus
+- src/test/scip-emit.test.ts test(extends edges project as is_implementation relationships, not occurrences) —calls→ src/protocol/scip-emit.ts extractionResultsToScipPlus
 - src/test/scip-emit.test.ts test(extends edges project as is_implementation relationships, not occurrences) —calls→ src/test/scip-emit.test.ts fixture
-- src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/scip-emit.ts extractionResultsToScipPlus
-- src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/scip.ts isLocalSymbol
+- src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/protocol/scip-emit.ts extractionResultsToScipPlus
+- src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/protocol/scip.ts isLocalSymbol
 - src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/test/scip-emit.test.ts fixture
-- src/test/scip-export.test.ts DocumentInit —references→ src/scip.ts createScipIndex
-- src/test/scip-export.test.ts fixture —references→ src/extractor.ts ExtractionResult
+- src/test/scip-export.test.ts DocumentInit —references→ src/protocol/scip.ts createScipIndex
+- src/test/scip-export.test.ts fixture —references→ src/protocol/extractor.ts ExtractionResult
 - src/test/scip-export.test.ts fixture —calls→ src/test/scip-export.test.ts sym
-- src/test/scip-export.test.ts normalize —references→ src/extractor.ts ExtractionResult
-- src/test/scip-export.test.ts pythonishIndex —calls→ src/scip.ts createScipIndex
+- src/test/scip-export.test.ts normalize —references→ src/protocol/extractor.ts ExtractionResult
+- src/test/scip-export.test.ts pythonishIndex —calls→ src/protocol/scip.ts createScipIndex
 - src/test/scip-export.test.ts pythonishIndex —references→ src/test/scip-export.test.ts DocumentInit
 - src/test/scip-export.test.ts pythonishIndex —references→ src/test/scip-export.test.ts PY
-- src/test/scip-export.test.ts seedStore —references→ src/extractor.ts ExtractionResult
-- src/test/scip-export.test.ts seedStore —references→ src/store.ts Store
-- src/test/scip-export.test.ts seedStore —calls→ src/store.ts Store.replaceFile
-- src/test/scip-export.test.ts seedStore —calls→ src/store.ts Store.upsertRepo
-- src/test/scip-export.test.ts sym —references→ src/extractor.ts ExtractionResult
-- src/test/scip-export.test.ts sym —calls→ src/extractor.ts symbolId
-- src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/indexer.ts importScip
-- src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/scip.ts encodeScip
-- src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/store.ts Store
-- src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/store.ts Store.close
-- src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/store.ts Store.findSymbols
+- src/test/scip-export.test.ts seedStore —references→ src/protocol/extractor.ts ExtractionResult
+- src/test/scip-export.test.ts seedStore —references→ src/store/store.ts Store
+- src/test/scip-export.test.ts seedStore —calls→ src/store/store.ts Store.replaceFile
+- src/test/scip-export.test.ts seedStore —calls→ src/store/store.ts Store.upsertRepo
+- src/test/scip-export.test.ts sym —references→ src/protocol/extractor.ts ExtractionResult
+- src/test/scip-export.test.ts sym —calls→ src/protocol/extractor.ts symbolId
+- src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/app/index.ts importScip
+- src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/protocol/scip.ts encodeScip
+- src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/store/store.ts Store
+- src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/store/store.ts Store.close
+- src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/store/store.ts Store.findSymbols
 - src/test/scip-export.test.ts test(degrade importScip e2e flags the route and persists rows) —calls→ src/test/scip-export.test.ts pythonishIndex
-- src/test/scip-export.test.ts test(degrade ingest maps an ext-less index per §4.5) —calls→ src/scip-ingest.ts scipIndexToExtractionResults
+- src/test/scip-export.test.ts test(degrade ingest maps an ext-less index per §4.5) —calls→ src/protocol/scip-ingest.ts scipIndexToExtractionResults
 - src/test/scip-export.test.ts test(degrade ingest maps an ext-less index per §4.5) —calls→ src/test/scip-export.test.ts pythonishIndex
-- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/indexer.ts TypeScriptExtractor
-- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/indexer.ts importScip
-- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/indexer.ts indexRepo
-- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/scip.ts encodeScip
-- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/store.ts Store
-- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/store.ts Store.close
-- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/store.ts Store.findSymbols
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/app/index.ts importScip
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/app/index.ts indexRepo
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/extractors/ts.ts TypeScriptExtractor
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/protocol/scip.ts encodeScip
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/store/store.ts Store
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/store/store.ts Store.close
+- src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/store/store.ts Store.findSymbols
 - src/test/scip-export.test.ts test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) —calls→ src/test/scip-export.test.ts pythonishIndex
-- src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/scip-export.ts storeToScipPlus
-- src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/scip-ingest.ts scipPlusToExtractionResults
-- src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/store.ts Store
-- src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/store.ts Store.close
+- src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/protocol/scip-export.ts storeToScipPlus
+- src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/protocol/scip-ingest.ts scipPlusToExtractionResults
+- src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/store/store.ts Store
+- src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/store/store.ts Store.close
 - src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/test/scip-export.test.ts fixture
 - src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/test/scip-export.test.ts normalize
 - src/test/scip-export.test.ts test(export → full ingest roundtrips store rows exactly (Step 4 export half)) —calls→ src/test/scip-export.test.ts seedStore
-- src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/scip-export.ts storeToScipPlus
-- src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/store.ts Store
-- src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/store.ts Store.close
-- src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/store.ts Store.replaceFile
-- src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/store.ts Store.upsertRepo
+- src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/protocol/scip-export.ts storeToScipPlus
+- src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/store/store.ts Store
+- src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/store/store.ts Store.close
+- src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/store/store.ts Store.replaceFile
+- src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/store/store.ts Store.upsertRepo
 - src/test/scip-export.test.ts test(files without a moniker scheme are reported, not silently dropped) —calls→ src/test/scip-export.test.ts sym
-- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/indexer.ts importScip
-- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/scip-export.ts storeToScipPlus
-- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/scip.ts encodeScip
-- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/store.ts Store
-- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/store.ts Store.close
-- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/store.ts Store.edgesFromFile
-- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/store.ts Store.symbolsInFile
+- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/app/index.ts importScip
+- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/protocol/scip-export.ts storeToScipPlus
+- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/protocol/scip.ts encodeScip
+- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/store/store.ts Store
+- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/store/store.ts Store.close
+- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/store/store.ts Store.edgesFromFile
+- src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/store/store.ts Store.symbolsInFile
 - src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/test/scip-export.test.ts fixture
 - src/test/scip-export.test.ts test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) —calls→ src/test/scip-export.test.ts seedStore
-- src/test/scip-export.test.ts test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) —calls→ src/scip-export.ts storeToScipPlus
-- src/test/scip-export.test.ts test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) —calls→ src/scip.ts parseMoniker
-- src/test/scip-export.test.ts test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) —calls→ src/store.ts Store
-- src/test/scip-export.test.ts test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) —calls→ src/store.ts Store.close
+- src/test/scip-export.test.ts test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) —calls→ src/protocol/scip-export.ts storeToScipPlus
+- src/test/scip-export.test.ts test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) —calls→ src/protocol/scip.ts parseMoniker
+- src/test/scip-export.test.ts test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) —calls→ src/store/store.ts Store
+- src/test/scip-export.test.ts test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) —calls→ src/store/store.ts Store.close
 - src/test/scip-export.test.ts test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) —calls→ src/test/scip-export.test.ts fixture
 - src/test/scip-export.test.ts test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) —calls→ src/test/scip-export.test.ts seedStore
 - src/test/scip.test.ts CASES —references→ src/test/scip.test.ts Case
-- src/test/scip.test.ts Case —references→ src/store.ts SymbolKind
-- src/test/scip.test.ts sampleEnvelope —calls→ src/scip.ts scipToJson
+- src/test/scip.test.ts Case —references→ src/store/store.ts SymbolKind
+- src/test/scip.test.ts sampleEnvelope —calls→ src/protocol/scip.ts scipToJson
 - src/test/scip.test.ts sampleEnvelope —calls→ src/test/scip.test.ts sampleIndex
-- src/test/scip.test.ts sampleIndex —calls→ src/scip.ts createScipIndex
-- src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/scip.ts decodeScip
-- src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/scip.ts encodeScip
-- src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/scip.ts scipToJson
+- src/test/scip.test.ts sampleIndex —calls→ src/protocol/scip.ts createScipIndex
+- src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/protocol/scip.ts decodeScip
+- src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/protocol/scip.ts encodeScip
+- src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/protocol/scip.ts scipToJson
 - src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/test/scip.test.ts sampleIndex
-- src/test/scip.test.ts test(kind mapping is a bijection on the mapped subset; testblock excluded) —references→ src/scip.ts KIND_TO_SCIP
-- src/test/scip.test.ts test(kind mapping is a bijection on the mapped subset; testblock excluded) —calls→ src/scip.ts kindFromScip
-- src/test/scip.test.ts test(module moniker is the file descriptor alone) —calls→ src/scip.ts formatMoniker
-- src/test/scip.test.ts test(module moniker rejects name !== file (id would be unrecoverable)) —calls→ src/scip.ts formatMoniker
-- src/test/scip.test.ts test(moniker format matches the documented shape (design §4.2)) —calls→ src/scip.ts formatMoniker
-- src/test/scip.test.ts test(moniker roundtrip recovers file/container/name exactly) —calls→ src/scip.ts formatMoniker
-- src/test/scip.test.ts test(moniker roundtrip recovers file/container/name exactly) —calls→ src/scip.ts monikerToParts
+- src/test/scip.test.ts test(kind mapping is a bijection on the mapped subset; testblock excluded) —references→ src/protocol/scip.ts KIND_TO_SCIP
+- src/test/scip.test.ts test(kind mapping is a bijection on the mapped subset; testblock excluded) —calls→ src/protocol/scip.ts kindFromScip
+- src/test/scip.test.ts test(module moniker is the file descriptor alone) —calls→ src/protocol/scip.ts formatMoniker
+- src/test/scip.test.ts test(module moniker rejects name !== file (id would be unrecoverable)) —calls→ src/protocol/scip.ts formatMoniker
+- src/test/scip.test.ts test(moniker format matches the documented shape (design §4.2)) —calls→ src/protocol/scip.ts formatMoniker
+- src/test/scip.test.ts test(moniker roundtrip recovers file/container/name exactly) —calls→ src/protocol/scip.ts formatMoniker
+- src/test/scip.test.ts test(moniker roundtrip recovers file/container/name exactly) —calls→ src/protocol/scip.ts monikerToParts
 - src/test/scip.test.ts test(moniker roundtrip recovers file/container/name exactly) —references→ src/test/scip.test.ts CASES
-- src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —calls→ src/extractor.ts symbolId
-- src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —calls→ src/scip.ts formatMoniker
-- src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —calls→ src/scip.ts monikerToId
+- src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —calls→ src/protocol/extractor.ts symbolId
+- src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —calls→ src/protocol/scip.ts formatMoniker
+- src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —calls→ src/protocol/scip.ts monikerToId
 - src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —references→ src/test/scip.test.ts CASES
-- src/test/scip.test.ts test(monikerToParts rejects non-file-rooted monikers) —calls→ src/scip.ts monikerToParts
-- src/test/scip.test.ts test(parseMoniker handles an external scip-typescript-shaped symbol) —calls→ src/scip.ts parseMoniker
-- src/test/scip.test.ts test(parseMoniker honours double-space escapes in header fields) —calls→ src/scip.ts parseMoniker
-- src/test/scip.test.ts test(parseMoniker reads method disambiguators and exotic descriptors) —calls→ src/scip.ts parseMoniker
-- src/test/scip.test.ts test(parseMoniker rejects malformed symbols) —calls→ src/scip.ts parseMoniker
-- src/test/scip.test.ts test(parseScipPlus accepts a well-formed envelope) —calls→ src/scip.ts parseScipPlus
+- src/test/scip.test.ts test(monikerToParts rejects non-file-rooted monikers) —calls→ src/protocol/scip.ts monikerToParts
+- src/test/scip.test.ts test(parseMoniker handles an external scip-typescript-shaped symbol) —calls→ src/protocol/scip.ts parseMoniker
+- src/test/scip.test.ts test(parseMoniker honours double-space escapes in header fields) —calls→ src/protocol/scip.ts parseMoniker
+- src/test/scip.test.ts test(parseMoniker reads method disambiguators and exotic descriptors) —calls→ src/protocol/scip.ts parseMoniker
+- src/test/scip.test.ts test(parseMoniker rejects malformed symbols) —calls→ src/protocol/scip.ts parseMoniker
+- src/test/scip.test.ts test(parseScipPlus accepts a well-formed envelope) —calls→ src/protocol/scip.ts parseScipPlus
 - src/test/scip.test.ts test(parseScipPlus accepts a well-formed envelope) —calls→ src/test/scip.test.ts sampleEnvelope
-- src/test/scip.test.ts test(parseScipPlus rejects malformed envelopes with precise errors) —calls→ src/scip.ts parseScipPlus
+- src/test/scip.test.ts test(parseScipPlus rejects malformed envelopes with precise errors) —calls→ src/protocol/scip.ts parseScipPlus
 - src/test/scip.test.ts test(parseScipPlus rejects malformed envelopes with precise errors) —calls→ src/test/scip.test.ts sampleEnvelope
-- src/test/scip.test.ts test(proto3 canonical JSON roundtrips (the child-process representation)) —calls→ src/scip.ts scipFromJson
-- src/test/scip.test.ts test(proto3 canonical JSON roundtrips (the child-process representation)) —calls→ src/scip.ts scipToJson
+- src/test/scip.test.ts test(proto3 canonical JSON roundtrips (the child-process representation)) —calls→ src/protocol/scip.ts scipFromJson
+- src/test/scip.test.ts test(proto3 canonical JSON roundtrips (the child-process representation)) —calls→ src/protocol/scip.ts scipToJson
 - src/test/scip.test.ts test(proto3 canonical JSON roundtrips (the child-process representation)) —calls→ src/test/scip.test.ts sampleIndex
-- src/test/scip.test.ts test(range → span handles single-line and mid-line ends) —calls→ src/scip.ts scipRangeToSpan
-- src/test/scip.test.ts test(span → range → span roundtrips) —calls→ src/scip.ts scipRangeToSpan
-- src/test/scip.test.ts test(span → range → span roundtrips) —calls→ src/scip.ts spanToScipRange
-- src/test/scip.test.ts test(spanToScipRange rejects invalid spans) —calls→ src/scip.ts spanToScipRange
-- src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/scip.ts formatLocal
-- src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/scip.ts formatMoniker
-- src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/scip.ts isLocalSymbol
+- src/test/scip.test.ts test(range → span handles single-line and mid-line ends) —calls→ src/protocol/scip.ts scipRangeToSpan
+- src/test/scip.test.ts test(span → range → span roundtrips) —calls→ src/protocol/scip.ts scipRangeToSpan
+- src/test/scip.test.ts test(span → range → span roundtrips) —calls→ src/protocol/scip.ts spanToScipRange
+- src/test/scip.test.ts test(spanToScipRange rejects invalid spans) —calls→ src/protocol/scip.ts spanToScipRange
+- src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/protocol/scip.ts formatLocal
+- src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/protocol/scip.ts formatMoniker
+- src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/protocol/scip.ts isLocalSymbol
 - web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts MODEL
 - web/components/AskPanel.tsx AskPanel —references→ web/components/AskPanel.tsx Cited
 - web/components/AskPanel.tsx AskPanel —calls→ web/components/AskPanel.tsx AskPanel.ask
@@ -1453,9 +1462,9 @@
 - 24× Error (calls)
 - 23× push (calls)
 - 21× filter (calls)
+- 21× node:path (imports)
 - 20× Map (calls)
 - 20× node:fs (imports)
-- 20× node:path (imports)
 - 20× test (calls)
 - 19× rmSync (calls)
 - 19× stringify (calls)
@@ -1555,7 +1564,7 @@
 - 2× toFixed (calls)
 - 2× useState (calls)
 - 2× write (calls)
-- 1× ../../dist/store.js (imports)
+- 1× ../../dist/store/store.js (imports)
 - 1× ./globals.css (imports)
 - 1× @/components/AskPanel (imports)
 - 1× @/components/EvalChart (imports)
