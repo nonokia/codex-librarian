@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SymbolInformation_Kind, SymbolRole } from '@scip-code/scip';
@@ -8,7 +8,7 @@ import { symbolId } from '../extractor.js';
 import type { ExtractionResult } from '../extractor.js';
 import { Store } from '../store.js';
 import { storeToScipPlus } from '../scip-export.js';
-import { importScip } from '../indexer.js';
+import { importScip, indexRepo, TypeScriptExtractor } from '../indexer.js';
 import { scipIndexToExtractionResults, scipPlusToExtractionResults } from '../scip-ingest.js';
 import { createScipIndex, encodeScip, parseMoniker } from '../scip.js';
 
@@ -161,13 +161,16 @@ test('importScip e2e: sidecar route reproduces the rows, re-import is a no-op', 
 
 const PY = 'scip-python python taskflow 0.1';
 
-function pythonishIndex() {
+type DocumentInit = NonNullable<Parameters<typeof createScipIndex>[0]['documents']>[number];
+
+function pythonishIndex(extraDocuments: DocumentInit[] = []) {
   return createScipIndex({
     metadata: {
       toolInfo: { name: 'scip-python', version: '0.6.6' },
       projectRoot: 'file:///py-src',
     },
     documents: [
+      ...extraDocuments,
       {
         language: 'python',
         relativePath: 'taskflow/store.py',
@@ -274,9 +277,63 @@ test('degrade importScip e2e flags the route and persists rows', () => {
     const report = importScip(store, join(dir, 'py.scip'), { repoName: 'py' });
     assert.equal(report.degraded, true);
     assert.equal(report.skippedSymbols, 0);
+    assert.equal(report.skippedNativeFiles, 0);
     assert.equal(report.filesSeen, 2);
     assert.equal(report.root, '/py-src');
     assert.ok(store.findSymbols('MemStore', 5, 'py').length === 1);
+    store.close();
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'librarian-scip-dispatch-'));
+  try {
+    // native side: a real TS file indexed by the native extractor
+    mkdirSync(join(dir, 'src'), { recursive: true });
+    writeFileSync(join(dir, 'src', 'app.ts'), 'export function tsMain(): number { return 1; }\n');
+    const store = new Store(':memory:');
+    indexRepo(store, dir, { repoName: 'poly', extractors: [new TypeScriptExtractor()] });
+    const nativeIds = store.findSymbols('tsMain', 5, 'poly').map((s) => s.id);
+    assert.equal(nativeIds.length, 1);
+
+    // external side: an ext-less .scip covering python AND the same TS file
+    const index = pythonishIndex([
+      {
+        language: 'typescript',
+        relativePath: 'src/app.ts',
+        occurrences: [
+          { symbol: 'scip-typescript npm app 0.1 `src/app`/tsMain().', symbolRoles: SymbolRole.Definition, range: [0, 16, 22] },
+        ],
+        symbols: [
+          { symbol: 'scip-typescript npm app 0.1 `src/app`/tsMain().', kind: SymbolInformation_Kind.Function },
+        ],
+      },
+    ]);
+    writeFileSync(join(dir, 'py.scip'), encodeScip(index));
+
+    const report = importScip(store, join(dir, 'py.scip'), { repoName: 'poly', root: dir });
+    assert.equal(report.degraded, true);
+    assert.equal(report.skippedNativeFiles, 1, 'the .ts document loses to the native extractor');
+    assert.equal(report.filesSeen, 2, 'only the python documents ingest');
+    assert.equal(store.findSymbols('MemStore', 5, 'poly').length, 1, 'python landed');
+    assert.deepEqual(
+      store.findSymbols('tsMain', 5, 'poly').map((s) => s.id),
+      nativeIds,
+      'native TS rows are untouched by the degrade import'
+    );
+
+    // jurisdiction: a reindex must not remove scip-imported files…
+    const re = indexRepo(store, dir, { repoName: 'poly', extractors: [new TypeScriptExtractor()] });
+    assert.equal(re.filesRemoved, 0);
+    assert.equal(store.findSymbols('MemStore', 5, 'poly').length, 1);
+
+    // …and a re-import must not remove native files (and is a no-op)
+    const again = importScip(store, join(dir, 'py.scip'), { repoName: 'poly', root: dir });
+    assert.equal(again.filesRemoved, 0);
+    assert.equal(again.filesIndexed, 0);
+    assert.equal(store.findSymbols('tsMain', 5, 'poly').length, 1);
     store.close();
   } finally {
     rmSync(dir, { recursive: true, force: true });

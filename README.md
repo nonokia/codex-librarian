@@ -42,6 +42,12 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
   抽出スクリプト、パーサ同梱)を子プロセスとして呼ぶ第 3 の Extractor。namespace + `use`
   (PSR-4)を第一級で解決。正解セット 12 ケース、fixture ベースライン micro recall 88.1% —
   詳細は [`docs/php-baseline.md`](docs/php-baseline.md)。
+- **SCIP+ 実装済み(issue #16, ADR-6 提案)**: 抽出器⇄store の交換フォーマットを
+  SCIP ベース層 + ext サイドカーの二層に。3 言語の native 抽出器はすべて SCIP+ emit、
+  `librarian export --scip` / `import`、外部 `.scip`(scip-python)の degrade 取り込みで
+  **抽出器を書かずに Python が増えた**(micro recall 88.1%)— 設計は
+  [`docs/scip-design.md`](docs/scip-design.md)、実測は
+  [`docs/scip-baseline.md`](docs/scip-baseline.md)。
 
 ## Go リポジトリのインデックス
 
@@ -76,6 +82,41 @@ librarian は以下の順でバイナリを探す:
 
 `php` もスクリプトも無い場合、`.php` ファイルはファイルレベルの module シンボルのみに
 degrade する(インデックス全体は失敗しない。警告が stderr に出る)。
+
+## SCIP での export / import(issue #16)
+
+抽出器⇄store の交換フォーマットは **SCIP ベース層 + ext サイドカーの二層(SCIP+)**
+(設計: [`docs/scip-design.md`](docs/scip-design.md))。index を標準準拠の `.scip` として
+持ち出せ、外部 SCIP インデクサの出力を取り込める。
+
+```bash
+# export: 標準準拠の .scip と librarian 固有信号の .scip-ext.json のペアを書き出す
+node bin/librarian.js export --scip out.scip --db <db> [--repo <name>]
+
+# import: <base>.scip-ext.json が隣にあれば SCIP+(行の完全復元)、無ければ degrade 取り込み
+node bin/librarian.js import out.scip --db <db> [--repo-name <name>] [--root <dir>]
+```
+
+**外部インデクサで native 未対応言語を足す**(抽出器を書かずに 1 言語増える)。例: Python —
+
+```bash
+npm install -g @sourcegraph/scip-python
+scip-python index <repo> --output index.scip
+node bin/librarian.js import index.scip --db <db> --root <repo>
+```
+
+ext サイドカーの無い `.scip` は degrade 規則で取り込む(設計 §4.5): Import role →
+imports、`is_implementation` → extends、残りの参照は一律 references。unresolved は
+存在せず、testblock は部分再構成。native との差の実測(= ext の価値)は
+[`docs/scip-baseline.md`](docs/scip-baseline.md)(scip-python: micro recall 88.1%)。
+
+**dispatch 優先度 — native が常に勝つ**(設計 §4.5): degrade `.scip` 内のドキュメントの
+うち、native extractor が claim する拡張子(`.ts`/`.js`/`.go`/`.php` …)のものは
+スキップされる(レポートの `skippedNativeFiles`)— それらの言語は `librarian index` が
+richer な取り込み口。ext サイドカー付き(`librarian export --scip` の出力)は native
+信号そのものなのでスキップされない。`index` と `import` はファイル削除の管轄を
+「自分が扱う拡張子」に限定するため、**同一 db・同一 repo で共存できる**
+(例: TS は native インデックス、Python は scip-python の import)。
 
 ## 自己インデックス(dogfooding, issue #15)
 

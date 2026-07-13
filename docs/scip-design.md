@@ -182,6 +182,13 @@ librarian-go . . . `store/memstore.go`/MemStore#Complete().
 - **dispatch 優先度**: 同一言語で native extractor と外部 `.scip` が両方ある場合、
   **native が常に勝つ**(ext を持つ方が retrieval 信号が多い)。外部 `.scip` は
   「native extractor が無い言語の取り込み口」。
+  → **実装(Step 5)**: degrade 取り込みは、登録 extractor が claim する拡張子の
+  ドキュメントをスキップする(report の `skippedNativeFiles`)。ext サイドカー付き
+  import は native 信号そのものなのでスキップ対象外(`export --scip` 往復が成立)。
+  あわせて `index` / `import` はファイル**削除の管轄を「自分が扱う拡張子」に限定**する
+  (index = 登録 extractor の拡張子、import = 今回 ingest した拡張子)— これが無いと
+  同一 repo で native 行と import 行が互いを全削除してしまい、共存
+  (例: TS native + Python scip)が成立しない。
 
 ## 5. 段階計画(B-first)
 
@@ -197,7 +204,11 @@ librarian-go . . . `store/memstore.go`/MemStore#Complete().
 store 行ダンプ完全一致**で代替した(fixture より大きい実コーパスでの同一性)。PHP・Go は
 store 行 + eval 出力の両方でバイト単位一致を確認済み。
 | 4 | `librarian export --scip` + 外部 `.scip` import + **scip-python PoC**(degrade 経路) | `graph`/`pack` が動く + golden 作成 + `docs/scip-baseline.md` に実測 |
-| 5 | dispatch 優先度の実装 + README(SCIP+ 経路の使い方) | selfindex 再生成・ドキュメント |
+| 5 | dispatch 優先度の実装 + README(SCIP+ 経路の使い方) | selfindex 再生成・ドキュメント ※2 |
+
+※2 Step 5 実施時の注記: dispatch は §4.5 の実装注記のとおり(degrade スキップ +
+削除管轄の限定)。回帰は Go 95.7%(45/47)・PHP 88.1%(37/42)・Python degrade
+88.1%(37/42)すべてベースラインと完全一致を確認。
 
 - Step 2 の回帰は go-baseline.md の失敗分析 2 件(gtf-001 の interface 越し呼び出し等)が
   **同じ理由で miss のまま**であることも確認する(別の理由で同数になっただけ、を検出する)。
