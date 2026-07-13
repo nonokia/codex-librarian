@@ -17,6 +17,8 @@ import { basename, join, relative, resolve, sep } from 'node:path';
 import type { EdgeKind, EdgeRow, SymbolKind } from './store.js';
 import { symbolId } from './extractor.js';
 import type { ExtractedSymbol, ExtractionResult, Extractor } from './extractor.js';
+import { extractionResultsToScipPlus } from './scip-emit.js';
+import { scipPlusToExtractionResults } from './scip-ingest.js';
 import { GoExtractor } from './extractor-go.js';
 import { PhpExtractor } from './extractor-php.js';
 import { Store } from './store.js';
@@ -231,11 +233,16 @@ export class TypeScriptExtractor implements Extractor {
       sf.forEachChild(visit);
     }
 
-    return [...perFile.entries()].map(([file, { symbols, edges }]) => ({
+    const results = [...perFile.entries()].map(([file, { symbols, edges }]) => ({
       file,
       symbols,
       edges: dedupeEdges(edges),
     }));
+    // Route through the SCIP+ contract (emit → ingest, issue #16 Step 3) so
+    // the in-process TS extractor speaks the same envelope as the Go/PHP
+    // child processes; ingest recomputes every row from the envelope alone.
+    const { index, ext } = extractionResultsToScipPlus('librarian-ts', rootDir, results);
+    return scipPlusToExtractionResults(index, ext);
   }
 }
 

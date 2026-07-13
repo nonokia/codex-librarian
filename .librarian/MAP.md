@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 38
-- symbols: 343
-- edges: 1690 (unresolved: 962)
-- symbols by kind: class=5, function=112, interface=46, method=31, module=38, testblock=59, typealias=8, variable=44
+- files: 40
+- symbols: 353
+- edges: 1753 (unresolved: 985)
+- symbols by kind: class=5, function=116, interface=46, method=31, module=40, testblock=62, typealias=8, variable=45
 
 ## Files
 
@@ -67,15 +67,15 @@
 
 ### src/extractor-php.ts
 
-- variable MAX_OUTPUT L29-29
-- function phpExtractorDir L32-34 `(): string`
-- function onPath L36-41 `(name: string): string | null`
-- interface PhpCommand L43-46
-- function resolvePhpExtractorCommand L48-56 `(): PhpCommand | null`
-- function fileLevelOnly L59-87 `(rootDir: string, files: string[]): ExtractionResult[]`
-- function moduleId L90-92 `(file: string): string`
-- class PhpExtractor L94-122
-- method PhpExtractor.extract L97-121 `(rootDir: string, files: string[]): ExtractionResult[]`
+- variable MAX_OUTPUT L33-33
+- function phpExtractorDir L36-38 `(): string`
+- function onPath L40-45 `(name: string): string | null`
+- interface PhpCommand L47-50
+- function resolvePhpExtractorCommand L52-60 `(): PhpCommand | null`
+- function fileLevelOnly L63-91 `(rootDir: string, files: string[]): ExtractionResult[]`
+- function moduleId L94-96 `(file: string): string`
+- class PhpExtractor L98-134
+- method PhpExtractor.extract L101-133 `(rootDir: string, files: string[]): ExtractionResult[]`
 
 ### src/extractor.ts
 
@@ -86,25 +86,25 @@
 
 ### src/indexer.ts
 
-- variable SKIP_DIRS L24-24
-- variable EXTENSIONS L25-25
-- function defaultExtractors L32-34 `(): Extractor[]`
-- function discoverSourceFiles L36-51 `(rootDir: string, extensions: string[] = EXTENSIONS): string[]`
-- function extractorFor L54-56 `(file: string, extractors: Extractor[]): Extractor | null`
-- function contentHash L58-60 `(text: string): string`
-- class TypeScriptExtractor L62-240
-- method TypeScriptExtractor.extract L65-239 `(rootDir: string, files: string[]): ExtractionResult[]`
-- variable TEST_BLOCK_CALLEES L249-249
-- function testBlockCall L251-267 `(node: ts.Node): { name: string; body: ts.Node } | null`
-- function classifyDeclaration L269-304 `(node: ts.Node): { name: string; kind: SymbolKind; nameNode: ts.Node | null } | null`
-- function calleeNameNode L307-311 `(expr: ts.Expression): ts.Node | null`
-- function isBareReference L318-344 `(node: ts.Identifier): boolean`
-- function signatureOf L346-361 `(node: ts.Node, sf: ts.SourceFile): string | null`
-- function docOf L363-371 `(node: ts.Node): string | null`
-- function dedupeEdges L373-381 `(edges: EdgeRow[]): EdgeRow[]`
-- function namespaceIds L389-405 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
-- interface IndexReport L407-418
-- function indexRepo L431-497 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
+- variable SKIP_DIRS L26-26
+- variable EXTENSIONS L27-27
+- function defaultExtractors L34-36 `(): Extractor[]`
+- function discoverSourceFiles L38-53 `(rootDir: string, extensions: string[] = EXTENSIONS): string[]`
+- function extractorFor L56-58 `(file: string, extractors: Extractor[]): Extractor | null`
+- function contentHash L60-62 `(text: string): string`
+- class TypeScriptExtractor L64-247
+- method TypeScriptExtractor.extract L67-246 `(rootDir: string, files: string[]): ExtractionResult[]`
+- variable TEST_BLOCK_CALLEES L256-256
+- function testBlockCall L258-274 `(node: ts.Node): { name: string; body: ts.Node } | null`
+- function classifyDeclaration L276-311 `(node: ts.Node): { name: string; kind: SymbolKind; nameNode: ts.Node | null } | null`
+- function calleeNameNode L314-318 `(expr: ts.Expression): ts.Node | null`
+- function isBareReference L325-351 `(node: ts.Identifier): boolean`
+- function signatureOf L353-368 `(node: ts.Node, sf: ts.SourceFile): string | null`
+- function docOf L370-378 `(node: ts.Node): string | null`
+- function dedupeEdges L380-388 `(edges: EdgeRow[]): EdgeRow[]`
+- function namespaceIds L396-412 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
+- interface IndexReport L414-425
+- function indexRepo L438-504 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
 
 ### src/loop.ts
 
@@ -157,6 +157,12 @@
 - function buildReviewRequest L66-80 `(pack: ReviewPack, model: string)`
 - function generateReview L82-98 `(pack: ReviewPack, opts: { model?: string; client?: Anthropic } = {}): Promise<ReviewResult>`
 - function renderReviewMarkdown L101-125 `(r: ReviewResult): string`
+
+### src/scip-emit.ts
+
+- variable LANGUAGE L37-41
+- function parentOf L44-53 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
+- function extractionResultsToScipPlus L55-185 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
 
 ### src/scip-ingest.ts
 
@@ -372,6 +378,14 @@
 - testblock test(map prefixes paths with the repo only when the db is multi-repo) L116-132
 - testblock test(a pre-v2 (single-repo) db is rejected with re-index guidance) L134-143
 
+### src/test/scip-emit.test.ts
+
+- function sym L10-31 `(file: string, container: string | null, name: string, kind: ExtractionResult['symbols'][number]['kind'], spanStart: number, spanEnd: number, signature: string | null = null, doc: string | null = null)`
+- function fixture L40-87 `(): ExtractionResult[]`
+- testblock test(emit → ingest roundtrips rows exactly (the Step 3 property)) L89-93
+- testblock test(testblocks project as locals with Test role and an enclosing symbol) L95-109
+- testblock test(extends edges project as is_implementation relationships, not occurrences) L111-119
+
 ### src/test/scip.test.ts
 
 - testblock test(moniker format matches the documented shape (design §4.2)) L27-36
@@ -483,10 +497,14 @@
 - src/extractor-go.ts → src/scip-ingest.ts
 - src/extractor-go.ts → src/scip.ts
 - src/extractor-php.ts → src/extractor.ts
+- src/extractor-php.ts → src/scip-ingest.ts
+- src/extractor-php.ts → src/scip.ts
 - src/extractor.ts → src/store.ts
 - src/indexer.ts → src/extractor-go.ts
 - src/indexer.ts → src/extractor-php.ts
 - src/indexer.ts → src/extractor.ts
+- src/indexer.ts → src/scip-emit.ts
+- src/indexer.ts → src/scip-ingest.ts
 - src/indexer.ts → src/store.ts
 - src/loop.ts → src/eval.ts
 - src/loop.ts → src/retrieval.ts
@@ -496,6 +514,8 @@
 - src/retrieval.ts → src/diff.ts
 - src/retrieval.ts → src/store.ts
 - src/review.ts → src/contextpack.ts
+- src/scip-emit.ts → src/extractor.ts
+- src/scip-emit.ts → src/scip.ts
 - src/scip-ingest.ts → src/extractor.ts
 - src/scip-ingest.ts → src/scip.ts
 - src/scip-ingest.ts → src/store.ts
@@ -546,6 +566,10 @@
 - src/test/multirepo.test.ts → src/map.ts
 - src/test/multirepo.test.ts → src/retrieval.ts
 - src/test/multirepo.test.ts → src/store.ts
+- src/test/scip-emit.test.ts → src/extractor.ts
+- src/test/scip-emit.test.ts → src/scip-emit.ts
+- src/test/scip-emit.test.ts → src/scip-ingest.ts
+- src/test/scip-emit.test.ts → src/scip.ts
 - src/test/scip.test.ts → src/extractor.ts
 - src/test/scip.test.ts → src/scip.ts
 - src/test/scip.test.ts → src/store.ts
@@ -662,6 +686,8 @@
 - src/extractor-php.ts PhpExtractor.extract —calls→ src/extractor-php.ts fileLevelOnly
 - src/extractor-php.ts PhpExtractor.extract —calls→ src/extractor-php.ts resolvePhpExtractorCommand
 - src/extractor-php.ts PhpExtractor.extract —references→ src/extractor.ts ExtractionResult
+- src/extractor-php.ts PhpExtractor.extract —calls→ src/scip-ingest.ts scipPlusToExtractionResults
+- src/extractor-php.ts PhpExtractor.extract —calls→ src/scip.ts parseScipPlus
 - src/extractor.ts ExtractedSymbol —references→ src/store.ts SymbolRow
 - src/extractor.ts ExtractionResult —references→ src/extractor.ts ExtractedSymbol
 - src/extractor.ts ExtractionResult —references→ src/store.ts EdgeRow
@@ -706,6 +732,8 @@
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts isBareReference
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts signatureOf
 - src/indexer.ts TypeScriptExtractor.extract —calls→ src/indexer.ts testBlockCall
+- src/indexer.ts TypeScriptExtractor.extract —calls→ src/scip-emit.ts extractionResultsToScipPlus
+- src/indexer.ts TypeScriptExtractor.extract —calls→ src/scip-ingest.ts scipPlusToExtractionResults
 - src/indexer.ts TypeScriptExtractor.extract —references→ src/store.ts EdgeKind
 - src/indexer.ts TypeScriptExtractor.extract —references→ src/store.ts EdgeRow
 - src/loop.ts CANDIDATE_STRATEGIES —references→ src/loop.ts NamedStrategy
@@ -797,6 +825,20 @@
 - src/review.ts generateReview —references→ src/review.ts ReviewResult
 - src/review.ts generateReview —calls→ src/review.ts buildReviewRequest
 - src/review.ts renderReviewMarkdown —references→ src/review.ts ReviewResult
+- src/scip-emit.ts LANGUAGE —references→ src/scip.ts LibrarianScheme
+- src/scip-emit.ts extractionResultsToScipPlus —references→ src/extractor.ts ExtractionResult
+- src/scip-emit.ts extractionResultsToScipPlus —references→ src/scip-emit.ts LANGUAGE
+- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip-emit.ts parentOf
+- src/scip-emit.ts extractionResultsToScipPlus —references→ src/scip.ts Ext
+- src/scip-emit.ts extractionResultsToScipPlus —references→ src/scip.ts ExtDocument
+- src/scip-emit.ts extractionResultsToScipPlus —references→ src/scip.ts KIND_TO_SCIP
+- src/scip-emit.ts extractionResultsToScipPlus —references→ src/scip.ts LibrarianScheme
+- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip.ts createScipIndex
+- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip.ts formatLocal
+- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip.ts formatMoniker
+- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip.ts isLocalSymbol
+- src/scip-emit.ts extractionResultsToScipPlus —calls→ src/scip.ts spanToScipRange
+- src/scip-emit.ts parentOf —references→ src/extractor.ts ExtractedSymbol
 - src/scip-ingest.ts ScipOccurrence —references→ src/scip-ingest.ts ScipDocument
 - src/scip-ingest.ts scipPlusToExtractionResults —references→ src/extractor.ts ExtractedSymbol
 - src/scip-ingest.ts scipPlusToExtractionResults —references→ src/extractor.ts ExtractionResult
@@ -1137,6 +1179,18 @@
 - src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.neighborhood
 - src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store.ts Store.stats
 - src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/test/multirepo.test.ts twoRepos
+- src/test/scip-emit.test.ts fixture —references→ src/extractor.ts ExtractionResult
+- src/test/scip-emit.test.ts fixture —calls→ src/test/scip-emit.test.ts sym
+- src/test/scip-emit.test.ts sym —references→ src/extractor.ts ExtractionResult
+- src/test/scip-emit.test.ts sym —calls→ src/extractor.ts symbolId
+- src/test/scip-emit.test.ts test(emit → ingest roundtrips rows exactly (the Step 3 property)) —calls→ src/scip-emit.ts extractionResultsToScipPlus
+- src/test/scip-emit.test.ts test(emit → ingest roundtrips rows exactly (the Step 3 property)) —calls→ src/scip-ingest.ts scipPlusToExtractionResults
+- src/test/scip-emit.test.ts test(emit → ingest roundtrips rows exactly (the Step 3 property)) —calls→ src/test/scip-emit.test.ts fixture
+- src/test/scip-emit.test.ts test(extends edges project as is_implementation relationships, not occurrences) —calls→ src/scip-emit.ts extractionResultsToScipPlus
+- src/test/scip-emit.test.ts test(extends edges project as is_implementation relationships, not occurrences) —calls→ src/test/scip-emit.test.ts fixture
+- src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/scip-emit.ts extractionResultsToScipPlus
+- src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/scip.ts isLocalSymbol
+- src/test/scip-emit.test.ts test(testblocks project as locals with Test role and an enclosing symbol) —calls→ src/test/scip-emit.test.ts fixture
 - src/test/scip.test.ts CASES —references→ src/test/scip.test.ts Case
 - src/test/scip.test.ts Case —references→ src/store.ts SymbolKind
 - src/test/scip.test.ts sampleEnvelope —calls→ src/scip.ts scipToJson
@@ -1202,33 +1256,33 @@
 
 - 49× map (calls)
 - 44× join (calls)
-- 36× equal (calls)
-- 29× ok (calls)
+- 38× equal (calls)
+- 31× ok (calls)
 - 28× some (calls)
 - 26× prepare (calls)
-- 22× Error (calls)
-- 22× get (calls)
-- 20× push (calls)
-- 19× deepEqual (calls)
+- 23× Error (calls)
+- 23× get (calls)
+- 21× push (calls)
+- 20× deepEqual (calls)
+- 19× filter (calls)
 - 19× node:fs (imports)
-- 18× filter (calls)
+- 19× test (calls)
 - 18× node:path (imports)
-- 18× test (calls)
 - 17× stringify (calls)
+- 16× find (calls)
 - 16× rmSync (calls)
 - 16× slice (calls)
+- 15× Map (calls)
 - 15× Set (calls)
-- 14× Map (calls)
 - 14× all (calls)
-- 14× find (calls)
 - 14× split (calls)
 - 13× has (calls)
 - 13× writeFileSync (calls)
+- 12× set (calls)
 - 11× mkdtempSync (calls)
-- 11× set (calls)
+- 11× node:assert/strict (imports)
+- 11× node:test (imports)
 - 11× tmpdir (calls)
-- 10× node:assert/strict (imports)
-- 10× node:test (imports)
 - 9× mkdirSync (calls)
 - 9× node:os (imports)
 - 9× readFileSync (calls)
@@ -1243,24 +1297,26 @@
 - 6× createHash (calls)
 - 6× digest (calls)
 - 6× dirname (calls)
+- 6× endsWith (calls)
 - 6× entries (calls)
+- 6× includes (calls)
+- 6× isArray (calls)
 - 6× json (calls)
 - 6× keys (calls)
 - 6× max (calls)
 - 6× trim (calls)
 - 6× update (calls)
 - 5× @/lib/librarian (imports)
+- 5× @scip-code/scip (imports)
 - 5× Number (calls)
-- 5× endsWith (calls)
 - 5× exec (calls)
-- 5× includes (calls)
-- 5× isArray (calls)
 - 5× node:crypto (imports)
 - 5× openLibrarian (calls)
 - 5× relative (calls)
 - 5× spawnSync (calls)
 - 5× startsWith (calls)
 - 4× add (calls)
+- 4× error (calls)
 - 4× every (calls)
 - 4× fileURLToPath (calls)
 - 4× isIdentifier (calls)
@@ -1268,10 +1324,8 @@
 - 4× node:child_process (imports)
 - 4× node:url (imports)
 - 4× round (calls)
-- 3× @scip-code/scip (imports)
 - 3× close (calls)
 - 3× create (calls)
-- 3× error (calls)
 - 3× getText (calls)
 - 3× isArrowFunction (calls)
 - 3× isCallExpression (calls)
@@ -1282,6 +1336,7 @@
 - 3× isVariableDeclaration (calls)
 - 3× values (calls)
 - 2× @anthropic-ai/sdk (imports)
+- 2× @bufbuild/protobuf (imports)
 - 2× Anthropic (calls)
 - 2× DatabaseSync (calls)
 - 2× fetch (calls)
@@ -1312,7 +1367,6 @@
 - 1× @/components/AskPanel (imports)
 - 1× @/components/EvalChart (imports)
 - 1× @/components/GraphExplorer (imports)
-- 1× @bufbuild/protobuf (imports)
 - 1× AskPanel (calls)
 - 1× EvalChart (calls)
 - 1× GraphExplorer (calls)
