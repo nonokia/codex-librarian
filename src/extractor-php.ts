@@ -7,7 +7,9 @@
  * NameResolver for namespace/`use` resolution) because re-parsing PHP from TS
  * would be syntax-only guessing with no name story. This class is just the
  * child-process plumbing: it feeds `{root, files}` JSON on stdin and ingests
- * the ExtractionResult[] JSON the script prints on stdout. The store never
+ * the SCIP+ envelope the script prints on stdout (issue #16,
+ * docs/scip-design.md §4 — hand-built proto3 JSON, no protobuf dependency in
+ * PHP; the mapping back to rows lives in src/scip-ingest.ts). The store never
  * learns which language produced the rows.
  *
  * The script is interpreted (no build step) and its parser is vendored beside
@@ -25,6 +27,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { delimiter, dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ExtractionResult, Extractor } from './extractor.js';
+import { parseScipPlus } from './scip.js';
+import { scipPlusToExtractionResults } from './scip-ingest.js';
 
 const MAX_OUTPUT = 512 * 1024 * 1024;
 
@@ -117,6 +121,14 @@ export class PhpExtractor implements Extractor {
     if (res.status !== 0) {
       throw new Error(`php extractor exited with ${res.status}`);
     }
-    return JSON.parse(res.stdout) as ExtractionResult[];
+    const payload: unknown = JSON.parse(res.stdout);
+    if (Array.isArray(payload)) {
+      throw new Error(
+        'php extractor emitted the legacy ExtractionResult[] contract — the contract is now the ' +
+          'SCIP+ envelope (issue #16). Point LIBRARIAN_PHP_EXTRACTOR at a current extract.php.'
+      );
+    }
+    const { index, ext } = parseScipPlus(payload);
+    return scipPlusToExtractionResults(index, ext);
   }
 }

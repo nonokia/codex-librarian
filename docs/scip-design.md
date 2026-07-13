@@ -190,7 +190,12 @@ librarian-go . . . `store/memstore.go`/MemStore#Complete().
 | 0 | 本文書 + ADR-6 の合意、issue #16 へ反映 | レビュー済み・dlog 記録 |
 | 1 | `src/scip.ts`: 型(封筒 / ext)、`.scip` encode/decode、moniker ⇄ id 写像、範囲変換 | ユニットテスト(moniker 往復・id 一致・エスケープ) |
 | 2 | **go-extractor を SCIP+ emit に載せ替え**(protojson + 参照位置取得)、indexer の ingest を SCIP+ 経由に | `eval golden/go-taskflow.json` の結果セットが載せ替え前と**完全一致**(micro 95.7% / 45/47) |
-| 3 | php-extractor(手組み JSON)、TS(in-process、プロセス境界なしで同じ封筒型を渡す)を横展開 | PHP: 88.1% / 37/42、TS: 87.0% と完全一致 |
+| 3 | php-extractor(手組み JSON)、TS(in-process、プロセス境界なしで同じ封筒型を渡す)を横展開 | PHP: 88.1% / 37/42、TS: 87.0% と完全一致 ※ |
+
+※ Step 3 実施時の注記: weather-you-travel は committed fixture が無くローカルで再計測
+できないため、TS のゲートは **self-index(code-on-board 自身、symbols 343 + edges 1690)の
+store 行ダンプ完全一致**で代替した(fixture より大きい実コーパスでの同一性)。PHP・Go は
+store 行 + eval 出力の両方でバイト単位一致を確認済み。
 | 4 | `librarian export --scip` + 外部 `.scip` import + **scip-python PoC**(degrade 経路) | `graph`/`pack` が動く + golden 作成 + `docs/scip-baseline.md` に実測 |
 | 5 | dispatch 優先度の実装 + README(SCIP+ 経路の使い方) | selfindex 再生成・ドキュメント |
 

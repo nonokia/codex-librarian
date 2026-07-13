@@ -6,12 +6,19 @@ declare(strict_types=1);
  * librarian php-extractor — the PHP implementation of the Extractor seam
  * (src/extractor.ts, architecture §4-①, ADR-2 multi-language path).
  *
- * librarian spawns `php extract.php` as a child process. Contract:
+ * librarian spawns `php extract.php` as a child process. Contract (SCIP+
+ * envelope, issue #16 / docs/scip-design.md §4):
  *
  *   stdin:  {"root": "/abs/repo", "files": ["/abs/repo/a.php", ...]}
- *   stdout: [{"file": "a.php", "symbols": [...], "edges": [...]}, ...]
+ *   stdout: {"scip": <scip.Index, proto3 canonical JSON>, "ext": {...}}
  *
- * one result per claimed file, in the exact row shape src/store.ts ingests.
+ * The scip half is a standards-compliant SCIP index (hand-built JSON — no
+ * protobuf dependency in PHP, by design). The ext half carries what SCIP
+ * cannot express: the edge taxonomy, unresolved references, and testblocks
+ * as first-class symbols. Ingest (src/scip-ingest.ts) treats ext as the
+ * source of truth for edges. Ranges are line-accurate only (php-parser's
+ * default attributes carry no columns), emitted as empty ranges at the
+ * name's line — legal SCIP.
  *
  * Parsing is nikic/php-parser (the base PHPStan and Psalm are built on —
  * issue #8's first candidate) with its NameResolver visitor, so namespace +
@@ -45,6 +52,59 @@ function fqn(string $name): string
     return ltrim($name, '\\');
 }
 
+// ---- SCIP+ emit helpers (issue #16, docs/scip-design.md §4.2) ----
+
+const MONIKER_SCHEME = 'librarian-php';
+
+function escape_ident(string $name): string
+{
+    if ($name !== '' && preg_match('/^[A-Za-z0-9_+$-]+$/', $name) === 1) {
+        return $name;
+    }
+    return '`' . str_replace('`', '``', $name) . '`';
+}
+
+/**
+ * moniker: file as namespace descriptor, container chain (always a class-like
+ * in PHP → '#'), then self. The package part stays empty — monikers never
+ * carry the repo dimension.
+ *
+ * @param array{kind:string,name:string,file:string,container:?string} $row
+ */
+function moniker(array $row): string
+{
+    $head = MONIKER_SCHEME . ' . . . ' . escape_ident($row['file']) . '/';
+    if ($row['kind'] === 'module') {
+        return $head;
+    }
+    if ($row['container'] !== null) {
+        foreach (explode('.', $row['container']) as $seg) {
+            $head .= escape_ident($seg) . '#';
+        }
+    }
+    return match ($row['kind']) {
+        'function', 'method' => $head . escape_ident($row['name']) . '().',
+        'class', 'interface', 'trait', 'enum' => $head . escape_ident($row['name']) . '#',
+        default => $head . escape_ident($row['name']) . '.', // typealias, variable
+    };
+}
+
+/** SymbolInformation.Kind enum name, or null for testblock (ext is its truth). */
+function scip_kind(string $kind): ?string
+{
+    return match ($kind) {
+        'module' => 'File',
+        'function' => 'Function',
+        'method' => 'Method',
+        'class' => 'Class',
+        'interface' => 'Interface',
+        'trait' => 'Trait',
+        'enum' => 'Enum',
+        'variable' => 'Variable',
+        default => null,
+    };
+}
+
 /**
  * One extraction run. Two passes over every claimed file: pass 1 registers
  * declared symbols (building the FQN → symbol tables pass 2 resolves against),
@@ -72,6 +132,8 @@ final class Extractor
     private array $methodsByClassFqn = [];
     /** @var array<string,string> declaring file (rel) of a class FQN */
     private array $fileOfClassFqn = [];
+    /** @var array<string,string> testblock id => owning class symbol id (for enclosing_symbol) */
+    private array $tbParent = [];
 
     public function __construct(string $root)
     {
@@ -169,17 +231,152 @@ final class Extractor
             $this->collectEdges($rel, $stmts, null, '');
         }
 
-        $out = [];
         foreach ($this->results as $rel => $bucket) {
-            $bucket['edges'] = $this->dedupeEdges($bucket['edges']);
-            $out[] = $bucket;
+            $this->results[$rel]['edges'] = $this->dedupeEdges($bucket['edges']);
         }
-        return $out;
+        return $this->emitEnvelope();
+    }
+
+    // ---- SCIP+ emit (issue #16, docs/scip-design.md §4) ----
+
+    /** @return array{scip:array,ext:array} the SCIP+ envelope, ready for json_encode */
+    private function emitEnvelope(): array
+    {
+        // scip symbol string (moniker, or a document-local id for testblocks)
+        // per symbol id; locals are numbered in collection order.
+        $scipName = [];
+        $fileOfId = [];
+        foreach ($this->results as $rel => $bucket) {
+            $local = 0;
+            foreach ($bucket['symbols'] as $row) {
+                $fileOfId[$row['id']] = $rel;
+                if ($row['kind'] === 'testblock') {
+                    $scipName[$row['id']] = 'local ' . $local;
+                    $local++;
+                } else {
+                    $scipName[$row['id']] = moniker($row);
+                }
+            }
+        }
+
+        $documents = [];
+        $extDocs = [];
+        foreach ($this->results as $rel => $bucket) {
+            $occurrences = [];
+            $symbols = [];
+            $extSymbols = [];
+            $extEdges = [];
+
+            foreach ($bucket['symbols'] as $row) {
+                $sym = $scipName[$row['id']];
+                $roles = 1; // Definition
+                if ($row['kind'] === 'testblock') {
+                    $roles |= 32; // Test
+                }
+                $occurrences[] = [
+                    'symbol' => $sym,
+                    'symbolRoles' => $roles,
+                    // empty range at the name's line: default php-parser attributes carry no columns
+                    'singleLineRange' => ['line' => ($row['nameLine'] ?? $row['spanStart']) - 1],
+                    'multiLineEnclosingRange' => ['startLine' => $row['spanStart'] - 1, 'endLine' => $row['spanEnd']],
+                ];
+
+                $info = ['symbol' => $sym, 'displayName' => $row['name']];
+                $kindName = scip_kind($row['kind']);
+                if ($kindName !== null) {
+                    $info['kind'] = $kindName;
+                }
+                if ($row['doc'] !== null) {
+                    $info['documentation'] = [$row['doc']];
+                }
+                if ($row['signature'] !== null) {
+                    $info['signatureDocumentation'] = ['language' => 'php', 'text' => $row['signature']];
+                }
+                if ($row['kind'] === 'testblock') {
+                    $parent = $this->tbParent[$row['id']] ?? null;
+                    if ($parent !== null && isset($scipName[$parent])) {
+                        $info['enclosingSymbol'] = $scipName[$parent];
+                    }
+                    $extSymbols[] = [
+                        'symbol' => $sym,
+                        'kind' => $row['kind'],
+                        'name' => $row['name'],
+                        'container' => $row['container'],
+                        'spanStart' => $row['spanStart'],
+                        'spanEnd' => $row['spanEnd'],
+                    ];
+                }
+                $relationships = [];
+                foreach ($bucket['edges'] as $edge) {
+                    if ($edge['kind'] === 'extends' && $edge['fromId'] === $row['id'] && $edge['toId'] !== null && isset($scipName[$edge['toId']])) {
+                        $relationships[] = ['symbol' => $scipName[$edge['toId']], 'isImplementation' => true];
+                    }
+                }
+                if ($relationships !== []) {
+                    $info['relationships'] = $relationships;
+                }
+                $symbols[] = $info;
+            }
+
+            // edges: all go to ext (the source of truth); resolved
+            // calls/references/imports also project to base occurrences.
+            foreach ($bucket['edges'] as $edge) {
+                $from = $scipName[$edge['fromId']];
+                $to = null;
+                if ($edge['toId'] !== null && isset($scipName[$edge['toId']])) {
+                    $t = $scipName[$edge['toId']];
+                    if (str_starts_with($t, 'local ') && ($fileOfId[$edge['toId']] ?? $rel) !== $rel) {
+                        fwrite(STDERR, "warn: {$rel}: dropping cross-file edge into a test block\n");
+                    } else {
+                        $to = $t;
+                    }
+                }
+                $extEdges[] = [
+                    'from' => $from,
+                    'to' => $to,
+                    'toName' => $edge['toName'],
+                    'kind' => $edge['kind'],
+                    'resolved' => $to !== null,
+                ];
+                if ($to === null || $edge['kind'] === 'extends' || $edge['refLine'] === null) {
+                    continue;
+                }
+                $occ = [
+                    'symbol' => $to,
+                    'singleLineRange' => ['line' => $edge['refLine'] - 1],
+                ];
+                if ($edge['kind'] === 'imports') {
+                    $occ['symbolRoles'] = 2; // Import
+                }
+                $occurrences[] = $occ;
+            }
+
+            $documents[] = [
+                'language' => 'php',
+                'relativePath' => $rel,
+                'positionEncoding' => 'UTF8CodeUnitOffsetFromLineStart',
+                'occurrences' => $occurrences,
+                'symbols' => $symbols,
+            ];
+            $extDocs[] = ['relativePath' => $rel, 'symbols' => $extSymbols, 'edges' => $extEdges];
+        }
+
+        return [
+            'scip' => [
+                'metadata' => [
+                    'toolInfo' => ['name' => MONIKER_SCHEME, 'version' => '0.1.0'],
+                    'projectRoot' => 'file://' . $this->root,
+                    'textDocumentEncoding' => 'UTF8',
+                ],
+                'documents' => $documents,
+            ],
+            'ext' => ['version' => 1, 'documents' => $extDocs],
+        ];
     }
 
     // ---- pass 1: symbols ----
 
-    private function addSymbol(string $file, string $id, string $kind, string $name, ?string $container, int $start, int $end, ?string $sig, ?string $doc): void
+    private function addSymbol(string $file, string $id, string $kind, string $name, ?string $container, int $start, int $end, ?string $sig, ?string $doc, ?int $nameLine = null): void
     {
         $this->results[$file]['symbols'][] = [
             'id' => $id,
@@ -191,6 +388,7 @@ final class Extractor
             'spanEnd' => $end,
             'signature' => $sig,
             'doc' => $doc,
+            'nameLine' => $nameLine, // internal: definition-occurrence line (emit strips it)
         ];
         $this->register($file, $id, $start, $end);
     }
@@ -213,7 +411,7 @@ final class Extractor
                 $fq = fqn($stmt->namespacedName ? $stmt->namespacedName->toString() : $name);
                 $id = symbol_id($file, null, $name, 'function');
                 $this->funcByFqn[$fq] = $id;
-                $this->addSymbol($file, $id, 'function', $name, null, $stmt->getStartLine(), $stmt->getEndLine(), $this->funcSignature($stmt), $this->docText($stmt));
+                $this->addSymbol($file, $id, 'function', $name, null, $stmt->getStartLine(), $stmt->getEndLine(), $this->funcSignature($stmt), $this->docText($stmt), $stmt->name->getStartLine());
                 continue;
             }
             if ($stmt instanceof Node\Stmt\ClassLike) {
@@ -224,7 +422,7 @@ final class Extractor
                 foreach ($stmt->consts as $c) {
                     $name = $c->name->toString();
                     $id = symbol_id($file, null, $name, 'variable');
-                    $this->addSymbol($file, $id, 'variable', $name, null, $stmt->getStartLine(), $stmt->getEndLine(), null, null);
+                    $this->addSymbol($file, $id, 'variable', $name, null, $stmt->getStartLine(), $stmt->getEndLine(), null, null, $c->name->getStartLine());
                 }
                 continue;
             }
@@ -249,7 +447,7 @@ final class Extractor
         $this->classByFqn[$fq] = ['file' => $file, 'short' => $short, 'id' => $id, 'parent' => $parent];
         $this->fileOfClassFqn[$fq] = $file;
         $this->methodsByClassFqn[$fq] = [];
-        $this->addSymbol($file, $id, $kind, $short, null, $node->getStartLine(), $node->getEndLine(), null, $this->docText($node));
+        $this->addSymbol($file, $id, $kind, $short, null, $node->getStartLine(), $node->getEndLine(), null, $this->docText($node), $node->name?->getStartLine());
 
         foreach ($node->stmts as $member) {
             if ($member instanceof Node\Stmt\ClassMethod) {
@@ -257,7 +455,10 @@ final class Extractor
                 $mkind = $this->isTestMethod($member) ? 'testblock' : 'method';
                 $mid = symbol_id($file, $short, $mname, $mkind);
                 $this->methodsByClassFqn[$fq][$mname] = $mid;
-                $this->addSymbol($file, $mid, $mkind, $mname, $short, $member->getStartLine(), $member->getEndLine(), $this->funcSignature($member), $this->docText($member));
+                if ($mkind === 'testblock') {
+                    $this->tbParent[$mid] = $id;
+                }
+                $this->addSymbol($file, $mid, $mkind, $mname, $short, $member->getStartLine(), $member->getEndLine(), $this->funcSignature($member), $this->docText($member), $member->name->getStartLine());
             }
         }
     }
@@ -278,7 +479,7 @@ final class Extractor
 
     // ---- pass 2: edges ----
 
-    private function addEdge(string $file, string $fromId, ?string $toId, string $toName, string $kind): void
+    private function addEdge(string $file, string $fromId, ?string $toId, string $toName, string $kind, ?int $refLine = null): void
     {
         if ($toId !== null && $toId === $fromId) {
             return; // self loops are noise
@@ -289,6 +490,7 @@ final class Extractor
             'toName' => $toName,
             'kind' => $kind,
             'resolved' => $toId !== null,
+            'refLine' => $refLine, // internal: reference-occurrence line (emit strips it)
         ];
     }
 
@@ -334,7 +536,7 @@ final class Extractor
                 }
             }
             $toId = $toFile !== null ? $this->moduleId($toFile) : null;
-            $this->addEdge($file, $moduleId, $toId, $target, 'imports');
+            $this->addEdge($file, $moduleId, $toId, $target, 'imports', $u->getStartLine());
         }
     }
 
@@ -435,25 +637,25 @@ final class Extractor
         if ($node instanceof Node\Expr\FuncCall) {
             if ($node->name instanceof Node\Name) {
                 [$id, $name] = $this->resolveFunc($node->name, $ns);
-                $this->addEdge($file, $from, $id, $name, 'calls');
+                $this->addEdge($file, $from, $id, $name, 'calls', $line);
             } else {
-                $this->addEdge($file, $from, null, '$dynamic()', 'calls'); // $fn()
+                $this->addEdge($file, $from, null, '$dynamic()', 'calls', $line); // $fn()
             }
             return;
         }
         if ($node instanceof Node\Expr\StaticCall) {
             [$id, $name] = $this->resolveStaticCall($node, $classFqn);
-            $this->addEdge($file, $from, $id, $name, 'calls');
+            $this->addEdge($file, $from, $id, $name, 'calls', $line);
             return;
         }
         if ($node instanceof Node\Expr\New_) {
             [$id, $name] = $this->resolveNew($node, $classFqn);
-            $this->addEdge($file, $from, $id, $name, 'calls');
+            $this->addEdge($file, $from, $id, $name, 'calls', $line);
             return;
         }
         if ($node instanceof Node\Expr\MethodCall || $node instanceof Node\Expr\NullsafeMethodCall) {
             [$id, $name] = $this->resolveInstanceCall($node, $classFqn);
-            $this->addEdge($file, $from, $id, $name, 'calls');
+            $this->addEdge($file, $from, $id, $name, 'calls', $line);
             return;
         }
         if ($node instanceof Node\Expr\Instanceof_ && $node->class instanceof Node\Name) {
@@ -580,7 +782,7 @@ final class Extractor
         if ($kind === 'references' && $toId === null) {
             return; // like the TS extractor: only resolved references are stored
         }
-        $this->addEdge($file, $fromId, $toId, $raw, $kind);
+        $this->addEdge($file, $fromId, $toId, $raw, $kind, $name->getStartLine());
     }
 
     /** references for a type hint node, unwrapping nullable/union/intersection. */
@@ -659,7 +861,7 @@ final class Extractor
     }
 }
 
-// ---- entry point: {root, files} on stdin → ExtractionResult[] on stdout ----
+// ---- entry point: {root, files} on stdin → SCIP+ envelope on stdout ----
 
 $raw = stream_get_contents(STDIN);
 $req = json_decode($raw, true);

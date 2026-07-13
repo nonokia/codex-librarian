@@ -93,7 +93,8 @@ dlog の「変更前に `dlog why`」と対になるルール:
 - `src/scip.ts` — SCIP+ 境界(封筒/ext 型、`.scip` の protobuf encode/decode、Symbol 文法
   パーサ、moniker⇄id 写像)。protobuf はこのファイルの外に出さない。
 - `src/scip-ingest.ts` — SCIP+ 封筒 → ExtractionResult 写像(native 経路。エッジは ext が正)。
-  Go は SCIP+ emit 済み(issue #16 Step 2)、PHP/TS は旧 ExtractionResult 契約のまま(Step 3)。
+- `src/scip-emit.ts` — ExtractionResult → SCIP+ 封筒の汎用 emit(TS in-process 経路 +
+  将来の `export --scip`)。**3 言語すべて SCIP+ 契約済み**(issue #16 Step 2–3)。
 - `eval/fixtures/go-taskflow/` — Go 用正解セットの対象リポジトリ(コミットされた fixture)。
   ベースラインは `docs/go-baseline.md`(`eval/golden/go-taskflow.json`)。
 - `eval/fixtures/php-taskflow/` — PHP 用正解セットの対象リポジトリ(コミットされた fixture)。
