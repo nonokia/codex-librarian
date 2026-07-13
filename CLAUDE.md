@@ -76,41 +76,51 @@ dlog の「変更前に `dlog why`」と対になるルール:
 
 ## Layout
 
+`src/` はレイヤ構造(依存 DAG の物理化、issue #21)。詳細とレイヤ図は `src/README.md`。
+
 - `docs/architecture.md` — アーキテクチャ設計書(WHY/WHAT)。フェーズ計画・ADR・成功指標。
 - `docs/phase0-report.md` — Phase 0 ベースライン計測と失敗分析。**retrieval を変更したら
   必ず `librarian eval` を回して数値を更新すること(ADR-4)。**
 - `docs/scip-design.md` — SCIP+ 設計(issue #16 / ADR-6 提案)。抽出器⇄store の交換
   フォーマット。**ext サイドカーが retrieval 信号の正、ベース SCIP は標準準拠の投影。**
-- `src/store.ts` — Knowledge Store(`node:sqlite`)。files/symbols/edges + 再帰 CTE。
-- `src/indexer.ts` — Indexer。TS Compiler API で symbols/edges を抽出。
-- `src/extractor.ts` — Extractor インターフェース(多言語対応の抽象)。実装は TS
-  (`src/indexer.ts`)・Go(`src/extractor-go.ts` + `go-extractor/`)・PHP
-  (`src/extractor-php.ts` + `php-extractor/`)。
+- `src/store/store.ts` — Knowledge Store(`node:sqlite`)。files/symbols/edges + 再帰 CTE。
+- `src/protocol/extractor.ts` — Extractor インターフェース(多言語対応の抽象、公開面)。実装は
+  TS(`src/extractors/ts.ts`)・Go(`src/extractors/go.ts` + `go-extractor/`)・PHP
+  (`src/extractors/php.ts` + `php-extractor/`)。
 - `go-extractor/` — Go 抽出バイナリ(`golang.org/x/tools/go/packages`)。stdin/stdout
   JSON 契約。ビルド・配布は README の「Go リポジトリのインデックス」。
 - `php-extractor/` — PHP 抽出スクリプト(nikic/php-parser、`vendor/` 同梱)。stdin/stdout
   JSON 契約。インタプリタ実行でビルド不要 — 詳細は README の「PHP リポジトリのインデックス」。
-- `src/scip.ts` — SCIP+ 境界(封筒/ext 型、`.scip` の protobuf encode/decode、Symbol 文法
-  パーサ、moniker⇄id 写像)。protobuf はこのファイルの外に出さない。
-- `src/scip-ingest.ts` — SCIP+ 封筒 → ExtractionResult 写像(native 経路。エッジは ext が正)。
-- `src/scip-emit.ts` — ExtractionResult → SCIP+ 封筒の汎用 emit(TS in-process 経路 +
-  将来の `export --scip`)。**3 言語すべて SCIP+ 契約済み**(issue #16 Step 2–3)。
+- `src/protocol/scip.ts` — SCIP+ 境界(封筒/ext 型、`.scip` の protobuf encode/decode、Symbol
+  文法パーサ、moniker⇄id 写像)。protobuf はこのファイルの外に出さない。
+- `src/protocol/scip-ingest.ts` — SCIP+ 封筒 → ExtractionResult 写像(native 経路。エッジは
+  ext が正)。
+- `src/protocol/scip-emit.ts` — ExtractionResult → SCIP+ 封筒の汎用 emit(TS in-process 経路 +
+  `export --scip`)。**3 言語すべて SCIP+ 契約済み**(issue #16 Step 2–3)。
+- `src/protocol/scip-export.ts` — store → SCIP+ の export(`librarian export --scip`、issue #16
+  Step 4)。
+- `src/app/index.ts` — 抽出器ディスパッチ(旧 indexer.ts の dispatch 部、issue #21 で分離)。
+  ファイル発見・拡張子ルーティング・`indexRepo`/`importScip`。
 - `eval/fixtures/go-taskflow/` — Go 用正解セットの対象リポジトリ(コミットされた fixture)。
   ベースラインは `docs/go-baseline.md`(`eval/golden/go-taskflow.json`)。
 - `eval/fixtures/php-taskflow/` — PHP 用正解セットの対象リポジトリ(コミットされた fixture)。
   ベースラインは `docs/php-baseline.md`(`eval/golden/php-taskflow.json`)。
-- `src/diff.ts` / `src/retrieval.ts` — unified diff → シード → 決定的展開(ADR-3 stage 1)。
-- `src/eval.ts` + `eval/golden/` — Phase 0 評価ハーネスと正解セット(規律は `eval/README.md`)。
-- `src/loop.ts` — 自己改善ループ(§4-⑤): 戦略候補・learn 掃引・レビュー結果の還流。
+- `src/core/diff.ts` / `src/core/retrieval.ts` — unified diff → シード → 決定的展開(ADR-3
+  stage 1)。
+- `src/app/eval.ts` + `eval/golden/` — Phase 0 評価ハーネスと正解セット(規律は
+  `eval/README.md`)。
+- `src/app/loop.ts` — 自己改善ループ(§4-⑤): 戦略候補・learn 掃引・レビュー結果の還流。
   数値は `docs/phase4-report.md`(train=test と holdout の区別に注意)。
-- `src/contextpack.ts` — Context Pack 組み立て(§4-③ の区画: 変更/呼び出し元/呼び出し先/テスト)。
-- `src/review.ts` — Claude API でのレビュー生成(構造化出力)。モデル既定は `claude-opus-4-8`。
+- `src/core/contextpack.ts` — Context Pack 組み立て(§4-③ の区画: 変更/呼び出し元/呼び出し先/
+  テスト)。
+- `src/app/review.ts` — Claude API でのレビュー生成(構造化出力)。モデル既定は
+  `claude-opus-4-8`。
 - `templates/librarian-review.yml` — 対象リポジトリに配る GitHub Actions テンプレート(§4-④)。
 - `web/` — Phase 3 の Web UI(Next.js、ADR-5)。蔵書目録(ダッシュボード)/ 書架を歩く
   (グラフ可視化)/ 司書に聞く(グラフ近傍 Q&A、要 ANTHROPIC_API_KEY)。store へは
   親 dist/ 経由の読み取りのみで、ロジックの再実装はしない。
-- `src/cli.ts` — CLI エントリポイント。
-- `src/map.ts` — `librarian map` のマップ組み立て/レンダラ(決定性が不変条件)。
+- `src/cli.ts` — CLI エントリポイント(据え置き、`dist/cli.js` 不変)。
+- `src/core/map.ts` — `librarian map` のマップ組み立て/レンダラ(決定性が不変条件)。
 - `scripts/selfindex.mjs` — 自己インデックスの再生成と drift 検出(`npm run selfindex[:check]`)。
 - `.librarian/MAP.md` / `.librarian/self.db` — committed self-index(コミット対象、issue #15)。
   「Self-index first」参照。

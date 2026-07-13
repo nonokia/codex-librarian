@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SymbolInformation_Kind, SymbolRole } from '@scip-code/scip';
-import { symbolId } from '../extractor.js';
-import type { SymbolKind } from '../store.js';
+import { symbolId } from '../protocol/extractor.js';
+import type { SymbolKind } from '../store/store.js';
 import {
   KIND_TO_SCIP,
   createScipIndex,
@@ -20,7 +20,7 @@ import {
   scipRangeToSpan,
   scipToJson,
   spanToScipRange,
-} from '../scip.js';
+} from '../protocol/scip.js';
 
 // --- moniker: format ---------------------------------------------------------
 

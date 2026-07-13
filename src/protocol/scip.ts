@@ -25,7 +25,7 @@ import {
 import { IndexSchema, SymbolInformation_Kind } from '@scip-code/scip';
 import type { Index } from '@scip-code/scip';
 import { symbolId } from './extractor.js';
-import type { EdgeKind, SymbolKind } from './store.js';
+import type { EdgeKind, SymbolKind } from '../store/store.js';
 
 // ---------------------------------------------------------------------------
 // SCIP+ envelope & ext sidecar (design §4.1, §4.4)

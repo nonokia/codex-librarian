@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Store } from '../store.js';
-import { indexRepo } from '../indexer.js';
-import { parseUnifiedDiff } from '../diff.js';
-import { retrieveForDiff, seedsFromDiff } from '../retrieval.js';
-import { runEval, type GoldenCase } from '../eval.js';
+import { Store } from '../store/store.js';
+import { indexRepo } from '../app/index.js';
+import { parseUnifiedDiff } from '../core/diff.js';
+import { retrieveForDiff, seedsFromDiff } from '../core/retrieval.js';
+import { runEval, type GoldenCase } from '../app/eval.js';
 
 test('parseUnifiedDiff extracts new-side ranges per file', () => {
   const diff = `diff --git a/src/a.ts b/src/a.ts

@@ -17,7 +17,7 @@ import { SymbolInformation_Kind, SymbolRole } from '@scip-code/scip';
 import type { Index } from '@scip-code/scip';
 import { symbolId } from './extractor.js';
 import type { ExtractedSymbol, ExtractionResult } from './extractor.js';
-import type { EdgeKind, EdgeRow, SymbolKind } from './store.js';
+import type { EdgeKind, EdgeRow, SymbolKind } from '../store/store.js';
 import {
   degradeKindFromScip,
   externalMonikerKey,

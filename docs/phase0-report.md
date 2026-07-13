@@ -58,7 +58,7 @@
 ## 改善ログ(ADR-4 の運用実績)
 
 ベースライン計測後、失敗分析 1〜2 を「1 改善 = 1 計測 = 1 コミット」で潰した。
-各行の根拠 diff は dlog(`dlog why src/retrieval.ts`)から commit sha 付きで引ける。
+各行の根拠 diff は dlog(`dlog why src/core/retrieval.ts`)から commit sha 付きで引ける。
 
 | # | 変更 | micro recall | macro | perfect |
 |---|---|---|---|---|

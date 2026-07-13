@@ -6,7 +6,7 @@
  * the store and CLI must never know which extractor produced the rows.
  */
 import { createHash } from 'node:crypto';
-import type { EdgeRow, SymbolRow } from './store.js';
+import type { EdgeRow, SymbolRow } from '../store/store.js';
 
 /**
  * Stable symbol id: survives line moves; changes only when identity changes.

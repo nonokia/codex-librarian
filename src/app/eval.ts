@@ -10,9 +10,9 @@
  * (items/chars) is reported instead as the pressure metric.
  */
 import { readFileSync } from 'node:fs';
-import type { Store } from './store.js';
-import { parseUnifiedDiff } from './diff.js';
-import { retrieveForDiff, type ContextItem, type ContextPack, type RootResolver, type Strategy } from './retrieval.js';
+import type { Store } from '../store/store.js';
+import { parseUnifiedDiff } from '../core/diff.js';
+import { retrieveForDiff, type ContextItem, type ContextPack, type RootResolver, type Strategy } from '../core/retrieval.js';
 
 export interface ExpectedEntry {
   file: string;

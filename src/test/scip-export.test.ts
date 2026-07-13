@@ -4,13 +4,14 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SymbolInformation_Kind, SymbolRole } from '@scip-code/scip';
-import { symbolId } from '../extractor.js';
-import type { ExtractionResult } from '../extractor.js';
-import { Store } from '../store.js';
-import { storeToScipPlus } from '../scip-export.js';
-import { importScip, indexRepo, TypeScriptExtractor } from '../indexer.js';
-import { scipIndexToExtractionResults, scipPlusToExtractionResults } from '../scip-ingest.js';
-import { createScipIndex, encodeScip, parseMoniker } from '../scip.js';
+import { symbolId } from '../protocol/extractor.js';
+import type { ExtractionResult } from '../protocol/extractor.js';
+import { Store } from '../store/store.js';
+import { storeToScipPlus } from '../protocol/scip-export.js';
+import { importScip, indexRepo } from '../app/index.js';
+import { TypeScriptExtractor } from '../extractors/ts.js';
+import { scipIndexToExtractionResults, scipPlusToExtractionResults } from '../protocol/scip-ingest.js';
+import { createScipIndex, encodeScip, parseMoniker } from '../protocol/scip.js';
 
 function sym(
   file: string,

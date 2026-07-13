@@ -7,7 +7,7 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
 - **設計書(source of truth): [`docs/architecture.md`](docs/architecture.md)** — 原則・ADR・フェーズ計画
 - **検証レポート: [`docs/validation-weather-you-travel.md`](docs/validation-weather-you-travel.md)**
 - 意思決定ログ: [`dlog`](https://github.com/nonokia/dlog) で記録し、`.dlog/dlog.db` をコミットしている。
-  `dlog why src/indexer.ts` などで「なぜこうなっているか」を照会できる(運用ルールは `AGENTS.md` / `CLAUDE.md`)。
+  `dlog why src/app/index.ts` などで「なぜこうなっているか」を照会できる(運用ルールは `AGENTS.md` / `CLAUDE.md`)。
 
 ## Status
 

@@ -5,11 +5,12 @@ import { tmpdir } from 'node:os';
 import { join, relative, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { Store } from '../store.js';
-import { indexRepo, TypeScriptExtractor } from '../indexer.js';
-import type { ExtractionResult, Extractor } from '../extractor.js';
-import { parseUnifiedDiff } from '../diff.js';
-import { retrieveForDiff } from '../retrieval.js';
+import { Store } from '../store/store.js';
+import { indexRepo } from '../app/index.js';
+import { TypeScriptExtractor } from '../extractors/ts.js';
+import type { ExtractionResult, Extractor } from '../protocol/extractor.js';
+import { parseUnifiedDiff } from '../core/diff.js';
+import { retrieveForDiff } from '../core/retrieval.js';
 
 /**
  * Stub for a second language (#10): claims `.foo` files. Each line of the

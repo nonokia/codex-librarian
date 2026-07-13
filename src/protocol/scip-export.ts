@@ -14,7 +14,7 @@
 import { extname } from 'node:path';
 import { TextEncoding } from '@scip-code/scip';
 import type { Index } from '@scip-code/scip';
-import type { Store } from './store.js';
+import type { Store } from '../store/store.js';
 import type { ExtractionResult } from './extractor.js';
 import { extractionResultsToScipPlus } from './scip-emit.js';
 import { createScipIndex, type Ext, type ExtDocument, type LibrarianScheme } from './scip.js';

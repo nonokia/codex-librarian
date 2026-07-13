@@ -5,12 +5,12 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Store } from '../store.js';
-import { indexRepo } from '../indexer.js';
-import { GoExtractor } from '../extractor-go.js';
-import { parseUnifiedDiff } from '../diff.js';
-import { retrieveForDiff } from '../retrieval.js';
-import { assembleReviewPack } from '../contextpack.js';
+import { Store } from '../store/store.js';
+import { indexRepo } from '../app/index.js';
+import { GoExtractor } from '../extractors/go.js';
+import { parseUnifiedDiff } from '../core/diff.js';
+import { retrieveForDiff } from '../core/retrieval.js';
+import { assembleReviewPack } from '../core/contextpack.js';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const goExtractorDir = join(repoRoot, 'go-extractor');

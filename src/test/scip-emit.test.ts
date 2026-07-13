@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SymbolRole } from '@scip-code/scip';
-import { symbolId } from '../extractor.js';
-import type { ExtractionResult } from '../extractor.js';
-import { extractionResultsToScipPlus } from '../scip-emit.js';
-import { scipPlusToExtractionResults } from '../scip-ingest.js';
-import { isLocalSymbol } from '../scip.js';
+import { symbolId } from '../protocol/extractor.js';
+import type { ExtractionResult } from '../protocol/extractor.js';
+import { extractionResultsToScipPlus } from '../protocol/scip-emit.js';
+import { scipPlusToExtractionResults } from '../protocol/scip-ingest.js';
+import { isLocalSymbol } from '../protocol/scip.js';
 
 function sym(
   file: string,

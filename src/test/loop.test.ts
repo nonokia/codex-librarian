@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Store } from '../store.js';
-import { indexRepo } from '../indexer.js';
-import { parseUnifiedDiff } from '../diff.js';
-import { retrieveForDiff, DEFAULT_STRATEGY } from '../retrieval.js';
-import { learn, recordReviewOutcome } from '../loop.js';
-import { runEval, type GoldenCase } from '../eval.js';
-import type { ReviewResult } from '../review.js';
+import { Store } from '../store/store.js';
+import { indexRepo } from '../app/index.js';
+import { parseUnifiedDiff } from '../core/diff.js';
+import { retrieveForDiff, DEFAULT_STRATEGY } from '../core/retrieval.js';
+import { learn, recordReviewOutcome } from '../app/loop.js';
+import { runEval, type GoldenCase } from '../app/eval.js';
+import type { ReviewResult } from '../app/review.js';
 
 /**
  * Fixture with a deep call chain: entry -> mid -> deep -> deepest.

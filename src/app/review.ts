@@ -7,7 +7,7 @@
  * without parsing free text.
  */
 import Anthropic from '@anthropic-ai/sdk';
-import { renderReviewPack, type ReviewPack } from './contextpack.js';
+import { renderReviewPack, type ReviewPack } from '../core/contextpack.js';
 
 export const DEFAULT_MODEL = 'claude-opus-4-8';
 

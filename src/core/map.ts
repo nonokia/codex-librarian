@@ -8,7 +8,7 @@
  * regenerating on the same tree MUST be byte-identical, because drift
  * detection is "regenerate and diff".
  */
-import type { EdgeKind, Store, SymbolRow } from './store.js';
+import type { EdgeKind, Store, SymbolRow } from '../store/store.js';
 
 export interface MapFile {
   path: string;
