@@ -13,11 +13,11 @@
  * call/reference distinction cannot survive base SCIP. Testblocks partially
  * reconstruct from SymbolRole.Test definitions.
  */
-import { SymbolRole } from '@scip-code/scip';
+import { SymbolInformation_Kind, SymbolRole } from '@scip-code/scip';
 import type { Index } from '@scip-code/scip';
 import { symbolId } from './extractor.js';
 import type { ExtractedSymbol, ExtractionResult } from './extractor.js';
-import type { EdgeKind, EdgeRow } from './store.js';
+import type { EdgeKind, EdgeRow, SymbolKind } from './store.js';
 import {
   degradeKindFromScip,
   externalMonikerKey,
@@ -28,6 +28,7 @@ import {
   parseMoniker,
   scipRangeToSpan,
   type Ext,
+  type ExternalMonikerKey,
 } from './scip.js';
 
 type ScipDocument = Index['documents'][number];
@@ -197,6 +198,17 @@ export interface DegradeIngest {
 export function scipIndexToExtractionResults(index: Index): DegradeIngest {
   let skippedSymbols = 0;
   const idByMoniker = new Map<string, string>();
+  // module-shaped monikers (either aliased in-index or external like numpy):
+  // references to them are import statements in every language we degrade
+  const moduleShaped = new Map<string, boolean>();
+  const isModuleMoniker = (symbol: string): boolean => {
+    let shaped = moduleShaped.get(symbol);
+    if (shaped === undefined) {
+      shaped = externalMonikerKey(symbol).kind === 'module';
+      moduleShaped.set(symbol, shaped);
+    }
+    return shaped;
+  };
 
   // Pass 1 — doc-owned rows; the moniker→id table must be complete before edges.
   const docs = index.documents.map((doc) => {
@@ -230,9 +242,23 @@ export function scipIndexToExtractionResults(index: Index): DegradeIngest {
       if (isLocalSymbol(si.symbol)) continue; // locals: only Test-role ones matter, below
       const occ = defOcc.get(si.symbol);
       if (occ === undefined) continue; // referenced-only listing, owned elsewhere
-      const kind = degradeKindFromScip(si.kind);
       const key = externalMonikerKey(si.symbol);
-      if (kind === null || key === null) {
+      if (key.kind === 'parameter') continue; // by design not a symbol — silent
+      if (key.kind === 'module') {
+        // the producer's own module symbol: alias it to the synthesized row so
+        // imports of this document resolve, exactly like the native edges
+        if (!idByMoniker.has(si.symbol)) idByMoniker.set(si.symbol, moduleRow.id);
+        continue;
+      }
+      if (key.kind === 'invalid') {
+        skippedSymbols++;
+        continue;
+      }
+      const kind =
+        si.kind !== SymbolInformation_Kind.UnspecifiedKind
+          ? degradeKindFromScip(si.kind)
+          : kindFromSuffix(key);
+      if (kind === null) {
         skippedSymbols++;
         continue;
       }
@@ -244,6 +270,7 @@ export function scipIndexToExtractionResults(index: Index): DegradeIngest {
       }
       usedIds.add(id);
       const span = definitionSpan(occ);
+      const { signature, doc: docText } = docAndSignature(si);
       const row: ExtractedSymbol = {
         id,
         kind,
@@ -252,8 +279,8 @@ export function scipIndexToExtractionResults(index: Index): DegradeIngest {
         container: key.container,
         spanStart: span.spanStart,
         spanEnd: span.spanEnd,
-        signature: si.signatureDocumentation?.text || null,
-        doc: si.documentation[0] ?? null,
+        signature,
+        doc: docText,
       };
       rows.push(row);
       rowByMoniker.set(si.symbol, row);
@@ -325,7 +352,12 @@ export function scipIndexToExtractionResults(index: Index): DegradeIngest {
       const line = occurrenceSpan(occ).spanStart;
       const from = innermostEnclosing(rows, moduleRow, line, line);
       const toId = idByMoniker.get(occ.symbol) ?? null;
-      const kind: EdgeKind = occ.symbolRoles & SymbolRole.Import ? 'imports' : 'references';
+      // scip-python never sets SymbolRole.Import — a reference to a
+      // module-shaped symbol is an import statement in any language we degrade
+      const kind: EdgeKind =
+        occ.symbolRoles & SymbolRole.Import || isModuleMoniker(occ.symbol)
+          ? 'imports'
+          : 'references';
       push({ fromId: from.id, toId, toName, kind, resolved: toId !== null });
     }
 
@@ -344,6 +376,48 @@ export function scipIndexToExtractionResults(index: Index): DegradeIngest {
   });
 
   return { results, skippedSymbols };
+}
+
+/**
+ * Kind fallback from the moniker grammar for producers that leave
+ * SymbolInformation.kind unset (scip-python 0.6.x): type suffix → class
+ * (class/interface/enum are indistinguishable), method suffix → method when
+ * contained / function at module level, term suffix → module-level variable.
+ * Class attributes (contained terms) are dropped — no native extractor emits
+ * field rows.
+ */
+function kindFromSuffix(key: Extract<ExternalMonikerKey, { kind: 'named' }>): SymbolKind | null {
+  switch (key.suffix) {
+    case 'type':
+      return 'class';
+    case 'method':
+      return key.container !== null ? 'method' : 'function';
+    case 'term':
+      return key.container === null ? 'variable' : null;
+    default:
+      return null;
+  }
+}
+
+/**
+ * scip-python has no signatureDocumentation; it packs the signature as a
+ * fenced code block into documentation[] and the docstring as a plain entry.
+ */
+function docAndSignature(si: {
+  signatureDocumentation?: { text: string };
+  documentation: string[];
+}): { signature: string | null; doc: string | null } {
+  let signature = si.signatureDocumentation?.text || null;
+  let doc: string | null = null;
+  for (const d of si.documentation) {
+    const fenced = /^```[\w-]*\n([\s\S]*?)\n?```$/.exec(d.trim());
+    if (fenced !== null) {
+      if (signature === null) signature = fenced[1];
+    } else if (doc === null) {
+      doc = d;
+    }
+  }
+  return { signature, doc };
 }
 
 /** innermost non-module row whose span contains [start, end], else the module row */

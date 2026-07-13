@@ -1,0 +1,133 @@
+{
+  "cases": [
+    {
+      "id": "pytf-001",
+      "title": "MemStore.complete の振る舞い変更(欠落 id の扱い)",
+      "note": "expected はコードリーディングで作成: Store 契約・注入インターフェース経由の呼び出し元・NotFoundError を 404 に写像する transport 層・回帰テスト(ptf-001 の移植)",
+      "target": { "file": "taskflow/store/memstore.py", "symbol": "complete" },
+      "expected": [
+        { "file": "taskflow/store/base.py", "symbol": "Store" },
+        { "file": "taskflow/store/errors.py", "symbol": "NotFoundError" },
+        { "file": "taskflow/service/service.py", "symbol": "complete_task" },
+        { "file": "taskflow/http/handler.py", "symbol": "handle_complete" },
+        { "file": "tests/test_memstore.py", "symbol": "test_complete" },
+        { "file": "tests/test_memstore.py", "symbol": "test_complete_missing_raises" }
+      ]
+    },
+    {
+      "id": "pytf-002",
+      "title": "Service.create_task のバリデーション変更",
+      "target": { "file": "taskflow/service/service.py", "symbol": "create_task" },
+      "expected": [
+        { "file": "taskflow/service/errors.py", "symbol": "ValidationError" },
+        { "file": "taskflow/store/task.py", "symbol": "Task" },
+        { "file": "taskflow/http/handler.py", "symbol": "handle_create" },
+        { "file": "tests/test_service.py", "symbol": "test_create_task_persists_and_returns" },
+        { "file": "tests/test_service.py", "symbol": "test_rejects_empty_title" }
+      ]
+    },
+    {
+      "id": "pytf-003",
+      "title": "Task.overdue の判定条件変更",
+      "target": { "file": "taskflow/store/task.py", "symbol": "overdue" },
+      "expected": [
+        { "file": "taskflow/service/service.py", "symbol": "overdue_tasks" },
+        { "file": "tests/test_service.py", "symbol": "test_overdue_tasks" }
+      ]
+    },
+    {
+      "id": "pytf-004",
+      "title": "Store 契約へのメソッド追加",
+      "note": "実装型と依存側の両方が壊れる変更",
+      "target": { "file": "taskflow/store/base.py", "symbol": "Store" },
+      "expected": [
+        { "file": "taskflow/store/memstore.py", "symbol": "MemStore" },
+        { "file": "taskflow/store/base.py", "symbol": "Reader" },
+        { "file": "taskflow/service/service.py", "symbol": "Service" }
+      ]
+    },
+    {
+      "id": "pytf-005",
+      "title": "Reader 契約のシグネチャ変更",
+      "target": { "file": "taskflow/store/base.py", "symbol": "Reader" },
+      "expected": [
+        { "file": "taskflow/store/base.py", "symbol": "Store" },
+        { "file": "taskflow/store/memstore.py", "symbol": "MemStore" },
+        { "file": "taskflow/service/service.py", "symbol": "Service" }
+      ]
+    },
+    {
+      "id": "pytf-006",
+      "title": "NotFoundError の意味変更(メッセージ形式・ファクトリ)",
+      "target": { "file": "taskflow/store/errors.py", "symbol": "NotFoundError" },
+      "expected": [
+        { "file": "taskflow/store/memstore.py", "symbol": "complete" },
+        { "file": "taskflow/store/memstore.py", "symbol": "remove" },
+        { "file": "taskflow/http/handler.py", "symbol": "handle_complete" },
+        { "file": "tests/test_memstore.py", "symbol": "test_complete_missing_raises" }
+      ]
+    },
+    {
+      "id": "pytf-007",
+      "title": "Handler.handle_create のエラー写像変更",
+      "target": { "file": "taskflow/http/handler.py", "symbol": "handle_create" },
+      "expected": [
+        { "file": "taskflow/service/service.py", "symbol": "create_task" },
+        { "file": "taskflow/service/errors.py", "symbol": "ValidationError" },
+        { "file": "taskflow/http/response.py", "symbol": "JsonResponse" },
+        { "file": "tests/test_handler.py", "symbol": "test_handle_create_rejects_empty" }
+      ]
+    },
+    {
+      "id": "pytf-008",
+      "title": "MemStore.add の id 採番変更(Sequence mixin)",
+      "target": { "file": "taskflow/store/memstore.py", "symbol": "add" },
+      "expected": [
+        { "file": "taskflow/store/sequence.py", "symbol": "Sequence" },
+        { "file": "taskflow/store/task.py", "symbol": "Task" },
+        { "file": "taskflow/store/base.py", "symbol": "Store" },
+        { "file": "tests/test_memstore.py", "symbol": "test_add_assigns_sequential_ids" }
+      ]
+    },
+    {
+      "id": "pytf-009",
+      "title": "Priority enum の変更(メンバー追加/重み変更)",
+      "target": { "file": "taskflow/store/priority.py", "symbol": "Priority" },
+      "expected": [
+        { "file": "taskflow/store/task.py", "symbol": "Task" },
+        { "file": "taskflow/service/service.py", "symbol": "create_task" }
+      ]
+    },
+    {
+      "id": "pytf-010",
+      "title": "factory の合成ルート変更(具象 store の差し替え)",
+      "target": { "file": "taskflow/factory.py", "symbol": "build" },
+      "expected": [
+        { "file": "taskflow/http/handler.py", "symbol": "Handler" },
+        { "file": "taskflow/service/service.py", "symbol": "Service" },
+        { "file": "taskflow/store/memstore.py", "symbol": "MemStore" }
+      ]
+    },
+    {
+      "id": "pytf-011",
+      "title": "JsonResponse の形状変更",
+      "target": { "file": "taskflow/http/response.py", "symbol": "JsonResponse" },
+      "expected": [
+        { "file": "taskflow/http/handler.py", "symbol": "handle_create" },
+        { "file": "taskflow/http/handler.py", "symbol": "handle_complete" }
+      ]
+    },
+    {
+      "id": "pytf-012",
+      "title": "実 diff 形式: create_task にタイトル長バリデーションを追加",
+      "note": "unified diff 入力の解析経路を 1 ケースで担保(go/php-taskflow と同じ役割)",
+      "diff": "--- a/taskflow/service/service.py\n+++ b/taskflow/service/service.py\n@@ -25,4 +25,4 @@\n         title = title.strip()\n-        if title == \"\" or len(title) > MAX_TITLE:\n+        if title == \"\" or len(title.encode()) > MAX_TITLE:\n             raise ValidationError(f\"title must be 1..{MAX_TITLE} chars\")\n         task = Task(0, title, priority)\n",
+      "expected": [
+        { "file": "taskflow/service/errors.py", "symbol": "ValidationError" },
+        { "file": "taskflow/store/task.py", "symbol": "Task" },
+        { "file": "taskflow/http/handler.py", "symbol": "handle_create" },
+        { "file": "tests/test_service.py", "symbol": "test_rejects_empty_title" }
+      ]
+    }
+  ]
+}

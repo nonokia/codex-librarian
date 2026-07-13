@@ -536,34 +536,47 @@ export function monikerToId(moniker: string, kind: SymbolKind): string {
 }
 
 /**
- * Best-effort (name, container) for an EXTERNAL moniker (degrade ingest,
- * design §4.5): the descriptors after the last namespace descriptor —
+ * Best-effort classification of an EXTERNAL moniker (degrade ingest, design
+ * §4.5): the descriptors after the last namespace descriptor are the symbol —
  * package/module path is not a librarian container, and the file comes from
- * the Document, not the moniker. Parameter/type-parameter descriptors are
- * dropped (they disambiguate, they don't name). Returns null when nothing
- * name-like remains (pure namespace/package monikers) or the moniker does
- * not parse.
+ * the Document, not the moniker.
+ *
+ * - `module`: nothing name-like after the namespace path, or the scip-python
+ *   convention of a trailing `__init__:` meta descriptor. The ingest aliases
+ *   these to its synthesized per-document module row.
+ * - `parameter`: terminal (type-)parameter descriptor — not a symbol at all.
+ * - `named`: a symbol; `suffix` lets the ingest derive a kind when the
+ *   producer left SymbolInformation.kind unset (scip-python 0.6.x does).
  */
-export function externalMonikerKey(
-  moniker: string,
-): { name: string; container: string | null } | null {
+export type ExternalMonikerKey =
+  | { kind: 'named'; name: string; container: string | null; suffix: DescriptorSuffix }
+  | { kind: 'module' }
+  | { kind: 'parameter' }
+  | { kind: 'invalid' };
+
+export function externalMonikerKey(moniker: string): ExternalMonikerKey {
   let parsed: ParsedMoniker;
   try {
     parsed = parseMoniker(moniker);
   } catch {
-    return null;
+    return { kind: 'invalid' };
   }
   let start = 0;
   for (let i = 0; i < parsed.descriptors.length; i++) {
     if (parsed.descriptors[i].suffix === 'namespace') start = i + 1;
   }
-  const chain = parsed.descriptors
-    .slice(start)
-    .filter((d) => d.suffix !== 'parameter' && d.suffix !== 'typeParameter');
-  if (chain.length === 0) return null;
-  const name = chain[chain.length - 1].name;
+  const chain = parsed.descriptors.slice(start);
+  if (chain.length === 0) return { kind: 'module' };
+  const last = chain[chain.length - 1];
+  if (last.suffix === 'parameter' || last.suffix === 'typeParameter') return { kind: 'parameter' };
+  if (last.suffix === 'meta' && last.name === '__init__') return { kind: 'module' };
   const middle = chain.slice(0, -1).map((d) => d.name);
-  return { name, container: middle.length > 0 ? middle.join('.') : null };
+  return {
+    kind: 'named',
+    name: last.name,
+    container: middle.length > 0 ? middle.join('.') : null,
+    suffix: last.suffix,
+  };
 }
 
 // ---------------------------------------------------------------------------

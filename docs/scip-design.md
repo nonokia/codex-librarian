@@ -216,6 +216,11 @@ store 行 + eval 出力の両方でバイト単位一致を確認済み。
    テストにする。
 4. **scip-python の充足率**: enclosing_range / enclosing_symbol / Test role をどこまで
    埋めるかは実測(Step 4)。欠けても §4.5 の degrade 規則は成立する。
+   → **実測済み(Step 4、scip-python 0.6.6)**: kind は全件 Unspecified、Import role・
+   Test role・typed_range は不使用、enclosing_range は定義 occurrence に付く。degrade
+   規則は成立したが、kind の moniker 文法からの導出・module 形 moniker(`__init__:`)の
+   合成 module 行へのエイリアス・module 形参照→imports のヒューリスティックを ingest に
+   追加した。実測値と失敗分析は `docs/scip-baseline.md`(88.1% — PHP native と同値)。
 5. **selfindex / dlog への影響**: id スキーム不変のため self.db・dlog anchor の id 連続性は
    保たれる。Step 3(TS 載せ替え)後に `npm run selfindex` の完全一致で確認。
 

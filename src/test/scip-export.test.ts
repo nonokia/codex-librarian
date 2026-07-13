@@ -189,26 +189,34 @@ function pythonishIndex() {
           // Test-role local definition: partial testblock reconstruction
           { symbol: 'local 0', symbolRoles: SymbolRole.Definition | SymbolRole.Test, range: [16, 8, 20], enclosingRange: [16, 4, 19, 0] },
         ],
+        // kind is left unset everywhere below (scip-python 0.6.x does that);
+        // the ingest must fall back to the moniker grammar
         symbols: [
+          { symbol: `${PY} \`taskflow.store\`/__init__:` },
           {
             symbol: `${PY} \`taskflow.store\`/MemStore#`,
-            kind: SymbolInformation_Kind.Class,
             documentation: ['in-memory store'],
             relationships: [
               { symbol: `${PY} \`taskflow.base\`/Store#`, isImplementation: true },
             ],
           },
-          { symbol: `${PY} \`taskflow.store\`/MemStore#complete().`, kind: SymbolInformation_Kind.Method },
-          { symbol: `${PY} \`taskflow.store\`/MemStore#complete().(task)`, kind: SymbolInformation_Kind.Parameter },
-          { symbol: 'local 0', kind: SymbolInformation_Kind.UnspecifiedKind, displayName: 'test_complete' },
+          {
+            symbol: `${PY} \`taskflow.store\`/MemStore#complete().`,
+            documentation: ['```python\ndef complete(self, id: int) -> None:\n```', 'mark a task done'],
+          },
+          { symbol: `${PY} \`taskflow.store\`/MemStore#complete().(task)` },
+          { symbol: 'local 0', displayName: 'test_complete' },
         ],
       },
       {
         language: 'python',
         relativePath: 'taskflow/util.py',
         occurrences: [
+          // `import taskflow.store` — no Import role, just a module-shaped reference
+          { symbol: `${PY} \`taskflow.store\`/__init__:`, symbolRoles: SymbolRole.ReadAccess, range: [0, 7, 21] },
           { symbol: `${PY} \`taskflow.util\`/log().`, symbolRoles: SymbolRole.Definition, range: [2, 4, 7], enclosingRange: [2, 0, 5, 0] },
         ],
+        // the kind-ful producer path must keep working alongside the fallback
         symbols: [{ symbol: `${PY} \`taskflow.util\`/log().`, kind: SymbolInformation_Kind.Function }],
       },
     ],
@@ -221,8 +229,8 @@ test('degrade ingest maps an ext-less index per §4.5', () => {
   const storePy = results[0];
   assert.equal(storePy.file, 'taskflow/store.py');
 
-  // parameter skipped by kind — the only doc-owned drop
-  assert.equal(skippedSymbols, 1);
+  // the parameter drops silently (by design, not a symbol) — nothing else skips
+  assert.equal(skippedSymbols, 0);
 
   const byName = new Map(storePy.symbols.map((s) => [s.name, s]));
   const module = byName.get('taskflow/store.py')!;
@@ -233,7 +241,10 @@ test('degrade ingest maps an ext-less index per §4.5', () => {
     ['class', null, 5, 20, 'in-memory store'],
   );
   const complete = byName.get('complete')!;
-  assert.deepEqual([complete.kind, complete.container, complete.spanStart, complete.spanEnd], ['method', 'MemStore', 10, 14]);
+  assert.deepEqual(
+    [complete.kind, complete.container, complete.spanStart, complete.spanEnd, complete.signature, complete.doc],
+    ['method', 'MemStore', 10, 14, 'def complete(self, id: int) -> None:', 'mark a task done'],
+  );
   const tb = byName.get('test_complete')!;
   assert.deepEqual([tb.kind, tb.container, tb.spanStart, tb.spanEnd], ['testblock', 'MemStore', 17, 19]);
 
@@ -247,6 +258,12 @@ test('degrade ingest maps an ext-less index per §4.5', () => {
     // is_implementation → extends; target not in the index → unresolved
     ['extends', 'Store', false, false, null],
   ]);
+
+  // `import taskflow.store` in util.py: module-shaped reference → a RESOLVED
+  // imports edge onto store.py's synthesized module row, like native imports
+  const utilModule = results[1].symbols.find((s) => s.kind === 'module')!;
+  const utilEdges = results[1].edges.map((e) => [e.kind, e.toName, e.resolved, e.fromId === utilModule.id, e.toId]);
+  assert.deepEqual(utilEdges, [['imports', 'taskflow.store', true, true, module.id]]);
 });
 
 test('degrade importScip e2e flags the route and persists rows', () => {
@@ -256,7 +273,7 @@ test('degrade importScip e2e flags the route and persists rows', () => {
     const store = new Store(':memory:');
     const report = importScip(store, join(dir, 'py.scip'), { repoName: 'py' });
     assert.equal(report.degraded, true);
-    assert.equal(report.skippedSymbols, 1);
+    assert.equal(report.skippedSymbols, 0);
     assert.equal(report.filesSeen, 2);
     assert.equal(report.root, '/py-src');
     assert.ok(store.findSymbols('MemStore', 5, 'py').length === 1);
