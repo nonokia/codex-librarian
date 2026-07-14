@@ -24,13 +24,20 @@ import { delimiter, isAbsolute, join, resolve } from 'node:path';
 import type { Extractor } from '../protocol/extractor.js';
 import { GoExtractor } from '../extractors/go.js';
 import { PhpExtractor } from '../extractors/php.js';
+import { PythonExtractor } from '../extractors/python.js';
 import { SubprocessExtractor, type SubprocessCommand } from '../extractors/subprocess.js';
 import { TerraformExtractor } from '../extractors/terraform.js';
 import { TypeScriptExtractor } from '../extractors/ts.js';
 
-/** The always-on built-ins: TS in-process, Go/PHP/Terraform as reference plugins. */
+/** The always-on built-ins: TS in-process, Go/PHP/Python/Terraform as reference plugins. */
 export function builtinExtractors(): Extractor[] {
-  return [new TypeScriptExtractor(), new GoExtractor(), new PhpExtractor(), new TerraformExtractor()];
+  return [
+    new TypeScriptExtractor(),
+    new GoExtractor(),
+    new PhpExtractor(),
+    new PythonExtractor(),
+    new TerraformExtractor(),
+  ];
 }
 
 /** One `.librarian/extractors.json` entry: extension → command declaration. */

@@ -41,6 +41,8 @@ interface Flags {
   json: boolean;
   /** export format selector (`librarian export --scip`) */
   scip: boolean;
+  /** `librarian import --prefer-scip`: keep degrade docs a native extractor claims */
+  preferScip: boolean;
 }
 
 function parseArgs(argv: string[]): { command: string; positional: string[]; flags: Flags } {
@@ -58,6 +60,7 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     include: [],
     json: false,
     scip: false,
+    preferScip: false,
   };
   const positional: string[] = [];
   let command = '';
@@ -73,6 +76,7 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     else if (a === '--include') flags.include.push(argv[++i]);
     else if (a === '--json') flags.json = true;
     else if (a === '--scip') flags.scip = true;
+    else if (a === '--prefer-scip') flags.preferScip = true;
     else if (a === '--source') flags.source = true;
     else if (a === '--model') flags.model = argv[++i];
     else if (a === '--dry-run') flags.dryRun = true;
@@ -124,10 +128,13 @@ Usage:
                                               Write one repo's index as SCIP+:
                                               <out>.scip (standard SCIP) +
                                               <out>.scip-ext.json (sidecar)
-  librarian import <index.scip> [--repo-name <name>] [--root <dir>]
+  librarian import <index.scip> [--repo-name <name>] [--root <dir>] [--prefer-scip]
                                               Ingest a SCIP index; reads the
                                               .scip-ext.json sidecar when present,
-                                              degrades to base-only edges otherwise
+                                              degrades to base-only edges otherwise.
+                                              Degrade docs whose extension a native
+                                              extractor claims are skipped (native
+                                              wins); --prefer-scip keeps them
   librarian pack <diff-file|->                Sectioned Context Pack (markdown)
   librarian review <diff-file|-> [--model M] [--dry-run] [--markdown]
                                               LLM review grounded in the pack
@@ -321,11 +328,16 @@ function main(): void {
       break;
     }
     case 'import': {
-      if (!positional[0]) fail('usage: librarian import <index.scip> [--repo-name <name>] [--root <dir>]');
+      if (!positional[0])
+        fail('usage: librarian import <index.scip> [--repo-name <name>] [--root <dir>] [--prefer-scip]');
       const scipPath = resolve(positional[0]);
       if (!existsSync(scipPath)) fail(`no such file: ${scipPath}`);
       const store = new Store(flags.db ?? defaultDb());
-      const report = importScip(store, scipPath, { repoName: flags.repoName, root: flags.root });
+      const report = importScip(store, scipPath, {
+        repoName: flags.repoName,
+        root: flags.root,
+        preferScip: flags.preferScip,
+      });
       store.close();
       emit(report, flags.pretty);
       break;

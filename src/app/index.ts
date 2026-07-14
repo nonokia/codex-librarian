@@ -99,9 +99,12 @@ export interface IndexReport {
  * runs when at least one of ITS files changed.
  *
  * Jurisdiction (#16 §4.5): a run only manages — and in particular only
- * REMOVES — files its extractors claim. Rows of other extensions (e.g. .py
+ * REMOVES — files its extractors claim. Rows of other extensions (e.g. .rs
  * imported from an external .scip) survive a reindex, so `index` and
- * `import` can coexist in one repo.
+ * `import` can coexist in one repo. Since #6 that includes .py both ways: the
+ * native extractor claims it, so indexing a repo whose .py rows came from an
+ * imported scip-python index replaces them (the native rows win for claimed
+ * files) — the two routes are compared in docs/python-baseline.md.
  */
 export function indexRepo(
   store: Store,
@@ -196,11 +199,18 @@ export interface ScipImportReport extends IndexReport {
  * route is exempt: ext IS the native signal (the export --scip roundtrip).
  * Removal jurisdiction mirrors indexRepo: an import only removes files of
  * extensions it actually ingested, so native rows survive a re-import.
+ *
+ * `preferScip` (CLI `--prefer-scip`) opts out of that skip for one run. It
+ * exists because a language can gain a native leg after an external indexer was
+ * already the route for it (#6 did exactly that to Python), and the two are
+ * measurably different — an external indexer may carry inference the native leg
+ * does not (docs/python-baseline.md compares them on the same golden set). The
+ * default stays "native wins": the override is explicit, never silent.
  */
 export function importScip(
   store: Store,
   scipPath: string,
-  opts: { repoName?: string; root?: string; extractors?: Extractor[] } = {}
+  opts: { repoName?: string; root?: string; extractors?: Extractor[]; preferScip?: boolean } = {}
 ): ScipImportReport {
   const t0 = Date.now();
   const index = decodeScip(readFileSync(scipPath));
@@ -229,7 +239,7 @@ export function importScip(
   // extension a registered extractor (built-in or `.librarian/extractors.json`)
   // claims — `librarian index` is the richer intake for those languages.
   let skippedNativeFiles = 0;
-  if (degraded) {
+  if (degraded && !opts.preferScip) {
     const extractors = opts.extractors ?? resolveExtractors(root);
     const kept = raw.filter((r) => extractorFor(r.file, extractors) === null);
     skippedNativeFiles = raw.length - kept.length;
