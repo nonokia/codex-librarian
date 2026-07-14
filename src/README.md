@@ -22,7 +22,8 @@ store/  ←──── core/ ───────────┘
 - **store/** — `store.ts`(SQLite、`node:sqlite`)。
 - **app/** — ディスパッチと外側のオーケストレーション。`index.ts`(ファイル発見・
   拡張子ルーティング・`indexRepo`/`importScip`)、`registry.ts`(ビルトイン +
-  `.librarian/extractors.json` の合成・上書き)、`review.ts`(Claude API)、
+  `.librarian/extractors.json` の合成・上書き)、`link.ts`(repo 間 import 解決 —
+  明示宣言を入力に unresolved エッジを再解決、ADR-8)、`review.ts`(Claude API)、
   `eval.ts`(ADR-4 評価ハーネス)、`loop.ts`(自己改善ループ)。
 - **cli.ts** — エントリポイント(`dist/cli.js` は不変)。
 

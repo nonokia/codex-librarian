@@ -232,6 +232,32 @@ class SubprocessExtractor implements Extractor {
 **実世界での実証**は #6(Python を native プラグインとして書く)が理想だが、それは #6 の
 スコープ。#22 の最低ラインは**ドキュメントのウォークスルーで確認**(issue の受け入れ条件どおり)。
 
+### 8.1 任意規約: import binding エッジ(cross-repo 解決の opt-in、#27 / ADR-8)
+
+`librarian link` は、リポジトリを跨ぐ呼び出しを**名前一致の推測ではなく binding の事実**で
+解決する。そのためにプラグインは、**repo 内に解決できなかった import**(= 外部 package)に
+ついて、名前を **package 修飾** で吐ける:
+
+| エッジ | `toName` | 意味 |
+| --- | --- | --- |
+| `imports`(module から) | `<specifier>` | ファイルがその指定子を import している(既存。必須) |
+| `imports`(module から) | `<specifier>#<imported>` | そこから `<imported>` を binding している |
+| `imports`(module から) | `<specifier>#<imported> as <local>` | 別名 binding(局所名は `<local>`) |
+| `calls` / `extends` / `references` | `<specifier>#<imported>` | **その import を使った参照点**。生の局所名ではなく、由来 package で名付ける |
+
+すべて `resolved = false` / `toId = null`。最後の行が肝で、**参照点そのものが由来を名乗る**ため
+link 側は「ファイル内の名前表を引いて突き合わせる」必要がない。結果として、export と同名の
+メソッド呼び出し(`seen.add(v)` と import された `add`)は生名 `add` のままなので、
+**構造的に繋がりようがない**(偽エッジが作れない)。これらはすべて **repo に依存しない事実**
+(「この指定子からこの名前を取った」)なので repo-unaware invariant(#11)を破らない —
+package → repo の写像を持つのは store/app 層(`link`)だけ。
+
+**任意**である: 吐かないプラグインは cross-repo 解決が起きないだけで、degrade も偽エッジも
+発生しない(link はその言語のエッジに触れない)。現状 TS 抽出器(`importBindings`)が唯一の
+実装。link 側は言語を知らないので、同じ規約で吐けば無改造で効く。`link` が繋ぐのは
+**module-scope の宣言を名前で import したもの**だけで、メソッド・default/namespace import は
+`resolved = 0` のまま残す(型解決が要るため)。
+
 ## 9. リファレンスプラグインの再位置付け(README)
 
 `go-extractor/` / `php-extractor/` を「同梱の組み込み実装」から「**プロトコルのリファレンス

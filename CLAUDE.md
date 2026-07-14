@@ -39,6 +39,7 @@ librarian stats                  # ストア統計
 librarian map [--json]           # 決定的コードベースマップ(markdown)
 librarian graph <symbol>         # k-hop 近傍探索
 librarian eval <golden.json>     # retrieval match 率の計測(ADR-4)
+librarian link [--map f] [--clear]   # repo 間 import 解決(明示宣言、ADR-8)
 librarian pack <diff>            # 区画付き Context Pack(markdown)
 librarian review <diff> --markdown   # Claude API でレビュー生成(要 ANTHROPIC_API_KEY)
 librarian learn <golden.json> --holdout  # 戦略掃引 → PatternCache 昇格(§4-⑤)
@@ -139,6 +140,14 @@ dlog の「変更前に `dlog why`」と対になるルール:
 - `eval/fixtures/terraform-taskflow/` — Terraform 用正解セットの対象構成(コミットされた
   fixture、ローカル module 含む)。ベースラインは `docs/terraform-baseline.md`
   (`eval/golden/terraform-taskflow.json`)。
+- `src/app/link.ts` — リポジトリ間 import 解決(issue #27 / ADR-8)。`.librarian/links.json`
+  の **明示宣言(package → repo)** を入力に、抽出器が残した unresolved エッジを再解決する
+  後段ステップ(`librarian link`)。**推測で名前一致させない** — TS 抽出器が吐く import
+  binding エッジ(`imports <spec>#<imported>`、`docs/plugin-protocol.md` §8.1)を辿って束縛し、
+  曖昧なら繋がない。冪等・可逆(`--clear`)。宣言が無い db では cross-repo エッジは 0 本で
+  #27 以前と同一。数値は `docs/cross-repo-baseline.md`(link なし 0.429 → あり 1.000)。
+- `eval/fixtures/cross-repo/` — 相互参照する fixture ペア(`acme-core` = package `@acme/core`
+  と、それを package 名で import する `acme-app`)。golden は `eval/golden/cross-repo.json`。
 - `src/core/diff.ts` / `src/core/retrieval.ts` — unified diff → シード → 決定的展開(ADR-3
   stage 1)。
 - `src/app/eval.ts` + `eval/golden/` — Phase 0 評価ハーネスと正解セット(規律は

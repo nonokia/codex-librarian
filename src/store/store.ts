@@ -58,6 +58,15 @@ export interface EdgeRow {
   resolved: boolean;
 }
 
+/** An unresolved edge with the repo/file it originates in (the input of `link`, #27). */
+export interface UnresolvedEdge {
+  fromId: string;
+  fromRepo: string;
+  fromFile: string;
+  toName: string;
+  kind: EdgeKind;
+}
+
 export interface EdgeEndpoint {
   repo: string;
   file: string;
@@ -637,6 +646,129 @@ export class Store {
       | Record<string, unknown>
       | undefined;
     return row ? rowToSymbol(row) : null;
+  }
+
+  /**
+   * Every unresolved edge with the repo/file its from-symbol lives in — the
+   * input `librarian link` (#27) resolves against a declared package → repo
+   * mapping. Ordered so a link run is deterministic.
+   */
+  unresolvedEdges(repo?: string): UnresolvedEdge[] {
+    return (
+      this.db
+        .prepare(
+          `SELECT e.from_id, e.to_name, e.kind, s.repo, s.file
+           FROM edges e JOIN symbols s ON s.id = e.from_id
+           WHERE e.resolved = 0 AND (?1 IS NULL OR s.repo = ?1)
+           ORDER BY s.repo, s.file, e.from_id, e.kind, e.to_name`
+        )
+        .all(repo ?? null) as Record<string, unknown>[]
+    ).map((r) => ({
+      fromId: r.from_id as string,
+      fromRepo: r.repo as string,
+      fromFile: r.file as string,
+      toName: r.to_name as string,
+      kind: r.kind as EdgeKind,
+    }));
+  }
+
+  /**
+   * Module-scope declarations of a repo, by name — the only symbols a
+   * cross-repo import can name (#27: a method needs type resolution to bind,
+   * a module symbol is a file and not importable by name). Returns every
+   * match: an ambiguous name is the caller's to refuse, not the store's.
+   */
+  topLevelSymbolsNamed(repo: string, name: string): SymbolRow[] {
+    return (
+      this.db
+        .prepare(
+          `SELECT * FROM symbols
+           WHERE repo = ? AND name = ? AND container IS NULL AND kind NOT IN ('module', 'testblock')
+           ORDER BY file, span_start`
+        )
+        .all(repo, name) as unknown[]
+    ).map(rowToSymbol);
+  }
+
+  moduleSymbol(repo: string, file: string): SymbolRow | null {
+    const row = this.db
+      .prepare("SELECT * FROM symbols WHERE repo = ? AND file = ? AND kind = 'module'")
+      .get(repo, file) as Record<string, unknown> | undefined;
+    return row ? rowToSymbol(row) : null;
+  }
+
+  /**
+   * Point unresolved edges at a target symbol, keeping the raw name in
+   * `to_name` (to_id is part of the PK, so this is a delete + insert). The raw
+   * name is what makes the operation reversible — `unlinkCrossRepo` restores
+   * exactly the row the extractor emitted.
+   */
+  linkEdges(links: { fromId: string; toName: string; kind: EdgeKind; toId: string }[]): number {
+    const del = this.db.prepare(
+      "DELETE FROM edges WHERE from_id = ? AND to_id = '' AND to_name = ? AND kind = ?"
+    );
+    const ins = this.db.prepare(
+      'INSERT OR REPLACE INTO edges(from_id, to_id, to_name, kind, resolved) VALUES(?,?,?,?,1)'
+    );
+    let n = 0;
+    this.db.exec('BEGIN');
+    try {
+      for (const l of links) {
+        if (del.run(l.fromId, l.toName, l.kind).changes === 0) continue;
+        ins.run(l.fromId, l.toId, l.toName, l.kind);
+        n++;
+      }
+      this.db.exec('COMMIT');
+    } catch (err) {
+      this.db.exec('ROLLBACK');
+      throw err;
+    }
+    return n;
+  }
+
+  /** Resolved edges whose endpoints live in different repos — only `link` creates these. */
+  crossRepoEdges(): JoinedEdge[] {
+    return this.resolvedEdgesJoined().filter((e) => e.from.repo !== e.to.repo);
+  }
+
+  countCrossRepoEdges(): number {
+    const row = this.db
+      .prepare(
+        `SELECT COUNT(*) AS n FROM edges e
+         JOIN symbols f ON f.id = e.from_id JOIN symbols t ON t.id = e.to_id
+         WHERE e.resolved = 1 AND f.repo != t.repo`
+      )
+      .get() as { n: number };
+    return row.n;
+  }
+
+  /** Revert every cross-repo edge to the unresolved row it was extracted as (`link --clear`). */
+  unlinkCrossRepo(): number {
+    const rows = this.db
+      .prepare(
+        `SELECT e.from_id, e.to_id, e.to_name, e.kind FROM edges e
+         JOIN symbols f ON f.id = e.from_id JOIN symbols t ON t.id = e.to_id
+         WHERE e.resolved = 1 AND f.repo != t.repo`
+      )
+      .all() as Record<string, unknown>[];
+    const del = this.db.prepare(
+      'DELETE FROM edges WHERE from_id = ? AND to_id = ? AND to_name = ? AND kind = ?'
+    );
+    const ins = this.db.prepare(
+      "INSERT OR REPLACE INTO edges(from_id, to_id, to_name, kind, resolved) VALUES(?,'',?,?,0)"
+    );
+    this.db.exec('BEGIN');
+    try {
+      for (const r of rows) {
+        del.run(r.from_id as string, r.to_id as string, r.to_name as string, r.kind as string);
+        ins.run(r.from_id as string, r.to_name as string, r.kind as string);
+      }
+      this.db.exec('COMMIT');
+    } catch (err) {
+      this.db.exec('ROLLBACK');
+      throw err;
+    }
+    return rows.length;
   }
 }
 

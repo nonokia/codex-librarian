@@ -14,6 +14,7 @@ import { loadGoldenFile, runEval } from './app/eval.js';
 import { assembleReviewPack, renderReviewPack } from './core/contextpack.js';
 import { generateReview, buildReviewRequest, renderReviewMarkdown, DEFAULT_MODEL } from './app/review.js';
 import { learn, recordReviewOutcome } from './app/loop.js';
+import { defaultLinkMapPath, link, loadLinkMap, unlink } from './app/link.js';
 import { buildMap, renderMapMarkdown } from './core/map.js';
 
 interface Flags {
@@ -43,6 +44,10 @@ interface Flags {
   scip: boolean;
   /** `librarian import --prefer-scip`: keep degrade docs a native extractor claims */
   preferScip: boolean;
+  /** `librarian link --map <file>`: the package → repo declaration (#27) */
+  map?: string;
+  /** `librarian link --clear`: revert every cross-repo edge to unresolved */
+  clear: boolean;
 }
 
 function parseArgs(argv: string[]): { command: string; positional: string[]; flags: Flags } {
@@ -61,6 +66,7 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     json: false,
     scip: false,
     preferScip: false,
+    clear: false,
   };
   const positional: string[] = [];
   let command = '';
@@ -75,6 +81,8 @@ function parseArgs(argv: string[]): { command: string; positional: string[]; fla
     else if (a === '--limit') flags.limit = Number(argv[++i]);
     else if (a === '--include') flags.include.push(argv[++i]);
     else if (a === '--json') flags.json = true;
+    else if (a === '--map') flags.map = argv[++i];
+    else if (a === '--clear') flags.clear = true;
     else if (a === '--scip') flags.scip = true;
     else if (a === '--prefer-scip') flags.preferScip = true;
     else if (a === '--source') flags.source = true;
@@ -135,6 +143,12 @@ Usage:
                                               Degrade docs whose extension a native
                                               extractor claims are skipped (native
                                               wins); --prefer-scip keeps them
+  librarian link [--map <file>] [--dry-run] [--clear]
+                                              Resolve cross-repo imports (#27)
+                                              from a declared package → repo map
+                                              (default: <db-dir>/links.json).
+                                              Nothing is linked without it;
+                                              --clear reverts to unresolved
   librarian pack <diff-file|->                Sectioned Context Pack (markdown)
   librarian review <diff-file|-> [--model M] [--dry-run] [--markdown]
                                               LLM review grounded in the pack
@@ -202,7 +216,12 @@ function main(): void {
     }
     case 'stats': {
       const store = openStore(flags);
-      emit({ ...store.stats(), repos: store.listRepos() }, flags.pretty);
+      // crossRepoEdges is 0 until `librarian link` runs (#27) — it is the only
+      // producer of edges whose endpoints live in different repos.
+      emit(
+        { ...store.stats(), crossRepoEdges: store.countCrossRepoEdges(), repos: store.listRepos() },
+        flags.pretty
+      );
       store.close();
       break;
     }
@@ -340,6 +359,33 @@ function main(): void {
       });
       store.close();
       emit(report, flags.pretty);
+      break;
+    }
+    case 'link': {
+      const dbPath = flags.db ?? defaultDb();
+      const store = openStore(flags);
+      if (flags.clear) {
+        const report = unlink(store);
+        store.close();
+        emit(report, flags.pretty);
+        break;
+      }
+      const mapPath = resolve(flags.map ?? defaultLinkMapPath(dbPath));
+      if (!existsSync(mapPath)) {
+        store.close();
+        fail(
+          `no link map at ${mapPath} — declare package → repo there, e.g. ` +
+            `{"packages":[{"package":"@acme/core","repo":"acme-core"}]} (or pass --map <file>)`
+        );
+      }
+      try {
+        const report = link(store, loadLinkMap(mapPath), { dryRun: flags.dryRun });
+        store.close();
+        emit({ map: mapPath, ...report }, flags.pretty);
+      } catch (err) {
+        store.close();
+        fail((err as Error).message);
+      }
       break;
     }
     case 'learn': {
