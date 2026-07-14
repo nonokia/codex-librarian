@@ -30,6 +30,7 @@ const SCHEME_BY_EXTENSION: Record<string, LibrarianScheme> = {
   '.cjs': 'librarian-ts',
   '.go': 'librarian-go',
   '.php': 'librarian-php',
+  '.tf': 'librarian-terraform',
 };
 
 export interface ScipExportResult {

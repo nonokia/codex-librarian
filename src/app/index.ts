@@ -13,7 +13,7 @@ import { EXTENSIONS } from '../extractors/ts.js';
 import { resolveExtractors } from './registry.js';
 import { Store } from '../store/store.js';
 
-const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', 'coverage', '.git', '.dlog', '.librarian', 'out', 'vendor']);
+const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', 'coverage', '.git', '.dlog', '.librarian', 'out', 'vendor', '.terraform']);
 
 export function discoverSourceFiles(rootDir: string, extensions: string[] = EXTENSIONS): string[] {
   const found: string[] = [];

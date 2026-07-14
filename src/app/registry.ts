@@ -25,11 +25,12 @@ import type { Extractor } from '../protocol/extractor.js';
 import { GoExtractor } from '../extractors/go.js';
 import { PhpExtractor } from '../extractors/php.js';
 import { SubprocessExtractor, type SubprocessCommand } from '../extractors/subprocess.js';
+import { TerraformExtractor } from '../extractors/terraform.js';
 import { TypeScriptExtractor } from '../extractors/ts.js';
 
-/** The always-on built-ins: TS in-process, Go/PHP as reference plugins. */
+/** The always-on built-ins: TS in-process, Go/PHP/Terraform as reference plugins. */
 export function builtinExtractors(): Extractor[] {
-  return [new TypeScriptExtractor(), new GoExtractor(), new PhpExtractor()];
+  return [new TypeScriptExtractor(), new GoExtractor(), new PhpExtractor(), new TerraformExtractor()];
 }
 
 /** One `.librarian/extractors.json` entry: extension → command declaration. */

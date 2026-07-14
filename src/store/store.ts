@@ -20,7 +20,14 @@ export type SymbolKind =
   | 'typealias'
   | 'enum'
   | 'variable'
-  | 'testblock';
+  | 'testblock'
+  // Terraform (HCL) block kinds (#9). `module` (blocks) and `variable` are
+  // reused; these four are new. They carry no call semantics — a Terraform
+  // graph is a resource/module reference graph, not a call graph.
+  | 'resource'
+  | 'data'
+  | 'output'
+  | 'locals';
 
 export type EdgeKind = 'calls' | 'imports' | 'extends' | 'references';
 
