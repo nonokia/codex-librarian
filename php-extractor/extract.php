@@ -863,6 +863,19 @@ final class Extractor
 
 // ---- entry point: {root, files} on stdin → SCIP+ envelope on stdout ----
 
+// Plugin-protocol handshake (issue #22 / ADR-7): `--capabilities` prints one
+// JSON line, reads no stdin, exits 0. The runner queries this to negotiate the
+// SCIP+ envelope major version before extracting.
+if (in_array('--capabilities', array_slice($argv, 1), true)) {
+    echo json_encode([
+        'protocol' => 'librarian-scip-plus',
+        'protocolVersion' => 1,
+        'name' => MONIKER_SCHEME,
+        'extensions' => ['.php'],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit(0);
+}
+
 $raw = stream_get_contents(STDIN);
 $req = json_decode($raw, true);
 if (!is_array($req) || !isset($req['root']) || !isset($req['files'])) {

@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 43
-- symbols: 389
-- edges: 2013 (unresolved: 1093)
-- symbols by kind: class=5, function=133, interface=49, method=32, module=43, testblock=69, typealias=10, variable=48
+- files: 46
+- symbols: 423
+- edges: 2176 (unresolved: 1184)
+- symbols by kind: class=6, function=141, interface=51, method=35, module=46, testblock=79, typealias=12, variable=53
 
 ## Files
 
@@ -26,16 +26,15 @@
 
 ### src/app/index.ts
 
-- variable SKIP_DIRS L17-17
-- function defaultExtractors L24-26 `(): Extractor[]`
-- function discoverSourceFiles L28-43 `(rootDir: string, extensions: string[] = EXTENSIONS): string[]`
-- function extractorFor L46-48 `(file: string, extractors: Extractor[]): Extractor | null`
-- function contentHash L50-52 `(text: string): string`
-- function namespaceIds L60-76 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
-- interface IndexReport L78-89
-- function indexRepo L107-175 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
-- interface ScipImportReport L177-183
-- function importScip L201-272 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[] } = {}): ScipImportReport`
+- variable SKIP_DIRS L16-16
+- function discoverSourceFiles L18-33 `(rootDir: string, extensions: string[] = EXTENSIONS): string[]`
+- function extractorFor L36-38 `(file: string, extractors: Extractor[]): Extractor | null`
+- function contentHash L40-42 `(text: string): string`
+- function namespaceIds L50-66 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
+- interface IndexReport L68-79
+- function indexRepo L97-165 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
+- interface ScipImportReport L167-173
+- function importScip L191-266 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[] } = {}): ScipImportReport`
 
 ### src/app/loop.ts
 
@@ -52,6 +51,18 @@
 - function caseSignature L136-144 `(store: Store, root: RootResolver, c: GoldenCase, opts: { budget?: number }): string`
 - function recordReviewOutcome L150-158 `(store: Store, logId: number, result: ReviewResult): void`
 - function round L160-162 `(x: number): number`
+
+### src/app/registry.ts
+
+- function builtinExtractors L31-33 `(): Extractor[]`
+- interface RegistryEntry L36-47
+- function onPath L49-54 `(name: string): string | null`
+- function registryCommandResolver L61-71 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
+- function entryToExtractor L73-82 `(entry: RegistryEntry, root: string): SubprocessExtractor`
+- function parseRegistry L85-97 `(raw: unknown): RegistryEntry[]`
+- function parseEntry L99-125 `(raw: unknown, i: number): RegistryEntry`
+- function loadRegistry L128-138 `(root: string): RegistryEntry[]`
+- function resolveExtractors L146-164 `(root: string): Extractor[]`
 
 ### src/app/review.ts
 
@@ -120,27 +131,35 @@
 
 ### src/extractors/go.ts
 
-- variable MAX_OUTPUT L32-32
-- function goExtractorSourceDir L35-37 `(): string`
-- function onPath L39-44 `(name: string): string | null`
-- interface GoCommand L46-50
-- function resolveGoExtractorCommand L52-62 `(): GoCommand | null`
-- function fileLevelOnly L65-93 `(rootDir: string, files: string[]): ExtractionResult[]`
-- function moduleId L96-98 `(file: string): string`
-- class GoExtractor L100-137
-- method GoExtractor.extract L103-136 `(rootDir: string, files: string[]): ExtractionResult[]`
+- function goExtractorSourceDir L26-28 `(): string`
+- function onPath L30-35 `(name: string): string | null`
+- typealias GoCommand L38-38
+- function resolveGoExtractorCommand L40-50 `(): GoCommand | null`
+- variable UNAVAILABLE_WARNING L52-55
+- class GoExtractor L57-66
+- method GoExtractor.constructor L58-65 `()`
 
 ### src/extractors/php.ts
 
-- variable MAX_OUTPUT L33-33
-- function phpExtractorDir L36-38 `(): string`
-- function onPath L40-45 `(name: string): string | null`
-- interface PhpCommand L47-50
-- function resolvePhpExtractorCommand L52-60 `(): PhpCommand | null`
-- function fileLevelOnly L63-91 `(rootDir: string, files: string[]): ExtractionResult[]`
-- function moduleId L94-96 `(file: string): string`
-- class PhpExtractor L98-134
-- method PhpExtractor.extract L101-133 `(rootDir: string, files: string[]): ExtractionResult[]`
+- function phpExtractorDir L28-30 `(): string`
+- function onPath L32-37 `(name: string): string | null`
+- typealias PhpCommand L40-40
+- function resolvePhpExtractorCommand L42-50 `(): PhpCommand | null`
+- variable UNAVAILABLE_WARNING L52-56
+- class PhpExtractor L58-67
+- method PhpExtractor.constructor L59-66 `()`
+
+### src/extractors/subprocess.ts
+
+- variable MAX_OUTPUT L30-30
+- interface SubprocessCommand L33-38
+- interface SubprocessExtractorConfig L40-49
+- class SubprocessExtractor L51-135
+- method SubprocessExtractor.constructor L59-64 `(config: SubprocessExtractorConfig)`
+- method SubprocessExtractor.extract L66-95 `(rootDir: string, files: string[]): ExtractionResult[]`
+- method SubprocessExtractor.negotiate L104-134 `(command: SubprocessCommand): void`
+- function fileLevelOnly L142-170 `(rootDir: string, files: string[]): ExtractionResult[]`
+- function moduleId L173-175 `(file: string): string`
 
 ### src/extractors/ts.ts
 
@@ -197,54 +216,58 @@
 ### src/protocol/scip.ts
 
 - interface ScipPlusEnvelope L40-43
-- interface Ext L51-54
-- interface ExtDocument L57-61
-- interface ExtSymbol L63-72
-- interface ExtEdge L74-82
-- variable SYMBOL_KIND_FLAGS L86-98
-- variable EDGE_KIND_FLAGS L99-104
-- variable SYMBOL_KINDS L105-105
-- variable EDGE_KINDS L106-106
-- function parseScipPlus L113-122 `(envelope: unknown): { index: Index; ext: Ext }`
-- function parseExt L125-135 `(raw: unknown): Ext`
-- function parseExtDocument L137-152 `(raw: unknown, i: number): ExtDocument`
-- function parseExtSymbol L154-176 `(raw: unknown, at: string): ExtSymbol`
-- function parseExtEdge L178-195 `(raw: unknown, at: string): ExtEdge`
-- function encodeScip L201-203 `(index: Index): Uint8Array`
-- function decodeScip L205-207 `(bytes: Uint8Array): Index`
-- function scipFromJson L209-211 `(json: JsonValue): Index`
-- function scipToJson L213-215 `(index: Index): JsonValue`
-- function createScipIndex L218-220 `(init: MessageInitShape<typeof IndexSchema>): Index`
-- variable KIND_TO_SCIP L228-239
-- variable SCIP_TO_KIND L241-243
-- function kindFromScip L245-247 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- variable DEGRADE_KIND_FROM_SCIP L258-287
-- function degradeKindFromScip L289-291 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- typealias LibrarianScheme L307-307
-- interface MonikerParts L309-321
-- typealias DescriptorSuffix L323-331
-- interface ParsedDescriptor L333-337
-- interface ParsedMoniker L339-345
-- interface LibrarianSymbolKey L348-352
-- variable IDENT_CHAR L354-354
-- variable SIMPLE_IDENT L355-355
-- variable TYPE_KINDS L356-356
-- function escapeIdent L358-361 `(name: string): string`
-- function descriptorFor L363-368 `(name: string, kind: SymbolKind): string`
-- function formatLocal L370-373 `(n: number): string`
-- function isLocalSymbol L375-377 `(symbol: string): boolean`
-- function formatMoniker L379-397 `(scheme: LibrarianScheme, parts: MonikerParts): string`
-- function readHeaderField L400-414 `(s: string, i: number, what: string): [string, number]`
-- function readIdent L416-437 `(s: string, i: number): [string, number]`
-- function parseMoniker L439-512 `(moniker: string): ParsedMoniker`
-- function monikerToParts L520-531 `(moniker: string): LibrarianSymbolKey`
-- function monikerToId L533-536 `(moniker: string, kind: SymbolKind): string`
-- typealias ExternalMonikerKey L551-555
-- function externalMonikerKey L557-580 `(moniker: string): ExternalMonikerKey`
-- interface ScipMultiLineRange L587-592
-- interface ScipSingleLineRange L594-598
-- function spanToScipRange L601-606 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
-- function scipRangeToSpan L608-619 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
+- variable PROTOCOL_NAME L55-55
+- variable PROTOCOL_VERSION L58-58
+- interface Capabilities L60-69
+- interface Ext L77-80
+- interface ExtDocument L83-87
+- interface ExtSymbol L89-98
+- interface ExtEdge L100-108
+- variable SYMBOL_KIND_FLAGS L112-124
+- variable EDGE_KIND_FLAGS L125-130
+- variable SYMBOL_KINDS L131-131
+- variable EDGE_KINDS L132-132
+- function parseScipPlus L139-148 `(envelope: unknown): { index: Index; ext: Ext }`
+- function parseCapabilities L156-181 `(raw: unknown): Capabilities`
+- function parseExt L184-194 `(raw: unknown): Ext`
+- function parseExtDocument L196-211 `(raw: unknown, i: number): ExtDocument`
+- function parseExtSymbol L213-235 `(raw: unknown, at: string): ExtSymbol`
+- function parseExtEdge L237-254 `(raw: unknown, at: string): ExtEdge`
+- function encodeScip L260-262 `(index: Index): Uint8Array`
+- function decodeScip L264-266 `(bytes: Uint8Array): Index`
+- function scipFromJson L268-270 `(json: JsonValue): Index`
+- function scipToJson L272-274 `(index: Index): JsonValue`
+- function createScipIndex L277-279 `(init: MessageInitShape<typeof IndexSchema>): Index`
+- variable KIND_TO_SCIP L287-298
+- variable SCIP_TO_KIND L300-302
+- function kindFromScip L304-306 `(kind: SymbolInformation_Kind): SymbolKind | null`
+- variable DEGRADE_KIND_FROM_SCIP L317-346
+- function degradeKindFromScip L348-350 `(kind: SymbolInformation_Kind): SymbolKind | null`
+- typealias LibrarianScheme L366-366
+- interface MonikerParts L368-380
+- typealias DescriptorSuffix L382-390
+- interface ParsedDescriptor L392-396
+- interface ParsedMoniker L398-404
+- interface LibrarianSymbolKey L407-411
+- variable IDENT_CHAR L413-413
+- variable SIMPLE_IDENT L414-414
+- variable TYPE_KINDS L415-415
+- function escapeIdent L417-420 `(name: string): string`
+- function descriptorFor L422-427 `(name: string, kind: SymbolKind): string`
+- function formatLocal L429-432 `(n: number): string`
+- function isLocalSymbol L434-436 `(symbol: string): boolean`
+- function formatMoniker L438-456 `(scheme: LibrarianScheme, parts: MonikerParts): string`
+- function readHeaderField L459-473 `(s: string, i: number, what: string): [string, number]`
+- function readIdent L475-496 `(s: string, i: number): [string, number]`
+- function parseMoniker L498-571 `(moniker: string): ParsedMoniker`
+- function monikerToParts L579-590 `(moniker: string): LibrarianSymbolKey`
+- function monikerToId L592-595 `(moniker: string, kind: SymbolKind): string`
+- typealias ExternalMonikerKey L610-614
+- function externalMonikerKey L616-639 `(moniker: string): ExternalMonikerKey`
+- interface ScipMultiLineRange L646-651
+- interface ScipSingleLineRange L653-657
+- function spanToScipRange L660-665 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
+- function scipRangeToSpan L667-678 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
 
 ### src/store/store.ts
 
@@ -344,33 +367,35 @@
 
 ### src/test/extractor-go.test.ts
 
-- variable repoRoot L15-15
-- variable goExtractorDir L16-16
-- variable fixture L17-17
-- variable hasGo L19-19
-- variable binary L26-26
-- function builtBinary L27-34 `(): string`
-- function indexedFixture L36-41 `(): Store`
-- testblock test(go fixture indexes with the full symbol taxonomy) L43-57
-- testblock test(extends covers interface satisfaction and embedding) L59-83
-- testblock test(calls resolve through the type checker; unresolved keep raw names) L85-99
-- testblock test(TestXxx and t.Run subtests become nested testblock symbols) L101-115
-- testblock test(a diff against a Go method seeds retrieval and packs its callers) L117-130
-- testblock test(without a Go toolchain the claimed files degrade to file-level modules) L132-152
+- variable repoRoot L16-16
+- variable goExtractorDir L17-17
+- variable fixture L18-18
+- variable hasGo L20-20
+- variable binary L27-27
+- function builtBinary L28-35 `(): string`
+- function indexedFixture L37-42 `(): Store`
+- testblock test(go fixture indexes with the full symbol taxonomy) L44-58
+- testblock test(extends covers interface satisfaction and embedding) L60-84
+- testblock test(calls resolve through the type checker; unresolved keep raw names) L86-100
+- testblock test(TestXxx and t.Run subtests become nested testblock symbols) L102-116
+- testblock test(a diff against a Go method seeds retrieval and packs its callers) L118-131
+- testblock test(without a Go toolchain the claimed files degrade to file-level modules) L133-153
+- testblock test(--capabilities answers the plugin-protocol handshake, reads no stdin) L155-163
 
 ### src/test/extractor-php.test.ts
 
-- variable repoRoot L15-15
-- variable fixture L16-16
-- variable hasPhp L18-18
-- function indexedFixture L20-24 `(): Store`
-- testblock test(php fixture indexes with the full symbol taxonomy) L26-40
-- testblock test(extends covers implements, interface-extends and trait use) L42-71
-- testblock test(calls: $this-> / new / static resolve; dynamic dispatch stays raw) L73-102
-- testblock test(type hints become references to repo types) L104-118
-- testblock test(PHPUnit test methods become testblock symbols (test* and #[Test])) L120-132
-- testblock test(a diff against a php method seeds retrieval and packs its test context) L134-147
-- testblock test(without a php interpreter the claimed files degrade to file-level modules) L149-171
+- variable repoRoot L16-16
+- variable fixture L17-17
+- variable hasPhp L19-19
+- function indexedFixture L21-25 `(): Store`
+- testblock test(php fixture indexes with the full symbol taxonomy) L27-41
+- testblock test(extends covers implements, interface-extends and trait use) L43-72
+- testblock test(calls: $this-> / new / static resolve; dynamic dispatch stays raw) L74-103
+- testblock test(type hints become references to repo types) L105-119
+- testblock test(PHPUnit test methods become testblock symbols (test* and #[Test])) L121-133
+- testblock test(a diff against a php method seeds retrieval and packs its test context) L135-148
+- testblock test(without a php interpreter the claimed files degrade to file-level modules) L150-172
+- testblock test(--capabilities answers the plugin-protocol handshake, reads no stdin) L174-183
 
 ### src/test/indexer.test.ts
 
@@ -406,6 +431,19 @@
 - testblock test(map prefixes paths with the repo only when the db is multi-repo) L116-132
 - testblock test(a pre-v2 (single-repo) db is rejected with re-index guidance) L134-143
 
+### src/test/registry.test.ts
+
+- variable repoRoot L15-15
+- testblock test(parseRegistry accepts a well-formed registry) L19-27
+- testblock test(parseRegistry rejects malformed registries with precise errors) L29-45
+- testblock test(resolveExtractors overlays the registry over built-ins, registry wins per extension) L49-78
+- testblock test(resolveExtractors returns exactly the built-ins when no registry file exists) L80-89
+- function writeEchoPlugin L99-113 `(dir: string, envelope: unknown): string`
+- function echoEnvelope L115-144 `(): unknown`
+- testblock test(a .librarian/extractors.json plugin indexes a novel extension end to end) L146-173
+- variable hasGo L177-177
+- testblock test(Go driven through a registry entry reproduces the native eval aggregate) L179-202
+
 ### src/test/scip-emit.test.ts
 
 - function sym L10-31 `(file: string, container: string | null, name: string, kind: ExtractionResult['symbols'][number]['kind'], spanStart: number, spanEnd: number, signature: string | null = null, doc: string | null = null)`
@@ -433,29 +471,31 @@
 
 ### src/test/scip.test.ts
 
-- testblock test(moniker format matches the documented shape (design §4.2)) L27-36
-- testblock test(module moniker is the file descriptor alone) L38-46
-- testblock test(module moniker rejects name !== file (id would be unrecoverable)) L48-54
-- testblock test(testblocks are refused a moniker — they are local symbols) L56-70
-- interface Case L74-80
-- variable CASES L82-93
-- testblock test(moniker roundtrip recovers file/container/name exactly) L95-103
-- testblock test(monikerToId equals the extractor id scheme byte-for-byte) L105-110
-- testblock test(parseMoniker handles an external scip-typescript-shaped symbol) L114-125
-- testblock test(parseMoniker honours double-space escapes in header fields) L127-132
-- testblock test(parseMoniker reads method disambiguators and exotic descriptors) L134-141
-- testblock test(parseMoniker rejects malformed symbols) L143-149
-- testblock test(monikerToParts rejects non-file-rooted monikers) L151-153
-- testblock test(kind mapping is a bijection on the mapped subset; testblock excluded) L157-163
-- testblock test(span → range → span roundtrips) L167-177
-- testblock test(range → span handles single-line and mid-line ends) L179-194
-- testblock test(spanToScipRange rejects invalid spans) L196-199
-- function sampleIndex L203-233 `()`
-- testblock test(.scip binary roundtrips through encode/decode) L235-239
-- testblock test(proto3 canonical JSON roundtrips (the child-process representation)) L241-245
-- function sampleEnvelope L249-282 `(): unknown`
-- testblock test(parseScipPlus accepts a well-formed envelope) L284-289
-- testblock test(parseScipPlus rejects malformed envelopes with precise errors) L291-310
+- testblock test(moniker format matches the documented shape (design §4.2)) L30-39
+- testblock test(module moniker is the file descriptor alone) L41-49
+- testblock test(module moniker rejects name !== file (id would be unrecoverable)) L51-57
+- testblock test(testblocks are refused a moniker — they are local symbols) L59-73
+- interface Case L77-83
+- variable CASES L85-96
+- testblock test(moniker roundtrip recovers file/container/name exactly) L98-106
+- testblock test(monikerToId equals the extractor id scheme byte-for-byte) L108-113
+- testblock test(parseMoniker handles an external scip-typescript-shaped symbol) L117-128
+- testblock test(parseMoniker honours double-space escapes in header fields) L130-135
+- testblock test(parseMoniker reads method disambiguators and exotic descriptors) L137-144
+- testblock test(parseMoniker rejects malformed symbols) L146-152
+- testblock test(monikerToParts rejects non-file-rooted monikers) L154-156
+- testblock test(kind mapping is a bijection on the mapped subset; testblock excluded) L160-166
+- testblock test(span → range → span roundtrips) L170-180
+- testblock test(range → span handles single-line and mid-line ends) L182-197
+- testblock test(spanToScipRange rejects invalid spans) L199-202
+- function sampleIndex L206-236 `()`
+- testblock test(.scip binary roundtrips through encode/decode) L238-242
+- testblock test(proto3 canonical JSON roundtrips (the child-process representation)) L244-248
+- function sampleEnvelope L252-285 `(): unknown`
+- testblock test(parseScipPlus accepts a well-formed envelope) L287-292
+- testblock test(parseScipPlus rejects malformed envelopes with precise errors) L294-313
+- testblock test(parseCapabilities accepts a well-formed handshake reply) L317-326
+- testblock test(parseCapabilities rejects malformed replies with precise errors) L328-350
 
 ### web/app/api/ask/route.ts
 
@@ -528,8 +568,7 @@
 - src/app/eval.ts → src/core/diff.ts
 - src/app/eval.ts → src/core/retrieval.ts
 - src/app/eval.ts → src/store/store.ts
-- src/app/index.ts → src/extractors/go.ts
-- src/app/index.ts → src/extractors/php.ts
+- src/app/index.ts → src/app/registry.ts
 - src/app/index.ts → src/extractors/ts.ts
 - src/app/index.ts → src/protocol/extractor.ts
 - src/app/index.ts → src/protocol/scip-ingest.ts
@@ -539,6 +578,11 @@
 - src/app/loop.ts → src/app/review.ts
 - src/app/loop.ts → src/core/retrieval.ts
 - src/app/loop.ts → src/store/store.ts
+- src/app/registry.ts → src/extractors/go.ts
+- src/app/registry.ts → src/extractors/php.ts
+- src/app/registry.ts → src/extractors/subprocess.ts
+- src/app/registry.ts → src/extractors/ts.ts
+- src/app/registry.ts → src/protocol/extractor.ts
 - src/app/review.ts → src/core/contextpack.ts
 - src/cli.ts → src/app/eval.ts
 - src/cli.ts → src/app/index.ts
@@ -555,12 +599,11 @@
 - src/core/map.ts → src/store/store.ts
 - src/core/retrieval.ts → src/core/diff.ts
 - src/core/retrieval.ts → src/store/store.ts
-- src/extractors/go.ts → src/protocol/extractor.ts
-- src/extractors/go.ts → src/protocol/scip-ingest.ts
-- src/extractors/go.ts → src/protocol/scip.ts
-- src/extractors/php.ts → src/protocol/extractor.ts
-- src/extractors/php.ts → src/protocol/scip-ingest.ts
-- src/extractors/php.ts → src/protocol/scip.ts
+- src/extractors/go.ts → src/extractors/subprocess.ts
+- src/extractors/php.ts → src/extractors/subprocess.ts
+- src/extractors/subprocess.ts → src/protocol/extractor.ts
+- src/extractors/subprocess.ts → src/protocol/scip-ingest.ts
+- src/extractors/subprocess.ts → src/protocol/scip.ts
 - src/extractors/ts.ts → src/protocol/extractor.ts
 - src/extractors/ts.ts → src/protocol/scip-emit.ts
 - src/extractors/ts.ts → src/protocol/scip-ingest.ts
@@ -599,12 +642,14 @@
 - src/test/extractor-go.test.ts → src/core/diff.ts
 - src/test/extractor-go.test.ts → src/core/retrieval.ts
 - src/test/extractor-go.test.ts → src/extractors/go.ts
+- src/test/extractor-go.test.ts → src/protocol/scip.ts
 - src/test/extractor-go.test.ts → src/store/store.ts
 - src/test/extractor-php.test.ts → src/app/index.ts
 - src/test/extractor-php.test.ts → src/core/contextpack.ts
 - src/test/extractor-php.test.ts → src/core/diff.ts
 - src/test/extractor-php.test.ts → src/core/retrieval.ts
 - src/test/extractor-php.test.ts → src/extractors/php.ts
+- src/test/extractor-php.test.ts → src/protocol/scip.ts
 - src/test/extractor-php.test.ts → src/store/store.ts
 - src/test/indexer.test.ts → src/app/index.ts
 - src/test/indexer.test.ts → src/store/store.ts
@@ -623,6 +668,11 @@
 - src/test/multirepo.test.ts → src/core/map.ts
 - src/test/multirepo.test.ts → src/core/retrieval.ts
 - src/test/multirepo.test.ts → src/store/store.ts
+- src/test/registry.test.ts → src/app/eval.ts
+- src/test/registry.test.ts → src/app/index.ts
+- src/test/registry.test.ts → src/app/registry.ts
+- src/test/registry.test.ts → src/protocol/scip.ts
+- src/test/registry.test.ts → src/store/store.ts
 - src/test/scip-emit.test.ts → src/protocol/extractor.ts
 - src/test/scip-emit.test.ts → src/protocol/scip-emit.ts
 - src/test/scip-emit.test.ts → src/protocol/scip-ingest.ts
@@ -663,18 +713,14 @@
 - src/app/eval.ts runEval —references→ src/store/store.ts Store
 - src/app/index.ts ScipImportReport —extends→ src/app/index.ts IndexReport
 - src/app/index.ts ScipImportReport —references→ src/app/index.ts IndexReport
-- src/app/index.ts defaultExtractors —calls→ src/extractors/go.ts GoExtractor
-- src/app/index.ts defaultExtractors —calls→ src/extractors/php.ts PhpExtractor
-- src/app/index.ts defaultExtractors —calls→ src/extractors/ts.ts TypeScriptExtractor
-- src/app/index.ts defaultExtractors —references→ src/protocol/extractor.ts Extractor
 - src/app/index.ts discoverSourceFiles —references→ src/app/index.ts SKIP_DIRS
 - src/app/index.ts discoverSourceFiles —references→ src/extractors/ts.ts EXTENSIONS
 - src/app/index.ts extractorFor —references→ src/protocol/extractor.ts Extractor
 - src/app/index.ts importScip —references→ src/app/index.ts ScipImportReport
 - src/app/index.ts importScip —calls→ src/app/index.ts contentHash
-- src/app/index.ts importScip —calls→ src/app/index.ts defaultExtractors
 - src/app/index.ts importScip —calls→ src/app/index.ts extractorFor
 - src/app/index.ts importScip —calls→ src/app/index.ts namespaceIds
+- src/app/index.ts importScip —calls→ src/app/registry.ts resolveExtractors
 - src/app/index.ts importScip —references→ src/protocol/extractor.ts ExtractionResult
 - src/app/index.ts importScip —references→ src/protocol/extractor.ts Extractor
 - src/app/index.ts importScip —calls→ src/protocol/scip-ingest.ts scipIndexToExtractionResults
@@ -691,10 +737,10 @@
 - src/app/index.ts importScip —calls→ src/store/store.ts Store.upsertRepo
 - src/app/index.ts indexRepo —references→ src/app/index.ts IndexReport
 - src/app/index.ts indexRepo —calls→ src/app/index.ts contentHash
-- src/app/index.ts indexRepo —calls→ src/app/index.ts defaultExtractors
 - src/app/index.ts indexRepo —calls→ src/app/index.ts discoverSourceFiles
 - src/app/index.ts indexRepo —calls→ src/app/index.ts extractorFor
 - src/app/index.ts indexRepo —calls→ src/app/index.ts namespaceIds
+- src/app/index.ts indexRepo —calls→ src/app/registry.ts resolveExtractors
 - src/app/index.ts indexRepo —calls→ src/protocol/extractor.ts Extractor
 - src/app/index.ts indexRepo —references→ src/protocol/extractor.ts Extractor
 - src/app/index.ts indexRepo —references→ src/store/store.ts Store
@@ -735,6 +781,26 @@
 - src/app/loop.ts recordReviewOutcome —references→ src/app/review.ts ReviewResult
 - src/app/loop.ts recordReviewOutcome —references→ src/store/store.ts Store
 - src/app/loop.ts recordReviewOutcome —calls→ src/store/store.ts Store.updateRetrievalOutcome
+- src/app/registry.ts builtinExtractors —calls→ src/extractors/go.ts GoExtractor
+- src/app/registry.ts builtinExtractors —calls→ src/extractors/php.ts PhpExtractor
+- src/app/registry.ts builtinExtractors —calls→ src/extractors/ts.ts TypeScriptExtractor
+- src/app/registry.ts builtinExtractors —references→ src/protocol/extractor.ts Extractor
+- src/app/registry.ts entryToExtractor —references→ src/app/registry.ts RegistryEntry
+- src/app/registry.ts entryToExtractor —calls→ src/app/registry.ts registryCommandResolver
+- src/app/registry.ts entryToExtractor —calls→ src/extractors/subprocess.ts SubprocessExtractor
+- src/app/registry.ts entryToExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
+- src/app/registry.ts loadRegistry —references→ src/app/registry.ts RegistryEntry
+- src/app/registry.ts loadRegistry —calls→ src/app/registry.ts parseRegistry
+- src/app/registry.ts parseEntry —references→ src/app/registry.ts RegistryEntry
+- src/app/registry.ts parseRegistry —references→ src/app/registry.ts RegistryEntry
+- src/app/registry.ts parseRegistry —references→ src/app/registry.ts parseEntry
+- src/app/registry.ts registryCommandResolver —references→ src/app/registry.ts RegistryEntry
+- src/app/registry.ts registryCommandResolver —calls→ src/app/registry.ts onPath
+- src/app/registry.ts registryCommandResolver —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/app/registry.ts resolveExtractors —calls→ src/app/registry.ts builtinExtractors
+- src/app/registry.ts resolveExtractors —calls→ src/app/registry.ts entryToExtractor
+- src/app/registry.ts resolveExtractors —calls→ src/app/registry.ts loadRegistry
+- src/app/registry.ts resolveExtractors —references→ src/protocol/extractor.ts Extractor
 - src/app/review.ts ReviewResult —references→ src/app/review.ts ReviewFinding
 - src/app/review.ts buildReviewRequest —references→ src/app/review.ts OUTPUT_SCHEMA
 - src/app/review.ts buildReviewRequest —references→ src/app/review.ts SYSTEM_PROMPT
@@ -863,32 +929,41 @@
 - src/core/retrieval.ts seedsFromDiff —references→ src/core/retrieval.ts Seed
 - src/core/retrieval.ts seedsFromDiff —references→ src/store/store.ts Store
 - src/core/retrieval.ts seedsFromDiff —calls→ src/store/store.ts Store.symbolsInFile
-- src/extractors/go.ts GoExtractor —extends→ src/protocol/extractor.ts Extractor
-- src/extractors/go.ts GoExtractor —references→ src/protocol/extractor.ts Extractor
-- src/extractors/go.ts fileLevelOnly —calls→ src/extractors/go.ts moduleId
-- src/extractors/go.ts fileLevelOnly —references→ src/protocol/extractor.ts ExtractionResult
+- src/extractors/go.ts GoCommand —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/extractors/go.ts GoExtractor —extends→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/go.ts GoExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
 - src/extractors/go.ts resolveGoExtractorCommand —references→ src/extractors/go.ts GoCommand
 - src/extractors/go.ts resolveGoExtractorCommand —calls→ src/extractors/go.ts goExtractorSourceDir
 - src/extractors/go.ts resolveGoExtractorCommand —calls→ src/extractors/go.ts onPath
-- src/extractors/go.ts GoExtractor.extract —references→ src/extractors/go.ts MAX_OUTPUT
-- src/extractors/go.ts GoExtractor.extract —calls→ src/extractors/go.ts fileLevelOnly
-- src/extractors/go.ts GoExtractor.extract —calls→ src/extractors/go.ts resolveGoExtractorCommand
-- src/extractors/go.ts GoExtractor.extract —references→ src/protocol/extractor.ts ExtractionResult
-- src/extractors/go.ts GoExtractor.extract —calls→ src/protocol/scip-ingest.ts scipPlusToExtractionResults
-- src/extractors/go.ts GoExtractor.extract —calls→ src/protocol/scip.ts parseScipPlus
-- src/extractors/php.ts PhpExtractor —extends→ src/protocol/extractor.ts Extractor
-- src/extractors/php.ts PhpExtractor —references→ src/protocol/extractor.ts Extractor
-- src/extractors/php.ts fileLevelOnly —calls→ src/extractors/php.ts moduleId
-- src/extractors/php.ts fileLevelOnly —references→ src/protocol/extractor.ts ExtractionResult
+- src/extractors/go.ts GoExtractor.constructor —references→ src/extractors/go.ts UNAVAILABLE_WARNING
+- src/extractors/go.ts GoExtractor.constructor —references→ src/extractors/go.ts resolveGoExtractorCommand
+- src/extractors/php.ts PhpCommand —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/extractors/php.ts PhpExtractor —extends→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/php.ts PhpExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
 - src/extractors/php.ts resolvePhpExtractorCommand —references→ src/extractors/php.ts PhpCommand
 - src/extractors/php.ts resolvePhpExtractorCommand —calls→ src/extractors/php.ts onPath
 - src/extractors/php.ts resolvePhpExtractorCommand —calls→ src/extractors/php.ts phpExtractorDir
-- src/extractors/php.ts PhpExtractor.extract —references→ src/extractors/php.ts MAX_OUTPUT
-- src/extractors/php.ts PhpExtractor.extract —calls→ src/extractors/php.ts fileLevelOnly
-- src/extractors/php.ts PhpExtractor.extract —calls→ src/extractors/php.ts resolvePhpExtractorCommand
-- src/extractors/php.ts PhpExtractor.extract —references→ src/protocol/extractor.ts ExtractionResult
-- src/extractors/php.ts PhpExtractor.extract —calls→ src/protocol/scip-ingest.ts scipPlusToExtractionResults
-- src/extractors/php.ts PhpExtractor.extract —calls→ src/protocol/scip.ts parseScipPlus
+- src/extractors/php.ts PhpExtractor.constructor —references→ src/extractors/php.ts UNAVAILABLE_WARNING
+- src/extractors/php.ts PhpExtractor.constructor —references→ src/extractors/php.ts resolvePhpExtractorCommand
+- src/extractors/subprocess.ts SubprocessExtractor —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/extractors/subprocess.ts SubprocessExtractor —extends→ src/protocol/extractor.ts Extractor
+- src/extractors/subprocess.ts SubprocessExtractor —references→ src/protocol/extractor.ts Extractor
+- src/extractors/subprocess.ts SubprocessExtractorConfig —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/extractors/subprocess.ts fileLevelOnly —calls→ src/extractors/subprocess.ts moduleId
+- src/extractors/subprocess.ts fileLevelOnly —references→ src/protocol/extractor.ts ExtractionResult
+- src/extractors/subprocess.ts SubprocessExtractor.constructor —references→ src/extractors/subprocess.ts SubprocessExtractorConfig
+- src/extractors/subprocess.ts SubprocessExtractor.extract —references→ src/extractors/subprocess.ts MAX_OUTPUT
+- src/extractors/subprocess.ts SubprocessExtractor.extract —calls→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/subprocess.ts SubprocessExtractor.extract —calls→ src/extractors/subprocess.ts fileLevelOnly
+- src/extractors/subprocess.ts SubprocessExtractor.extract —calls→ src/extractors/subprocess.ts SubprocessExtractor.negotiate
+- src/extractors/subprocess.ts SubprocessExtractor.extract —references→ src/protocol/extractor.ts ExtractionResult
+- src/extractors/subprocess.ts SubprocessExtractor.extract —calls→ src/protocol/scip-ingest.ts scipPlusToExtractionResults
+- src/extractors/subprocess.ts SubprocessExtractor.extract —calls→ src/protocol/scip.ts parseScipPlus
+- src/extractors/subprocess.ts SubprocessExtractor.negotiate —references→ src/extractors/subprocess.ts MAX_OUTPUT
+- src/extractors/subprocess.ts SubprocessExtractor.negotiate —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/extractors/subprocess.ts SubprocessExtractor.negotiate —references→ src/protocol/scip.ts Capabilities
+- src/extractors/subprocess.ts SubprocessExtractor.negotiate —references→ src/protocol/scip.ts PROTOCOL_VERSION
+- src/extractors/subprocess.ts SubprocessExtractor.negotiate —calls→ src/protocol/scip.ts parseCapabilities
 - src/extractors/ts.ts TypeScriptExtractor —references→ src/extractors/ts.ts EXTENSIONS
 - src/extractors/ts.ts TypeScriptExtractor —extends→ src/protocol/extractor.ts Extractor
 - src/extractors/ts.ts TypeScriptExtractor —references→ src/protocol/extractor.ts Extractor
@@ -1023,6 +1098,8 @@
 - src/protocol/scip.ts monikerToId —references→ src/store/store.ts SymbolKind
 - src/protocol/scip.ts monikerToParts —references→ src/protocol/scip.ts LibrarianSymbolKey
 - src/protocol/scip.ts monikerToParts —calls→ src/protocol/scip.ts parseMoniker
+- src/protocol/scip.ts parseCapabilities —references→ src/protocol/scip.ts Capabilities
+- src/protocol/scip.ts parseCapabilities —references→ src/protocol/scip.ts PROTOCOL_NAME
 - src/protocol/scip.ts parseExt —references→ src/protocol/scip.ts Ext
 - src/protocol/scip.ts parseExt —references→ src/protocol/scip.ts parseExtDocument
 - src/protocol/scip.ts parseExtDocument —references→ src/protocol/scip.ts ExtDocument
@@ -1154,6 +1231,11 @@
 - src/test/extractor-go.test.ts indexedFixture —references→ src/store/store.ts Store
 - src/test/extractor-go.test.ts indexedFixture —calls→ src/test/extractor-go.test.ts builtBinary
 - src/test/extractor-go.test.ts indexedFixture —references→ src/test/extractor-go.test.ts fixture
+- src/test/extractor-go.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/protocol/scip.ts PROTOCOL_NAME
+- src/test/extractor-go.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/protocol/scip.ts PROTOCOL_VERSION
+- src/test/extractor-go.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —calls→ src/protocol/scip.ts parseCapabilities
+- src/test/extractor-go.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —calls→ src/test/extractor-go.test.ts builtBinary
+- src/test/extractor-go.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/test/extractor-go.test.ts hasGo
 - src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store/store.ts Store.close
 - src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store/store.ts Store.edgesOf
 - src/test/extractor-go.test.ts test(TestXxx and t.Run subtests become nested testblock symbols) —calls→ src/store/store.ts Store.findSymbols
@@ -1184,12 +1266,17 @@
 - src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —references→ src/test/extractor-go.test.ts hasGo
 - src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —calls→ src/test/extractor-go.test.ts indexedFixture
 - src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/go.ts GoExtractor
-- src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/go.ts GoExtractor.extract
+- src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
 - src/test/extractor-php.test.ts fixture —references→ src/test/extractor-php.test.ts repoRoot
 - src/test/extractor-php.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
 - src/test/extractor-php.test.ts indexedFixture —calls→ src/store/store.ts Store
 - src/test/extractor-php.test.ts indexedFixture —references→ src/store/store.ts Store
 - src/test/extractor-php.test.ts indexedFixture —references→ src/test/extractor-php.test.ts fixture
+- src/test/extractor-php.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/protocol/scip.ts PROTOCOL_NAME
+- src/test/extractor-php.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/protocol/scip.ts PROTOCOL_VERSION
+- src/test/extractor-php.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —calls→ src/protocol/scip.ts parseCapabilities
+- src/test/extractor-php.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/test/extractor-php.test.ts hasPhp
+- src/test/extractor-php.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/test/extractor-php.test.ts repoRoot
 - src/test/extractor-php.test.ts test(PHPUnit test methods become testblock symbols (test* and #[Test])) —calls→ src/store/store.ts Store.close
 - src/test/extractor-php.test.ts test(PHPUnit test methods become testblock symbols (test* and #[Test])) —calls→ src/store/store.ts Store.symbolsInFile
 - src/test/extractor-php.test.ts test(PHPUnit test methods become testblock symbols (test* and #[Test])) —references→ src/test/extractor-php.test.ts hasPhp
@@ -1223,7 +1310,7 @@
 - src/test/extractor-php.test.ts test(type hints become references to repo types) —references→ src/test/extractor-php.test.ts hasPhp
 - src/test/extractor-php.test.ts test(type hints become references to repo types) —calls→ src/test/extractor-php.test.ts indexedFixture
 - src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/php.ts PhpExtractor
-- src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/php.ts PhpExtractor.extract
+- src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
 - src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/app/index.ts indexRepo
 - src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store/store.ts Store
 - src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store/store.ts Store.close
@@ -1319,6 +1406,26 @@
 - src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store/store.ts Store.neighborhood
 - src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/store/store.ts Store.stats
 - src/test/multirepo.test.ts test(two repos share one db without path or symbol-id collisions) —calls→ src/test/multirepo.test.ts twoRepos
+- src/test/registry.test.ts echoEnvelope —calls→ src/protocol/scip.ts createScipIndex
+- src/test/registry.test.ts echoEnvelope —calls→ src/protocol/scip.ts scipToJson
+- src/test/registry.test.ts test(Go driven through a registry entry reproduces the native eval aggregate) —calls→ src/app/eval.ts loadGoldenFile
+- src/test/registry.test.ts test(Go driven through a registry entry reproduces the native eval aggregate) —calls→ src/app/eval.ts runEval
+- src/test/registry.test.ts test(Go driven through a registry entry reproduces the native eval aggregate) —calls→ src/app/index.ts indexRepo
+- src/test/registry.test.ts test(Go driven through a registry entry reproduces the native eval aggregate) —calls→ src/app/registry.ts entryToExtractor
+- src/test/registry.test.ts test(Go driven through a registry entry reproduces the native eval aggregate) —calls→ src/store/store.ts Store
+- src/test/registry.test.ts test(Go driven through a registry entry reproduces the native eval aggregate) —calls→ src/store/store.ts Store.close
+- src/test/registry.test.ts test(Go driven through a registry entry reproduces the native eval aggregate) —references→ src/test/registry.test.ts hasGo
+- src/test/registry.test.ts test(Go driven through a registry entry reproduces the native eval aggregate) —references→ src/test/registry.test.ts repoRoot
+- src/test/registry.test.ts test(a .librarian/extractors.json plugin indexes a novel extension end to end) —calls→ src/app/index.ts indexRepo
+- src/test/registry.test.ts test(a .librarian/extractors.json plugin indexes a novel extension end to end) —calls→ src/store/store.ts Store
+- src/test/registry.test.ts test(a .librarian/extractors.json plugin indexes a novel extension end to end) —calls→ src/store/store.ts Store.close
+- src/test/registry.test.ts test(a .librarian/extractors.json plugin indexes a novel extension end to end) —calls→ src/store/store.ts Store.findSymbols
+- src/test/registry.test.ts test(a .librarian/extractors.json plugin indexes a novel extension end to end) —calls→ src/test/registry.test.ts echoEnvelope
+- src/test/registry.test.ts test(a .librarian/extractors.json plugin indexes a novel extension end to end) —calls→ src/test/registry.test.ts writeEchoPlugin
+- src/test/registry.test.ts test(parseRegistry accepts a well-formed registry) —calls→ src/app/registry.ts parseRegistry
+- src/test/registry.test.ts test(parseRegistry rejects malformed registries with precise errors) —calls→ src/app/registry.ts parseRegistry
+- src/test/registry.test.ts test(resolveExtractors overlays the registry over built-ins, registry wins per extension) —calls→ src/app/registry.ts resolveExtractors
+- src/test/registry.test.ts test(resolveExtractors returns exactly the built-ins when no registry file exists) —calls→ src/app/registry.ts resolveExtractors
 - src/test/scip-emit.test.ts fixture —references→ src/protocol/extractor.ts ExtractionResult
 - src/test/scip-emit.test.ts fixture —calls→ src/test/scip-emit.test.ts sym
 - src/test/scip-emit.test.ts sym —references→ src/protocol/extractor.ts ExtractionResult
@@ -1410,6 +1517,11 @@
 - src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —calls→ src/protocol/scip.ts monikerToId
 - src/test/scip.test.ts test(monikerToId equals the extractor id scheme byte-for-byte) —references→ src/test/scip.test.ts CASES
 - src/test/scip.test.ts test(monikerToParts rejects non-file-rooted monikers) —calls→ src/protocol/scip.ts monikerToParts
+- src/test/scip.test.ts test(parseCapabilities accepts a well-formed handshake reply) —references→ src/protocol/scip.ts PROTOCOL_NAME
+- src/test/scip.test.ts test(parseCapabilities accepts a well-formed handshake reply) —references→ src/protocol/scip.ts PROTOCOL_VERSION
+- src/test/scip.test.ts test(parseCapabilities accepts a well-formed handshake reply) —calls→ src/protocol/scip.ts parseCapabilities
+- src/test/scip.test.ts test(parseCapabilities rejects malformed replies with precise errors) —references→ src/protocol/scip.ts PROTOCOL_NAME
+- src/test/scip.test.ts test(parseCapabilities rejects malformed replies with precise errors) —calls→ src/protocol/scip.ts parseCapabilities
 - src/test/scip.test.ts test(parseMoniker handles an external scip-typescript-shaped symbol) —calls→ src/protocol/scip.ts parseMoniker
 - src/test/scip.test.ts test(parseMoniker honours double-space escapes in header fields) —calls→ src/protocol/scip.ts parseMoniker
 - src/test/scip.test.ts test(parseMoniker reads method disambiguators and exotic descriptors) —calls→ src/protocol/scip.ts parseMoniker
@@ -1451,83 +1563,84 @@
 
 ## Unresolved (aggregated)
 
-- 59× map (calls)
-- 49× join (calls)
-- 45× equal (calls)
-- 32× ok (calls)
+- 60× map (calls)
+- 58× join (calls)
+- 53× equal (calls)
+- 35× ok (calls)
+- 32× some (calls)
+- 30× deepEqual (calls)
+- 28× Error (calls)
 - 28× get (calls)
-- 28× some (calls)
 - 27× prepare (calls)
-- 26× deepEqual (calls)
-- 24× Error (calls)
+- 24× node:path (imports)
+- 24× stringify (calls)
+- 23× node:fs (imports)
 - 23× push (calls)
-- 21× filter (calls)
-- 21× node:path (imports)
+- 22× filter (calls)
+- 22× rmSync (calls)
+- 21× test (calls)
 - 20× Map (calls)
-- 20× node:fs (imports)
-- 20× test (calls)
-- 19× rmSync (calls)
-- 19× stringify (calls)
-- 18× slice (calls)
-- 17× Set (calls)
-- 17× find (calls)
-- 17× writeFileSync (calls)
+- 20× writeFileSync (calls)
+- 19× Set (calls)
+- 18× find (calls)
+- 18× mkdtempSync (calls)
+- 18× tmpdir (calls)
+- 17× has (calls)
+- 17× slice (calls)
 - 15× all (calls)
-- 15× has (calls)
-- 14× mkdtempSync (calls)
 - 14× set (calls)
 - 14× split (calls)
-- 14× tmpdir (calls)
-- 12× node:assert/strict (imports)
-- 12× node:test (imports)
+- 13× node:assert/strict (imports)
+- 13× node:test (imports)
+- 13× parse (calls)
+- 12× mkdirSync (calls)
+- 11× existsSync (calls)
+- 11× node:os (imports)
+- 11× resolve (calls)
 - 11× sort (calls)
-- 10× mkdirSync (calls)
-- 10× node:os (imports)
 - 10× readFileSync (calls)
-- 9× endsWith (calls)
-- 9× parse (calls)
-- 9× resolve (calls)
+- 9× includes (calls)
 - 9× run (calls)
-- 8× existsSync (calls)
+- 9× spawnSync (calls)
+- 9× throws (calls)
+- 8× @scip-code/scip (imports)
+- 8× dirname (calls)
+- 8× endsWith (calls)
+- 8× isArray (calls)
 - 8× keys (calls)
-- 8× max (calls)
 - 8× now (calls)
-- 7× @scip-code/scip (imports)
-- 7× dirname (calls)
 - 7× match (calls)
-- 7× throws (calls)
+- 7× max (calls)
+- 7× startsWith (calls)
 - 7× trim (calls)
-- 6× createHash (calls)
-- 6× digest (calls)
+- 6× add (calls)
 - 6× entries (calls)
 - 6× exec (calls)
-- 6× includes (calls)
-- 6× isArray (calls)
 - 6× json (calls)
-- 6× startsWith (calls)
-- 6× update (calls)
 - 5× @/lib/librarian (imports)
 - 5× Number (calls)
-- 5× add (calls)
-- 5× node:crypto (imports)
+- 5× createHash (calls)
+- 5× digest (calls)
+- 5× error (calls)
+- 5× fileURLToPath (calls)
+- 5× node:url (imports)
 - 5× openLibrarian (calls)
-- 5× relative (calls)
-- 5× spawnSync (calls)
-- 4× error (calls)
+- 5× update (calls)
 - 4× every (calls)
-- 4× fileURLToPath (calls)
 - 4× isIdentifier (calls)
+- 4× isInteger (calls)
 - 4× next/server (imports)
 - 4× node:child_process (imports)
-- 4× node:url (imports)
+- 4× node:crypto (imports)
+- 4× relative (calls)
 - 4× round (calls)
 - 3× close (calls)
 - 3× create (calls)
+- 3× flatMap (calls)
 - 3× getText (calls)
 - 3× isArrowFunction (calls)
 - 3× isCallExpression (calls)
 - 3× isFunctionDeclaration (calls)
-- 3× isInteger (calls)
 - 3× isMethodDeclaration (calls)
 - 3× isPropertyAccessExpression (calls)
 - 3× isVariableDeclaration (calls)
@@ -1541,7 +1654,6 @@
 - 2× extname (calls)
 - 2× fetch (calls)
 - 2× findSymbols (calls)
-- 2× flatMap (calls)
 - 2× forEach (calls)
 - 2× isClassDeclaration (calls)
 - 2× isConstructorDeclaration (calls)
@@ -1563,7 +1675,6 @@
 - 2× then (calls)
 - 2× toFixed (calls)
 - 2× useState (calls)
-- 2× write (calls)
 - 1× ../../dist/store/store.js (imports)
 - 1× ./globals.css (imports)
 - 1× @/components/AskPanel (imports)
@@ -1596,6 +1707,7 @@
 - 1× getStart (calls)
 - 1× getSymbolAtLocation (calls)
 - 1× getTypeChecker (calls)
+- 1× isAbsolute (calls)
 - 1× isBindingElement (calls)
 - 1× isClassLike (calls)
 - 1× isDirectory (calls)
@@ -1635,4 +1747,5 @@
 - 1× useCallback (calls)
 - 1× useEffect (calls)
 - 1× useMemo (calls)
+- 1× write (calls)
 

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/nonokia/code-on-board/src/protocol/scip-plus.schema.json",
+  "title": "SCIP+ envelope",
+  "description": "The extractor-plugin wire contract (issue #16 / #22, ADR-6 / ADR-7). A subprocess plugin reads {root, files} JSON on stdin and prints exactly this envelope on stdout. `scip` is a scip.Index in proto3 canonical JSON (standards-compliant base layer); `ext` is the librarian-specific sidecar and is the source of truth for retrieval signals (edge kinds, unresolved refs, testblocks). See docs/plugin-protocol.md and docs/scip-design.md §4.",
+  "type": "object",
+  "required": ["scip", "ext"],
+  "additionalProperties": false,
+  "properties": {
+    "scip": {
+      "type": "object",
+      "description": "A scip.Index message in proto3 canonical JSON. Schema: scip.proto (github.com/scip-code/scip). Validated by the protobuf binding, not by this JSON Schema — described here as an opaque object on purpose. The base layer is a lossy, standards-compliant projection; edge kinds / unresolved / testblock-as-first-class do not survive it (that is what `ext` carries)."
+    },
+    "ext": { "$ref": "#/$defs/ext" }
+  },
+  "$defs": {
+    "ext": {
+      "type": "object",
+      "description": "Delta on top of base SCIP, never a restatement of it. Future revisions add fields only; consumers ignore unknown fields.",
+      "required": ["version", "documents"],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": 1,
+          "description": "ext schema version. Distinct from the protocol major reported by --capabilities."
+        },
+        "documents": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/extDocument" }
+        }
+      }
+    },
+    "extDocument": {
+      "type": "object",
+      "description": "One source file, mirroring ExtractionResult granularity so Store.replaceFile stays incremental.",
+      "required": ["relativePath", "symbols", "edges"],
+      "additionalProperties": false,
+      "properties": {
+        "relativePath": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo-relative, forward-slash path. Repo-unaware: no repo prefix (the indexer namespaces ids)."
+        },
+        "symbols": {
+          "type": "array",
+          "description": "Symbols the base layer cannot carry as first-class (currently testblocks only). Ordinary symbols come from base SCIP and are NOT restated here.",
+          "items": { "$ref": "#/$defs/extSymbol" }
+        },
+        "edges": {
+          "type": "array",
+          "description": "The edge list — the source of truth for retrieval. All kinds, all edges, including unresolved.",
+          "items": { "$ref": "#/$defs/extEdge" }
+        }
+      }
+    },
+    "extSymbol": {
+      "type": "object",
+      "required": ["symbol", "kind", "name", "container", "spanStart", "spanEnd"],
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A moniker (SCIP Symbol grammar, docs/scip-design.md §4.2) or a `local N` id scoped to this document (testblocks)."
+        },
+        "kind": { "$ref": "#/$defs/symbolKind" },
+        "name": { "type": "string" },
+        "container": {
+          "type": ["string", "null"],
+          "description": "Enclosing symbol name, or null at file scope."
+        },
+        "spanStart": {
+          "type": "integer",
+          "description": "1-based inclusive first line of the definition span."
+        },
+        "spanEnd": {
+          "type": "integer",
+          "description": "1-based inclusive last line of the definition span."
+        }
+      }
+    },
+    "extEdge": {
+      "type": "object",
+      "required": ["from", "to", "toName", "kind", "resolved"],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Source moniker (or `local N` for a testblock in this document)."
+        },
+        "to": {
+          "type": ["string", "null"],
+          "description": "Target moniker, or null when unresolved (resolved=false)."
+        },
+        "toName": {
+          "type": "string",
+          "description": "Referenced name as written, kept even when unresolved."
+        },
+        "kind": { "$ref": "#/$defs/edgeKind" },
+        "resolved": {
+          "type": "boolean",
+          "description": "false keeps the raw name with to=null (completeness-over-precision; base SCIP cannot express this)."
+        }
+      }
+    },
+    "symbolKind": {
+      "enum": [
+        "module",
+        "function",
+        "method",
+        "class",
+        "struct",
+        "interface",
+        "trait",
+        "typealias",
+        "enum",
+        "variable",
+        "testblock"
+      ]
+    },
+    "edgeKind": {
+      "enum": ["calls", "imports", "extends", "references"]
+    }
+  }
+}

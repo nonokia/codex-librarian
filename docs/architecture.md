@@ -139,6 +139,14 @@ v1のフィードバック信号は簡素でよい: (a) LLMレスポンスがCon
 **ADR-5: 言語はTypeScriptで統一、モノレポ構成**
 理由: 開発者(自分)の主戦場であり、Indexer(Compiler API)・CLI・Next.js UIまで単一言語で貫ける。Loreのvisual diff UIプロジェクトと技術スタックが揃い、ポートフォリオとして一貫する。
 
+**ADR-6: 抽出器と store の間の交換フォーマットは SCIP ベース層 + 拡張層の二層(SCIP+)**
+理由: (1) 標準フォーマットの取り込み口により、native 抽出器を書かずに外部 `scip-*` インデクサの言語を追加できる。(2) index を `.scip` として export でき、SCIP エコシステムと相互運用できる。(3) retrieval を駆動する固有信号(エッジ種別・unresolved・testblock)は SCIP に表現が存在しないことを仕様確認で確定済みのため、サイドカー拡張(ext)を正とし、ベース SCIP は標準準拠の投影とする。ADR-1 とは非衝突(SCIP+ は抽出→store 間の契約で、保存先は SQLite のまま)。ADR-2 とも非衝突(抽出は言語ごと native のまま。#7/#8 で却下したのは「外部 SCIP インデクサへの置き換え」であり、本 ADR は交換フォーマットの標準化)。
+トレードオフ: 参照位置の追加取得と二層の維持コスト。native 経路の精度は ext が担うため SCIP 化そのものによる精度向上は無い(相互運用と言語追加コスト削減への投資)。外部 `.scip` はエッジ種別・unresolved・testblock ネストが欠落した degrade 動作となり、その実測値を `docs/scip-baseline.md` に記録する。設計の全文は `docs/scip-design.md`(issue #16)。
+
+**ADR-7: 抽出器はプロトコル準拠のプラグイン。発見・登録は明示レジストリ、ワイヤ契約は SCIP+ 封筒。**
+理由: librarian のコア価値は store/retrieval であり、パース・抽出は第三者が差し替え・追加できるべき。ADR-6 の SCIP+ 封筒(stdin/stdout の単一 JSON、protobuf 非依存)+ moniker→id の決定的再計算(#16)+ repo-unaware invariant(#11)で、事実上のプラグイン ABI は既に存在する。ADR-7 はこれを公開契約に格上げし、(1) 発見・登録を `.librarian/extractors.json`(拡張子→コマンドの明示宣言)に集約、(2) 言語別アダプタを 1 つの汎用サブプロセスランナー(`SubprocessExtractor`)に畳み、(3) `--capabilities` ハンドシェイクで封筒バージョンを交渉する。信頼モデルは**明示登録のみ・自動ダウンロード無し・PATH 規約による暗黙発見を採らない**(暗黙の信頼と環境差の非決定性を排除)。ADR-2 と非衝突(抽出は言語ごと native のまま。プラグイン化は「発見・登録の外部化」であって「TS Compiler API を捨てる」ことではない — TS は in-process 実装のまま特別扱い)。ADR-6 と非衝突(ワイヤ契約は SCIP+ 封筒そのもの。プロトコルはその発見・実行規約を足すだけ)。ADR-1 と非衝突(保存先は SQLite のまま)。
+トレードオフ: 公開契約はバージョニングとの後方互換コミットメント(封筒スキーマは追加のみ、major は `--capabilities` で交渉)。プラグイン = 任意コマンド実行の信頼境界を利用者に開く。既存 Go/PHP はレジストリ経由で動き eval 完全一致(#16 と同じゲート)。設計の全文は `docs/plugin-protocol.md`(issue #22)。
+
 ## 6. フェーズ計画
 
 各フェーズは「単体でデモ可能な成果物」を持つ。フェーズ内の実装設計はOpus/Sonnetに委譲する単位でもある。
