@@ -65,6 +65,12 @@ function namespaceIds(repo: string, results: ExtractionResult[]): ExtractionResu
   }));
 }
 
+/**
+ * A single-repo summary: every count is scoped to `repo`, not the store. In a
+ * multi-repo db (#11) `symbols`/`edges`/`unresolvedEdges` report this repo's
+ * rows only — matching `filesSeen`/`filesIndexed` — so the summary reads as
+ * "what this run's repo holds", never the db-wide total (#29).
+ */
 export interface IndexReport {
   repo: string;
   root: string;
@@ -72,8 +78,11 @@ export interface IndexReport {
   filesIndexed: number;
   filesUnchanged: number;
   filesRemoved: number;
+  /** symbols in this repo (not the whole store) */
   symbols: number;
+  /** edges originating from this repo's symbols (not the whole store) */
   edges: number;
+  /** unresolved edges originating from this repo's symbols */
   unresolvedEdges: number;
   durationMs: number;
 }
@@ -149,7 +158,7 @@ export function indexRepo(
     store.setMeta('last_indexed_at', String(Date.now()));
   }
 
-  const s = store.stats();
+  const s = store.statsForRepo(repo);
   return {
     repo,
     root: rootDir,
@@ -247,7 +256,7 @@ export function importScip(
   for (const { r, hash } of changed) store.replaceFile(repo, r.file, hash, r.symbols, r.edges);
   if (writes) store.setMeta('last_indexed_at', String(Date.now()));
 
-  const s = store.stats();
+  const s = store.statsForRepo(repo);
   return {
     repo,
     root,

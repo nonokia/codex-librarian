@@ -72,6 +72,34 @@ test('two repos share one db without path or symbol-id collisions', () => {
   assert.ok(neighbors.every((n) => n.repo === 'alpha'), 'neighborhood never crosses repos');
 });
 
+test('index summary counts are per-repo, not the db-wide total (#29)', () => {
+  const { alphaRoot, betaRoot } = twoRepos();
+  const store = new Store(':memory:');
+  const a = indexRepo(store, alphaRoot, { repoName: 'alpha' });
+  const b = indexRepo(store, betaRoot, { repoName: 'beta' });
+
+  // Each summary reports its own repo (matches statsForRepo), not the store.
+  const alphaOnly = store.statsForRepo('alpha');
+  const betaOnly = store.statsForRepo('beta');
+  assert.equal(a.symbols, alphaOnly.symbols);
+  assert.equal(a.edges, alphaOnly.edges);
+  assert.equal(a.unresolvedEdges, alphaOnly.unresolvedEdges);
+  assert.equal(b.symbols, betaOnly.symbols);
+  assert.equal(b.edges, betaOnly.edges);
+  assert.equal(b.unresolvedEdges, betaOnly.unresolvedEdges);
+
+  // The bug: the second summary reported the cumulative store total. With both
+  // repos holding symbols/edges, the per-repo count is strictly below the total.
+  const total = store.stats();
+  assert.ok(betaOnly.symbols > 0 && total.symbols > betaOnly.symbols, 'symbols not cumulative');
+  assert.ok(betaOnly.edges > 0 && total.edges > betaOnly.edges, 'edges not cumulative');
+  // per-repo counts partition the store total
+  assert.equal(alphaOnly.symbols + betaOnly.symbols, total.symbols);
+  assert.equal(alphaOnly.edges + betaOnly.edges, total.edges);
+  // byRepo (used by `stats`/`map`) agrees with the summary
+  assert.equal(b.symbols, total.byRepo.beta.symbols);
+});
+
 test('single-repo flow keeps working without --repo-name (basename default)', () => {
   const { alphaRoot } = twoRepos();
   const store = new Store(':memory:');

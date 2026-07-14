@@ -340,6 +340,29 @@ export class Store {
     };
   }
 
+  /**
+   * Per-repo symbol/edge counts (#29). `stats()` is db-wide, so an index
+   * summary that reported `stats()` inflated symbols/edges to the store total
+   * once a db held more than one repo. Edges have no repo column — they are
+   * scoped through their originating symbol (`from_id`), matching how
+   * `replaceFile` deletes them.
+   */
+  statsForRepo(repo: string): { symbols: number; edges: number; unresolvedEdges: number } {
+    const one = (sql: string, ...params: string[]) =>
+      (this.db.prepare(sql).get(...params) as { n: number }).n;
+    return {
+      symbols: one('SELECT COUNT(*) AS n FROM symbols WHERE repo = ?', repo),
+      edges: one(
+        'SELECT COUNT(*) AS n FROM edges e JOIN symbols s ON e.from_id = s.id WHERE s.repo = ?',
+        repo
+      ),
+      unresolvedEdges: one(
+        'SELECT COUNT(*) AS n FROM edges e JOIN symbols s ON e.from_id = s.id WHERE s.repo = ? AND e.resolved = 0',
+        repo
+      ),
+    };
+  }
+
   /** Cross-repo by default (#11); pass `repo` to scope to one repository. */
   findSymbols(query: string, limit = 20, repo?: string): SymbolRow[] {
     return (
