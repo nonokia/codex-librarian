@@ -38,6 +38,7 @@ const LANGUAGE: Record<LibrarianScheme, string> = {
   'librarian-ts': 'typescript',
   'librarian-go': 'go',
   'librarian-php': 'php',
+  'librarian-terraform': 'terraform',
 };
 
 /** innermost row strictly enclosing the testblock's span — its enclosing_symbol */

@@ -121,6 +121,10 @@ const SYMBOL_KIND_FLAGS: Record<SymbolKind, true> = {
   enum: true,
   variable: true,
   testblock: true,
+  resource: true,
+  data: true,
+  output: true,
+  locals: true,
 };
 const EDGE_KIND_FLAGS: Record<EdgeKind, true> = {
   calls: true,
@@ -295,6 +299,14 @@ export const KIND_TO_SCIP: Record<Exclude<SymbolKind, 'testblock'>, SymbolInform
   typealias: SymbolInformation_Kind.TypeAlias,
   enum: SymbolInformation_Kind.Enum,
   variable: SymbolInformation_Kind.Variable,
+  // Terraform (#9): four otherwise-unused SCIP kinds keep the inverse
+  // (SCIP_TO_KIND) a bijection, so the native round-trip recovers the kind.
+  // `module` blocks are NOT here — they reuse the `module → File` mapping and
+  // are told apart from the file symbol by the moniker (descriptor vs bare).
+  resource: SymbolInformation_Kind.Object,
+  data: SymbolInformation_Kind.Value,
+  output: SymbolInformation_Kind.Property,
+  locals: SymbolInformation_Kind.Constant,
 };
 
 const SCIP_TO_KIND = new Map<SymbolInformation_Kind, SymbolKind>(
@@ -363,7 +375,7 @@ export function degradeKindFromScip(kind: SymbolInformation_Kind): SymbolKind | 
 // segment boundaries may differ for dotted names, the joined string cannot.
 // ---------------------------------------------------------------------------
 
-export type LibrarianScheme = 'librarian-ts' | 'librarian-go' | 'librarian-php';
+export type LibrarianScheme = 'librarian-ts' | 'librarian-go' | 'librarian-php' | 'librarian-terraform';
 
 export interface MonikerParts {
   file: string;
@@ -441,12 +453,13 @@ export function formatMoniker(scheme: LibrarianScheme, parts: MonikerParts): str
   }
   const head = `${scheme} . . . `;
   const fileDescriptor = `${escapeIdent(parts.file)}/`;
-  if (parts.kind === 'module') {
-    // Module ids are computed as symbolId(file, null, file, 'module') by every
-    // extractor; the file descriptor alone must therefore recover the id.
-    if (parts.name !== parts.file || parts.container !== null) {
-      throw new Error(`module symbol must have name === file and no container, got ${parts.name}`);
-    }
+  if (parts.kind === 'module' && parts.name === parts.file && parts.container === null) {
+    // The file-level module symbol: every extractor computes its id as
+    // symbolId(file, null, file, 'module'), so the file descriptor alone must
+    // recover it. A Terraform `module` block (kind module, name !== file)
+    // falls through to a normal term descriptor below (#9), the same shape the
+    // tf-extractor emits — recovered as name/container by monikerToParts, with
+    // the kind coming back from SymbolInformation.kind (File → module).
     return head + fileDescriptor;
   }
   const segments = parts.container === null ? [] : parts.container.split('.');

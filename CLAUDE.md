@@ -15,6 +15,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   Go 製バイナリ)を子プロセスとして呼ぶ(issue #7、`docs/go-baseline.md`)。
   PHP も同じ多言語パス: `php-extractor/`(nikic/php-parser + NameResolver、パーサ同梱の
   PHP スクリプト)を子プロセスとして呼ぶ(issue #8、`docs/php-baseline.md`)。
+  Terraform (HCL) も同じ多言語パス: `tf-extractor/`(hashicorp/hcl、Go 製バイナリ)を
+  子プロセスとして呼ぶ(issue #9、`docs/terraform-baseline.md`)。ただし HCL は
+  call graph でなく**参照グラフ**で、型解決が要らず構文レベルで十分 — ADR-2 の「型解決
+  必須」は call graph 言語向けの判断であり HCL には適用しない(dlog 記録)。
 - **全機能はまず CLI**(`librarian`)として存在する。
 
 ## Commands
@@ -88,14 +92,19 @@ dlog の「変更前に `dlog why`」と対になるルール:
 - `src/store/store.ts` — Knowledge Store(`node:sqlite`)。files/symbols/edges + 再帰 CTE。
 - `src/protocol/extractor.ts` — Extractor インターフェース(多言語対応の抽象、公開面)。実装は
   TS(`src/extractors/ts.ts`、in-process)・Go(`src/extractors/go.ts` + `go-extractor/`)・PHP
-  (`src/extractors/php.ts` + `php-extractor/`)。Go/PHP は汎用ランナー
+  (`src/extractors/php.ts` + `php-extractor/`)・Terraform(`src/extractors/terraform.ts` +
+  `tf-extractor/`)。Go/PHP/Terraform は汎用ランナー
   `src/extractors/subprocess.ts` に resolver を渡すリファレンスプラグイン。
 - `src/protocol/scip-plus.schema.json` — 封筒(`{scip, ext}`)の JSON Schema(プラグイン公開物)。
-- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP)+
+- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP/Terraform)+
   `.librarian/extractors.json` の合成・拡張子上書き(`resolveExtractors`)。信頼モデル:
   明示登録のみ・自動 DL/PATH 規約発見なし。
 - `go-extractor/` — Go 抽出バイナリ(`golang.org/x/tools/go/packages`)。stdin/stdout
   JSON 契約 + `--capabilities`。ビルド・配布は README の「Go リポジトリのインデックス」。
+- `tf-extractor/` — Terraform (HCL) 抽出バイナリ(hashicorp/hcl)。参照グラフ(call graph
+  ではない)。SCIP+ 封筒 + `--capabilities`。symbol は参照アドレスで命名(`aws_x.y` /
+  `var.z` / `module.m` / `data.t.n` / `local.k` / `output.o`)。ビルド・配布は README の
+  「Terraform リポジトリのインデックス」、ベースラインは `docs/terraform-baseline.md`。
 - `php-extractor/` — PHP 抽出スクリプト(nikic/php-parser、`vendor/` 同梱)。stdin/stdout
   JSON 契約 + `--capabilities`。インタプリタ実行でビルド不要 — 詳細は README の「PHP リポジトリのインデックス」。
 - `src/protocol/scip.ts` — SCIP+ 境界(封筒/ext 型、`.scip` の protobuf encode/decode、Symbol
@@ -112,6 +121,9 @@ dlog の「変更前に `dlog why`」と対になるルール:
   ベースラインは `docs/go-baseline.md`(`eval/golden/go-taskflow.json`)。
 - `eval/fixtures/php-taskflow/` — PHP 用正解セットの対象リポジトリ(コミットされた fixture)。
   ベースラインは `docs/php-baseline.md`(`eval/golden/php-taskflow.json`)。
+- `eval/fixtures/terraform-taskflow/` — Terraform 用正解セットの対象構成(コミットされた
+  fixture、ローカル module 含む)。ベースラインは `docs/terraform-baseline.md`
+  (`eval/golden/terraform-taskflow.json`)。
 - `src/core/diff.ts` / `src/core/retrieval.ts` — unified diff → シード → 決定的展開(ADR-3
   stage 1)。
 - `src/app/eval.ts` + `eval/golden/` — Phase 0 評価ハーネスと正解セット(規律は

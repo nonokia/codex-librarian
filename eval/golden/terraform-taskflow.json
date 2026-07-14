@@ -1,0 +1,84 @@
+{
+  "cases": [
+    {
+      "id": "ttf-001",
+      "title": "var.instance_count の変更(web インスタンス数)",
+      "note": "expected はコードリーディングで作成: count に使う aws_instance.web と、その id を公開する output。HCL の参照グラフは blast radius が字句的に明示されるため直接たどれる。",
+      "target": { "file": "variables.tf", "symbol": "var.instance_count" },
+      "expected": [
+        { "file": "compute.tf", "symbol": "aws_instance.web" },
+        { "file": "outputs.tf", "symbol": "output.web_instance_ids" }
+      ]
+    },
+    {
+      "id": "ttf-002",
+      "title": "var.db_password の変更(DB 認証情報)",
+      "target": { "file": "variables.tf", "symbol": "var.db_password" },
+      "expected": [
+        { "file": "database.tf", "symbol": "aws_db_instance.main" },
+        { "file": "outputs.tf", "symbol": "output.database_endpoint" }
+      ]
+    },
+    {
+      "id": "ttf-003",
+      "title": "local.name_prefix の変更(命名規約)",
+      "note": "name_prefix を参照するすべての resource / module ブロックが影響を受ける(1-hop)。",
+      "target": { "file": "locals.tf", "symbol": "local.name_prefix" },
+      "expected": [
+        { "file": "compute.tf", "symbol": "aws_security_group.web" },
+        { "file": "compute.tf", "symbol": "aws_instance.web" },
+        { "file": "database.tf", "symbol": "aws_security_group.db" },
+        { "file": "database.tf", "symbol": "aws_db_instance.main" },
+        { "file": "network.tf", "symbol": "module.vpc" }
+      ]
+    },
+    {
+      "id": "ttf-004",
+      "title": "module.vpc の変更(ネットワーク土台)",
+      "note": "module の出力を使う resource/output(1-hop in)と、module が読み込むローカルモジュールのファイル(imports edge)。",
+      "target": { "file": "network.tf", "symbol": "module.vpc" },
+      "expected": [
+        { "file": "compute.tf", "symbol": "aws_security_group.web" },
+        { "file": "compute.tf", "symbol": "aws_instance.web" },
+        { "file": "database.tf", "symbol": "aws_security_group.db" },
+        { "file": "database.tf", "symbol": "aws_db_instance.main" },
+        { "file": "outputs.tf", "symbol": "output.vpc_id" },
+        { "file": "modules/vpc/main.tf" },
+        { "file": "modules/vpc/outputs.tf" },
+        { "file": "modules/vpc/variables.tf" }
+      ]
+    },
+    {
+      "id": "ttf-005",
+      "title": "modules/vpc の var.name 変更(ローカルモジュール内)",
+      "note": "モジュール内の resource / output だけが影響を受ける(モジュール境界の内側で閉じる)。",
+      "target": { "file": "modules/vpc/variables.tf", "symbol": "var.name" },
+      "expected": [
+        { "file": "modules/vpc/main.tf", "symbol": "aws_vpc.this" },
+        { "file": "modules/vpc/main.tf", "symbol": "aws_subnet.public" },
+        { "file": "modules/vpc/outputs.tf", "symbol": "output.database_subnet_group" }
+      ]
+    },
+    {
+      "id": "ttf-006",
+      "title": "data.aws_ami.ubuntu の変更(AMI 選定)",
+      "target": { "file": "data.tf", "symbol": "data.aws_ami.ubuntu" },
+      "expected": [
+        { "file": "compute.tf", "symbol": "aws_instance.web" },
+        { "file": "outputs.tf", "symbol": "output.web_instance_ids" }
+      ]
+    },
+    {
+      "id": "ttf-007",
+      "title": "var.app_name の変更(アプリ名 → タグ/命名へ波及)",
+      "note": "app_name は locals を通じて全リソースへ波及する。1-hop の locals と、2-hop の代表 resource を expected に含める。",
+      "target": { "file": "variables.tf", "symbol": "var.app_name" },
+      "expected": [
+        { "file": "locals.tf", "symbol": "local.name_prefix" },
+        { "file": "locals.tf", "symbol": "local.common_tags" },
+        { "file": "compute.tf", "symbol": "aws_instance.web" },
+        { "file": "database.tf", "symbol": "aws_db_instance.main" }
+      ]
+    }
+  ]
+}

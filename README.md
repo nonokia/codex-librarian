@@ -42,8 +42,14 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
   抽出スクリプト、パーサ同梱)を子プロセスとして呼ぶ第 3 の Extractor。namespace + `use`
   (PSR-4)を第一級で解決。正解セット 12 ケース、fixture ベースライン micro recall 88.1% —
   詳細は [`docs/php-baseline.md`](docs/php-baseline.md)。
+- **Terraform (HCL) 対応実装済み(issue #9)**: `tf-extractor/`(hashicorp/hcl ベースの
+  抽出バイナリ)を子プロセスとして呼ぶ第 4 の Extractor。call graph ではなく
+  **リソース/モジュール参照グラフ**(`var.x` / `module.y.out` / `aws_x.y.attr`)。
+  正解セット 7 ケース、fixture ベースライン micro recall 100%(HCL は参照が字句的に
+  明示されるため blast radius がそのままグラフに載る)— 詳細は
+  [`docs/terraform-baseline.md`](docs/terraform-baseline.md)。
 - **SCIP+ 実装済み(issue #16, ADR-6 提案)**: 抽出器⇄store の交換フォーマットを
-  SCIP ベース層 + ext サイドカーの二層に。3 言語の native 抽出器はすべて SCIP+ emit、
+  SCIP ベース層 + ext サイドカーの二層に。4 言語の native 抽出器はすべて SCIP+ emit、
   `librarian export --scip` / `import`、外部 `.scip`(scip-python)の degrade 取り込みで
   **抽出器を書かずに Python が増えた**(micro recall 88.1%)— 設計は
   [`docs/scip-design.md`](docs/scip-design.md)、実測は
@@ -84,6 +90,26 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
 
 `php` もスクリプトも無い場合、`.php` ファイルはファイルレベルの module シンボルのみに
 degrade する(インデックス全体は失敗しない。警告が stderr に出る)。
+
+## Terraform リポジトリのインデックス
+
+`.tf` ファイルは Go 製の抽出バイナリ(`tf-extractor/`、hashicorp/hcl ベース)で
+symbols/edges 化される。プロトコルの**リファレンスプラグイン**でもある。他言語と違い
+**call graph ではなくリソース/モジュール参照グラフ**を作る(HCL は参照が字句的に明示
+され型解決が要らないため構文レベルで十分 — ADR-2 の解釈は dlog / [`docs/terraform-baseline.md`](docs/terraform-baseline.md))。
+librarian は以下の順でバイナリを探す:
+
+1. `LIBRARIAN_TF_EXTRACTOR` 環境変数(ビルド済みバイナリへのパス)
+2. `librarian-tf-extractor` が `$PATH` 上にある(`go build -o <PATHの通った場所>/librarian-tf-extractor ./tf-extractor`)
+3. Go toolchain があれば `go run ./tf-extractor` に自動フォールバック(初回はビルドの分だけ遅い)
+
+シンボルは Terraform の参照アドレスで命名される(`aws_instance.web` / `var.region` /
+`module.vpc` / `data.aws_ami.ubuntu` / `local.tags` / `output.ip`)。ファイル自体は
+module シンボル(`module` ブロックと同じ kind だが moniker で区別)。ローカル module の
+`source` は対象ディレクトリのファイルに解決し、registry/remote source は `resolved=0`。
+
+どれも無い場合、`.tf` ファイルはファイルレベルの module シンボルのみに degrade する
+(インデックス全体は失敗しない。警告が stderr に出る)。
 
 ## SCIP での export / import(issue #16)
 

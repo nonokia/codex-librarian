@@ -48,12 +48,22 @@ test('module moniker is the file descriptor alone', () => {
   assert.equal(m, 'librarian-ts . . . `src/store.ts`/');
 });
 
-test('module moniker rejects name !== file (id would be unrecoverable)', () => {
-  assert.throws(
-    () =>
-      formatMoniker('librarian-ts', { file: 'a.ts', container: null, name: 'b', kind: 'module' }),
-    /name === file/,
-  );
+test('a module *block* (kind module, name !== file) is a term descriptor (#9)', () => {
+  // The file-module owns the bare head; a Terraform `module "vpc"` block reuses
+  // kind `module` but gets a normal descriptor, so both coexist in one file and
+  // round-trip (kind comes back from SymbolInformation.kind, File → module).
+  const m = formatMoniker('librarian-terraform', {
+    file: 'network.tf',
+    container: null,
+    name: 'module.vpc',
+    kind: 'module',
+  });
+  assert.equal(m, 'librarian-terraform . . . `network.tf`/`module.vpc`.');
+  const key = monikerToParts(m);
+  assert.equal(key.file, 'network.tf');
+  assert.equal(key.name, 'module.vpc');
+  assert.equal(key.container, null);
+  assert.equal(monikerToId(m, 'module'), symbolId('network.tf', null, 'module.vpc', 'module'));
 });
 
 test('testblocks are refused a moniker — they are local symbols', () => {
@@ -93,6 +103,13 @@ const CASES: Case[] = [
   { file: 'src/x.test.ts', container: 'MemStore.complete works', name: 'helper', kind: 'function' },
   { file: 'app/Service.php', container: 'App\\TaskService', name: 'create', kind: 'method', containerKinds: ['class'] },
   { file: 'src/util.ts', container: null, name: 'weird `name` +x', kind: 'variable' },
+  // Terraform (#9): dotted reference-address names, new kinds, and a module
+  // block (kind module, name !== file) all round-trip through the moniker.
+  { file: 'network.tf', container: null, name: 'module.vpc', kind: 'module' },
+  { file: 'compute.tf', container: null, name: 'aws_instance.web', kind: 'resource' },
+  { file: 'data.tf', container: null, name: 'data.aws_ami.ubuntu', kind: 'data' },
+  { file: 'outputs.tf', container: null, name: 'output.vpc_id', kind: 'output' },
+  { file: 'locals.tf', container: null, name: 'local.common_tags', kind: 'locals' },
 ];
 
 test('moniker roundtrip recovers file/container/name exactly', () => {
@@ -100,7 +117,9 @@ test('moniker roundtrip recovers file/container/name exactly', () => {
     const m = formatMoniker('librarian-ts', c);
     const key = monikerToParts(m);
     assert.equal(key.file, c.file, m);
-    assert.equal(key.name, c.kind === 'module' ? c.file : c.name, m);
+    // file-module: name === file (c.name is the file); module block & all
+    // others: the descriptor name is recovered verbatim.
+    assert.equal(key.name, c.name, m);
     assert.equal(key.container, c.container, m);
   }
 });
