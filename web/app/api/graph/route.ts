@@ -15,22 +15,27 @@ export async function GET(req: NextRequest) {
   if (!seed) return NextResponse.json({ error: 'unknown symbol' }, { status: 404 });
 
   const neighbors = store.neighborhood(id, hops, 120);
-  const nodes = [
-    { ...seed, depth: 0 },
-    ...neighbors.map((n) => ({ ...n })),
-  ];
-  const inSet = new Set(nodes.map((n) => n.id));
+  const base = [{ ...seed, depth: 0 }, ...neighbors.map((n) => ({ ...n }))];
+  const inSet = new Set(base.map((n) => n.id));
   const links: { source: string; target: string; kind: string }[] = [];
   const seen = new Set<string>();
-  for (const n of nodes) {
+  // per-node count of unresolved outgoing edges — surfaced as a toggleable
+  // badge so the neighborhood can show where the graph runs out (#28).
+  const unresolvedOut = new Map<string, number>();
+  for (const n of base) {
     const { out } = store.edgesOf(n.id);
     for (const e of out) {
-      if (!e.resolved || !e.toId || !inSet.has(e.toId)) continue;
+      if (!e.resolved) {
+        unresolvedOut.set(n.id, (unresolvedOut.get(n.id) ?? 0) + 1);
+        continue;
+      }
+      if (!e.toId || !inSet.has(e.toId)) continue;
       const key = `${e.fromId}|${e.toId}|${e.kind}`;
       if (seen.has(key)) continue;
       seen.add(key);
       links.push({ source: e.fromId, target: e.toId, kind: e.kind });
     }
   }
+  const nodes = base.map((n) => ({ ...n, unresolvedOut: unresolvedOut.get(n.id) ?? 0 }));
   return NextResponse.json({ seed: seed.id, nodes, links });
 }
