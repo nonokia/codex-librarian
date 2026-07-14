@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 46
-- symbols: 423
-- edges: 2176 (unresolved: 1184)
-- symbols by kind: class=6, function=141, interface=51, method=35, module=46, testblock=79, typealias=12, variable=53
+- files: 48
+- symbols: 446
+- edges: 2302 (unresolved: 1242)
+- symbols by kind: class=7, function=146, interface=51, method=36, module=48, testblock=86, typealias=12, variable=60
 
 ## Files
 
@@ -54,15 +54,15 @@
 
 ### src/app/registry.ts
 
-- function builtinExtractors L31-33 `(): Extractor[]`
-- interface RegistryEntry L36-47
-- function onPath L49-54 `(name: string): string | null`
-- function registryCommandResolver L61-71 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
-- function entryToExtractor L73-82 `(entry: RegistryEntry, root: string): SubprocessExtractor`
-- function parseRegistry L85-97 `(raw: unknown): RegistryEntry[]`
-- function parseEntry L99-125 `(raw: unknown, i: number): RegistryEntry`
-- function loadRegistry L128-138 `(root: string): RegistryEntry[]`
-- function resolveExtractors L146-164 `(root: string): Extractor[]`
+- function builtinExtractors L32-34 `(): Extractor[]`
+- interface RegistryEntry L37-48
+- function onPath L50-55 `(name: string): string | null`
+- function registryCommandResolver L62-72 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
+- function entryToExtractor L74-83 `(entry: RegistryEntry, root: string): SubprocessExtractor`
+- function parseRegistry L86-98 `(raw: unknown): RegistryEntry[]`
+- function parseEntry L100-126 `(raw: unknown, i: number): RegistryEntry`
+- function loadRegistry L129-139 `(root: string): RegistryEntry[]`
+- function resolveExtractors L147-165 `(root: string): Extractor[]`
 
 ### src/app/review.ts
 
@@ -161,6 +161,15 @@
 - function fileLevelOnly L142-170 `(rootDir: string, files: string[]): ExtractionResult[]`
 - function moduleId L173-175 `(file: string): string`
 
+### src/extractors/terraform.ts
+
+- function tfExtractorSourceDir L29-31 `(): string`
+- function onPath L33-38 `(name: string): string | null`
+- function resolveTerraformExtractorCommand L40-50 `(): SubprocessCommand | null`
+- variable UNAVAILABLE_WARNING L52-55
+- class TerraformExtractor L57-66
+- method TerraformExtractor.constructor L58-65 `()`
+
 ### src/extractors/ts.ts
 
 - variable EXTENSIONS L21-21
@@ -184,15 +193,15 @@
 
 ### src/protocol/scip-emit.ts
 
-- variable LANGUAGE L37-41
-- function parentOf L44-53 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
-- function extractionResultsToScipPlus L55-185 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
+- variable LANGUAGE L37-42
+- function parentOf L45-54 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
+- function extractionResultsToScipPlus L56-186 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
 
 ### src/protocol/scip-export.ts
 
-- variable SCHEME_BY_EXTENSION L22-33
-- interface ScipExportResult L35-47
-- function storeToScipPlus L49-107 `(store: Store, repo: string): ScipExportResult`
+- variable SCHEME_BY_EXTENSION L22-34
+- interface ScipExportResult L36-48
+- function storeToScipPlus L50-108 `(store: Store, repo: string): ScipExportResult`
 
 ### src/protocol/scip-ingest.ts
 
@@ -223,77 +232,77 @@
 - interface ExtDocument L83-87
 - interface ExtSymbol L89-98
 - interface ExtEdge L100-108
-- variable SYMBOL_KIND_FLAGS L112-124
-- variable EDGE_KIND_FLAGS L125-130
-- variable SYMBOL_KINDS L131-131
-- variable EDGE_KINDS L132-132
-- function parseScipPlus L139-148 `(envelope: unknown): { index: Index; ext: Ext }`
-- function parseCapabilities L156-181 `(raw: unknown): Capabilities`
-- function parseExt L184-194 `(raw: unknown): Ext`
-- function parseExtDocument L196-211 `(raw: unknown, i: number): ExtDocument`
-- function parseExtSymbol L213-235 `(raw: unknown, at: string): ExtSymbol`
-- function parseExtEdge L237-254 `(raw: unknown, at: string): ExtEdge`
-- function encodeScip L260-262 `(index: Index): Uint8Array`
-- function decodeScip L264-266 `(bytes: Uint8Array): Index`
-- function scipFromJson L268-270 `(json: JsonValue): Index`
-- function scipToJson L272-274 `(index: Index): JsonValue`
-- function createScipIndex L277-279 `(init: MessageInitShape<typeof IndexSchema>): Index`
-- variable KIND_TO_SCIP L287-298
-- variable SCIP_TO_KIND L300-302
-- function kindFromScip L304-306 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- variable DEGRADE_KIND_FROM_SCIP L317-346
-- function degradeKindFromScip L348-350 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- typealias LibrarianScheme L366-366
-- interface MonikerParts L368-380
-- typealias DescriptorSuffix L382-390
-- interface ParsedDescriptor L392-396
-- interface ParsedMoniker L398-404
-- interface LibrarianSymbolKey L407-411
-- variable IDENT_CHAR L413-413
-- variable SIMPLE_IDENT L414-414
-- variable TYPE_KINDS L415-415
-- function escapeIdent L417-420 `(name: string): string`
-- function descriptorFor L422-427 `(name: string, kind: SymbolKind): string`
-- function formatLocal L429-432 `(n: number): string`
-- function isLocalSymbol L434-436 `(symbol: string): boolean`
-- function formatMoniker L438-456 `(scheme: LibrarianScheme, parts: MonikerParts): string`
-- function readHeaderField L459-473 `(s: string, i: number, what: string): [string, number]`
-- function readIdent L475-496 `(s: string, i: number): [string, number]`
-- function parseMoniker L498-571 `(moniker: string): ParsedMoniker`
-- function monikerToParts L579-590 `(moniker: string): LibrarianSymbolKey`
-- function monikerToId L592-595 `(moniker: string, kind: SymbolKind): string`
-- typealias ExternalMonikerKey L610-614
-- function externalMonikerKey L616-639 `(moniker: string): ExternalMonikerKey`
-- interface ScipMultiLineRange L646-651
-- interface ScipSingleLineRange L653-657
-- function spanToScipRange L660-665 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
-- function scipRangeToSpan L667-678 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
+- variable SYMBOL_KIND_FLAGS L112-128
+- variable EDGE_KIND_FLAGS L129-134
+- variable SYMBOL_KINDS L135-135
+- variable EDGE_KINDS L136-136
+- function parseScipPlus L143-152 `(envelope: unknown): { index: Index; ext: Ext }`
+- function parseCapabilities L160-185 `(raw: unknown): Capabilities`
+- function parseExt L188-198 `(raw: unknown): Ext`
+- function parseExtDocument L200-215 `(raw: unknown, i: number): ExtDocument`
+- function parseExtSymbol L217-239 `(raw: unknown, at: string): ExtSymbol`
+- function parseExtEdge L241-258 `(raw: unknown, at: string): ExtEdge`
+- function encodeScip L264-266 `(index: Index): Uint8Array`
+- function decodeScip L268-270 `(bytes: Uint8Array): Index`
+- function scipFromJson L272-274 `(json: JsonValue): Index`
+- function scipToJson L276-278 `(index: Index): JsonValue`
+- function createScipIndex L281-283 `(init: MessageInitShape<typeof IndexSchema>): Index`
+- variable KIND_TO_SCIP L291-310
+- variable SCIP_TO_KIND L312-314
+- function kindFromScip L316-318 `(kind: SymbolInformation_Kind): SymbolKind | null`
+- variable DEGRADE_KIND_FROM_SCIP L329-358
+- function degradeKindFromScip L360-362 `(kind: SymbolInformation_Kind): SymbolKind | null`
+- typealias LibrarianScheme L378-378
+- interface MonikerParts L380-392
+- typealias DescriptorSuffix L394-402
+- interface ParsedDescriptor L404-408
+- interface ParsedMoniker L410-416
+- interface LibrarianSymbolKey L419-423
+- variable IDENT_CHAR L425-425
+- variable SIMPLE_IDENT L426-426
+- variable TYPE_KINDS L427-427
+- function escapeIdent L429-432 `(name: string): string`
+- function descriptorFor L434-439 `(name: string, kind: SymbolKind): string`
+- function formatLocal L441-444 `(n: number): string`
+- function isLocalSymbol L446-448 `(symbol: string): boolean`
+- function formatMoniker L450-469 `(scheme: LibrarianScheme, parts: MonikerParts): string`
+- function readHeaderField L472-486 `(s: string, i: number, what: string): [string, number]`
+- function readIdent L488-509 `(s: string, i: number): [string, number]`
+- function parseMoniker L511-584 `(moniker: string): ParsedMoniker`
+- function monikerToParts L592-603 `(moniker: string): LibrarianSymbolKey`
+- function monikerToId L605-608 `(moniker: string, kind: SymbolKind): string`
+- typealias ExternalMonikerKey L623-627
+- function externalMonikerKey L629-652 `(moniker: string): ExternalMonikerKey`
+- interface ScipMultiLineRange L659-664
+- interface ScipSingleLineRange L666-670
+- function spanToScipRange L673-678 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
+- function scipRangeToSpan L680-691 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
 
 ### src/store/store.ts
 
-- typealias SymbolKind L12-23
-- typealias EdgeKind L25-25
-- interface SymbolRow L27-38
-- interface RepoRow L40-44
-- interface EdgeRow L46-52
-- interface EdgeEndpoint L54-60
-- interface JoinedEdge L62-66
-- interface NeighborRow L68-72
-- variable SCHEMA_VERSION L75-75
-- variable SCHEMA L77-158
-- class Store L160-611
-- method Store.constructor L163-182 `(path: string)`
-- method Store.close L184-186 `(): void`
-- method Store.getMeta L188-193 `(key: string): string | null`
-- method Store.setMeta L195-199 `(key: string, value: string): void`
-- method Store.upsertRepo L201-208 `(name: string, root: string): void`
-- method Store.getRepo L210-215 `(name: string): RepoRow | null`
-- method Store.listRepos L217-225 `(): RepoRow[]`
-- method Store.fileHash L227-232 `(repo: string, path: string): string | null`
-- method Store.replaceFile L235-264 `(repo: string, path: string, hash: string, symbols: Omit<SymbolRow, 'repo'>[], edges: EdgeRow[]): void`
-- method Store.removeFiles L266-275 `(repo: string, paths: string[]): void`
-- method Store.listFiles L277-288 `(repo?: string): { repo: string; path: string; hash: string }[]`
-- method Store.stats L290-334 `(): {
+- typealias SymbolKind L12-30
+- typealias EdgeKind L32-32
+- interface SymbolRow L34-45
+- interface RepoRow L47-51
+- interface EdgeRow L53-59
+- interface EdgeEndpoint L61-67
+- interface JoinedEdge L69-73
+- interface NeighborRow L75-79
+- variable SCHEMA_VERSION L82-82
+- variable SCHEMA L84-165
+- class Store L167-618
+- method Store.constructor L170-189 `(path: string)`
+- method Store.close L191-193 `(): void`
+- method Store.getMeta L195-200 `(key: string): string | null`
+- method Store.setMeta L202-206 `(key: string, value: string): void`
+- method Store.upsertRepo L208-215 `(name: string, root: string): void`
+- method Store.getRepo L217-222 `(name: string): RepoRow | null`
+- method Store.listRepos L224-232 `(): RepoRow[]`
+- method Store.fileHash L234-239 `(repo: string, path: string): string | null`
+- method Store.replaceFile L242-271 `(repo: string, path: string, hash: string, symbols: Omit<SymbolRow, 'repo'>[], edges: EdgeRow[]): void`
+- method Store.removeFiles L273-282 `(repo: string, paths: string[]): void`
+- method Store.listFiles L284-295 `(repo?: string): { repo: string; path: string; hash: string }[]`
+- method Store.stats L297-341 `(): {
     files: number;
     symbols: number;
     edges: number;
@@ -302,12 +311,12 @@
     byExtension: Record<string, number>;
     byRepo: Record<string, { files: number; symbols: number }>;
   }`
-- method Store.findSymbols L337-349 `(query: string, limit = 20, repo?: string): SymbolRow[]`
-- method Store.symbolsInFile L351-359 `(file: string, repo?: string): SymbolRow[]`
-- method Store.neighborhood L365-390 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
-- method Store.edgesOf L392-404 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
-- method Store.edgesFromFile L410-425 `(repo: string, file: string): EdgeRow[]`
-- method Store.logRetrieval L429-458 `(entry: {
+- method Store.findSymbols L344-356 `(query: string, limit = 20, repo?: string): SymbolRow[]`
+- method Store.symbolsInFile L358-366 `(file: string, repo?: string): SymbolRow[]`
+- method Store.neighborhood L372-397 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
+- method Store.edgesOf L399-411 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
+- method Store.edgesFromFile L417-432 `(repo: string, file: string): EdgeRow[]`
+- method Store.logRetrieval L436-465 `(entry: {
     source: string;
     signature: string;
     strategy: string;
@@ -318,12 +327,12 @@
     usedChars: number;
     latencyMs: number;
   }): number`
-- method Store.updateRetrievalOutcome L460-481 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
-- method Store.listRetrievals L483-487 `(limit = 20): Record<string, unknown>[]`
-- method Store.getPattern L489-497 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
-- method Store.putPattern L499-509 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
-- method Store.listPatterns L511-515 `(): Record<string, unknown>[]`
-- method Store.recordEval L517-545 `(entry: {
+- method Store.updateRetrievalOutcome L467-488 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
+- method Store.listRetrievals L490-494 `(limit = 20): Record<string, unknown>[]`
+- method Store.getPattern L496-504 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
+- method Store.putPattern L506-516 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
+- method Store.listPatterns L518-522 `(): Record<string, unknown>[]`
+- method Store.recordEval L524-552 `(entry: {
     golden: string;
     cases: number;
     microRecall: number;
@@ -334,11 +343,11 @@
     usedCache: boolean;
     note?: string;
   }): void`
-- method Store.evalHistory L547-551 `(): Record<string, unknown>[]`
-- method Store.resolvedEdgesJoined L558-591 `(): JoinedEdge[]`
-- method Store.unresolvedSummary L594-603 `(): { name: string; kind: EdgeKind; count: number }[]`
-- method Store.symbolById L605-610 `(id: string): SymbolRow | null`
-- function rowToSymbol L613-627 `(r: unknown): SymbolRow`
+- method Store.evalHistory L554-558 `(): Record<string, unknown>[]`
+- method Store.resolvedEdgesJoined L565-598 `(): JoinedEdge[]`
+- method Store.unresolvedSummary L601-610 `(): { name: string; kind: EdgeKind; count: number }[]`
+- method Store.symbolById L612-617 `(id: string): SymbolRow | null`
+- function rowToSymbol L620-634 `(r: unknown): SymbolRow`
 
 ### src/test/contextpack.test.ts
 
@@ -396,6 +405,24 @@
 - testblock test(a diff against a php method seeds retrieval and packs its test context) L135-148
 - testblock test(without a php interpreter the claimed files degrade to file-level modules) L150-172
 - testblock test(--capabilities answers the plugin-protocol handshake, reads no stdin) L174-183
+
+### src/test/extractor-terraform.test.ts
+
+- variable repoRoot L17-17
+- variable tfExtractorDir L18-18
+- variable fixture L19-19
+- variable golden L20-20
+- variable hasGo L22-22
+- variable binary L29-29
+- function builtBinary L30-37 `(): string`
+- function indexedFixture L39-44 `(): Store`
+- testblock test(terraform fixture indexes with the block-kind taxonomy) L46-65
+- testblock test(references resolve across files (variable → resource blast radius)) L67-82
+- testblock test(module source is an imports edge to the local module files) L84-94
+- testblock test(a diff on a variable seeds retrieval and packs the affected resource) L96-110
+- testblock test(eval baseline: the reference graph recovers the golden blast radius) L112-120
+- testblock test(without a Go toolchain the claimed files degrade to file-level modules) L122-141
+- testblock test(--capabilities answers the plugin-protocol handshake, reads no stdin) L143-151
 
 ### src/test/indexer.test.ts
 
@@ -473,29 +500,29 @@
 
 - testblock test(moniker format matches the documented shape (design §4.2)) L30-39
 - testblock test(module moniker is the file descriptor alone) L41-49
-- testblock test(module moniker rejects name !== file (id would be unrecoverable)) L51-57
-- testblock test(testblocks are refused a moniker — they are local symbols) L59-73
-- interface Case L77-83
-- variable CASES L85-96
-- testblock test(moniker roundtrip recovers file/container/name exactly) L98-106
-- testblock test(monikerToId equals the extractor id scheme byte-for-byte) L108-113
-- testblock test(parseMoniker handles an external scip-typescript-shaped symbol) L117-128
-- testblock test(parseMoniker honours double-space escapes in header fields) L130-135
-- testblock test(parseMoniker reads method disambiguators and exotic descriptors) L137-144
-- testblock test(parseMoniker rejects malformed symbols) L146-152
-- testblock test(monikerToParts rejects non-file-rooted monikers) L154-156
-- testblock test(kind mapping is a bijection on the mapped subset; testblock excluded) L160-166
-- testblock test(span → range → span roundtrips) L170-180
-- testblock test(range → span handles single-line and mid-line ends) L182-197
-- testblock test(spanToScipRange rejects invalid spans) L199-202
-- function sampleIndex L206-236 `()`
-- testblock test(.scip binary roundtrips through encode/decode) L238-242
-- testblock test(proto3 canonical JSON roundtrips (the child-process representation)) L244-248
-- function sampleEnvelope L252-285 `(): unknown`
-- testblock test(parseScipPlus accepts a well-formed envelope) L287-292
-- testblock test(parseScipPlus rejects malformed envelopes with precise errors) L294-313
-- testblock test(parseCapabilities accepts a well-formed handshake reply) L317-326
-- testblock test(parseCapabilities rejects malformed replies with precise errors) L328-350
+- testblock test(a module *block* (kind module, name !== file) is a term descriptor (#9)) L51-67
+- testblock test(testblocks are refused a moniker — they are local symbols) L69-83
+- interface Case L87-93
+- variable CASES L95-113
+- testblock test(moniker roundtrip recovers file/container/name exactly) L115-125
+- testblock test(monikerToId equals the extractor id scheme byte-for-byte) L127-132
+- testblock test(parseMoniker handles an external scip-typescript-shaped symbol) L136-147
+- testblock test(parseMoniker honours double-space escapes in header fields) L149-154
+- testblock test(parseMoniker reads method disambiguators and exotic descriptors) L156-163
+- testblock test(parseMoniker rejects malformed symbols) L165-171
+- testblock test(monikerToParts rejects non-file-rooted monikers) L173-175
+- testblock test(kind mapping is a bijection on the mapped subset; testblock excluded) L179-185
+- testblock test(span → range → span roundtrips) L189-199
+- testblock test(range → span handles single-line and mid-line ends) L201-216
+- testblock test(spanToScipRange rejects invalid spans) L218-221
+- function sampleIndex L225-255 `()`
+- testblock test(.scip binary roundtrips through encode/decode) L257-261
+- testblock test(proto3 canonical JSON roundtrips (the child-process representation)) L263-267
+- function sampleEnvelope L271-304 `(): unknown`
+- testblock test(parseScipPlus accepts a well-formed envelope) L306-311
+- testblock test(parseScipPlus rejects malformed envelopes with precise errors) L313-332
+- testblock test(parseCapabilities accepts a well-formed handshake reply) L336-345
+- testblock test(parseCapabilities rejects malformed replies with precise errors) L347-369
 
 ### web/app/api/ask/route.ts
 
@@ -581,6 +608,7 @@
 - src/app/registry.ts → src/extractors/go.ts
 - src/app/registry.ts → src/extractors/php.ts
 - src/app/registry.ts → src/extractors/subprocess.ts
+- src/app/registry.ts → src/extractors/terraform.ts
 - src/app/registry.ts → src/extractors/ts.ts
 - src/app/registry.ts → src/protocol/extractor.ts
 - src/app/review.ts → src/core/contextpack.ts
@@ -604,6 +632,7 @@
 - src/extractors/subprocess.ts → src/protocol/extractor.ts
 - src/extractors/subprocess.ts → src/protocol/scip-ingest.ts
 - src/extractors/subprocess.ts → src/protocol/scip.ts
+- src/extractors/terraform.ts → src/extractors/subprocess.ts
 - src/extractors/ts.ts → src/protocol/extractor.ts
 - src/extractors/ts.ts → src/protocol/scip-emit.ts
 - src/extractors/ts.ts → src/protocol/scip-ingest.ts
@@ -651,6 +680,14 @@
 - src/test/extractor-php.test.ts → src/extractors/php.ts
 - src/test/extractor-php.test.ts → src/protocol/scip.ts
 - src/test/extractor-php.test.ts → src/store/store.ts
+- src/test/extractor-terraform.test.ts → src/app/eval.ts
+- src/test/extractor-terraform.test.ts → src/app/index.ts
+- src/test/extractor-terraform.test.ts → src/core/contextpack.ts
+- src/test/extractor-terraform.test.ts → src/core/diff.ts
+- src/test/extractor-terraform.test.ts → src/core/retrieval.ts
+- src/test/extractor-terraform.test.ts → src/extractors/terraform.ts
+- src/test/extractor-terraform.test.ts → src/protocol/scip.ts
+- src/test/extractor-terraform.test.ts → src/store/store.ts
 - src/test/indexer.test.ts → src/app/index.ts
 - src/test/indexer.test.ts → src/store/store.ts
 - src/test/loop.test.ts → src/app/eval.ts
@@ -783,6 +820,7 @@
 - src/app/loop.ts recordReviewOutcome —calls→ src/store/store.ts Store.updateRetrievalOutcome
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/go.ts GoExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/php.ts PhpExtractor
+- src/app/registry.ts builtinExtractors —calls→ src/extractors/terraform.ts TerraformExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/ts.ts TypeScriptExtractor
 - src/app/registry.ts builtinExtractors —references→ src/protocol/extractor.ts Extractor
 - src/app/registry.ts entryToExtractor —references→ src/app/registry.ts RegistryEntry
@@ -964,6 +1002,13 @@
 - src/extractors/subprocess.ts SubprocessExtractor.negotiate —references→ src/protocol/scip.ts Capabilities
 - src/extractors/subprocess.ts SubprocessExtractor.negotiate —references→ src/protocol/scip.ts PROTOCOL_VERSION
 - src/extractors/subprocess.ts SubprocessExtractor.negotiate —calls→ src/protocol/scip.ts parseCapabilities
+- src/extractors/terraform.ts TerraformExtractor —extends→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/terraform.ts TerraformExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/terraform.ts resolveTerraformExtractorCommand —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/extractors/terraform.ts resolveTerraformExtractorCommand —calls→ src/extractors/terraform.ts onPath
+- src/extractors/terraform.ts resolveTerraformExtractorCommand —calls→ src/extractors/terraform.ts tfExtractorSourceDir
+- src/extractors/terraform.ts TerraformExtractor.constructor —references→ src/extractors/terraform.ts UNAVAILABLE_WARNING
+- src/extractors/terraform.ts TerraformExtractor.constructor —references→ src/extractors/terraform.ts resolveTerraformExtractorCommand
 - src/extractors/ts.ts TypeScriptExtractor —references→ src/extractors/ts.ts EXTENSIONS
 - src/extractors/ts.ts TypeScriptExtractor —extends→ src/protocol/extractor.ts Extractor
 - src/extractors/ts.ts TypeScriptExtractor —references→ src/protocol/extractor.ts Extractor
@@ -1311,6 +1356,53 @@
 - src/test/extractor-php.test.ts test(type hints become references to repo types) —calls→ src/test/extractor-php.test.ts indexedFixture
 - src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/php.ts PhpExtractor
 - src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
+- src/test/extractor-terraform.test.ts builtBinary —references→ src/test/extractor-terraform.test.ts binary
+- src/test/extractor-terraform.test.ts builtBinary —references→ src/test/extractor-terraform.test.ts tfExtractorDir
+- src/test/extractor-terraform.test.ts fixture —references→ src/test/extractor-terraform.test.ts repoRoot
+- src/test/extractor-terraform.test.ts golden —references→ src/test/extractor-terraform.test.ts repoRoot
+- src/test/extractor-terraform.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
+- src/test/extractor-terraform.test.ts indexedFixture —calls→ src/store/store.ts Store
+- src/test/extractor-terraform.test.ts indexedFixture —references→ src/store/store.ts Store
+- src/test/extractor-terraform.test.ts indexedFixture —calls→ src/test/extractor-terraform.test.ts builtBinary
+- src/test/extractor-terraform.test.ts indexedFixture —references→ src/test/extractor-terraform.test.ts fixture
+- src/test/extractor-terraform.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/protocol/scip.ts PROTOCOL_NAME
+- src/test/extractor-terraform.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/protocol/scip.ts PROTOCOL_VERSION
+- src/test/extractor-terraform.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —calls→ src/protocol/scip.ts parseCapabilities
+- src/test/extractor-terraform.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —calls→ src/test/extractor-terraform.test.ts builtBinary
+- src/test/extractor-terraform.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/test/extractor-terraform.test.ts hasGo
+- src/test/extractor-terraform.test.ts test(a diff on a variable seeds retrieval and packs the affected resource) —calls→ src/core/contextpack.ts assembleReviewPack
+- src/test/extractor-terraform.test.ts test(a diff on a variable seeds retrieval and packs the affected resource) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/extractor-terraform.test.ts test(a diff on a variable seeds retrieval and packs the affected resource) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/extractor-terraform.test.ts test(a diff on a variable seeds retrieval and packs the affected resource) —calls→ src/store/store.ts Store.close
+- src/test/extractor-terraform.test.ts test(a diff on a variable seeds retrieval and packs the affected resource) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-terraform.test.ts test(a diff on a variable seeds retrieval and packs the affected resource) —references→ src/test/extractor-terraform.test.ts fixture
+- src/test/extractor-terraform.test.ts test(a diff on a variable seeds retrieval and packs the affected resource) —references→ src/test/extractor-terraform.test.ts hasGo
+- src/test/extractor-terraform.test.ts test(a diff on a variable seeds retrieval and packs the affected resource) —calls→ src/test/extractor-terraform.test.ts indexedFixture
+- src/test/extractor-terraform.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/app/eval.ts loadGoldenFile
+- src/test/extractor-terraform.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/app/eval.ts runEval
+- src/test/extractor-terraform.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/store/store.ts Store.close
+- src/test/extractor-terraform.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —references→ src/test/extractor-terraform.test.ts fixture
+- src/test/extractor-terraform.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —references→ src/test/extractor-terraform.test.ts golden
+- src/test/extractor-terraform.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —references→ src/test/extractor-terraform.test.ts hasGo
+- src/test/extractor-terraform.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/test/extractor-terraform.test.ts indexedFixture
+- src/test/extractor-terraform.test.ts test(module source is an imports edge to the local module files) —calls→ src/store/store.ts Store.close
+- src/test/extractor-terraform.test.ts test(module source is an imports edge to the local module files) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-terraform.test.ts test(module source is an imports edge to the local module files) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-terraform.test.ts test(module source is an imports edge to the local module files) —references→ src/test/extractor-terraform.test.ts hasGo
+- src/test/extractor-terraform.test.ts test(module source is an imports edge to the local module files) —calls→ src/test/extractor-terraform.test.ts indexedFixture
+- src/test/extractor-terraform.test.ts test(references resolve across files (variable → resource blast radius)) —calls→ src/store/store.ts Store.close
+- src/test/extractor-terraform.test.ts test(references resolve across files (variable → resource blast radius)) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-terraform.test.ts test(references resolve across files (variable → resource blast radius)) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-terraform.test.ts test(references resolve across files (variable → resource blast radius)) —references→ src/test/extractor-terraform.test.ts hasGo
+- src/test/extractor-terraform.test.ts test(references resolve across files (variable → resource blast radius)) —calls→ src/test/extractor-terraform.test.ts indexedFixture
+- src/test/extractor-terraform.test.ts test(terraform fixture indexes with the block-kind taxonomy) —calls→ src/store/store.ts Store.close
+- src/test/extractor-terraform.test.ts test(terraform fixture indexes with the block-kind taxonomy) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-terraform.test.ts test(terraform fixture indexes with the block-kind taxonomy) —calls→ src/store/store.ts Store.stats
+- src/test/extractor-terraform.test.ts test(terraform fixture indexes with the block-kind taxonomy) —references→ src/test/extractor-terraform.test.ts hasGo
+- src/test/extractor-terraform.test.ts test(terraform fixture indexes with the block-kind taxonomy) —calls→ src/test/extractor-terraform.test.ts indexedFixture
+- src/test/extractor-terraform.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
+- src/test/extractor-terraform.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/terraform.ts TerraformExtractor
+- src/test/extractor-terraform.test.ts tfExtractorDir —references→ src/test/extractor-terraform.test.ts repoRoot
 - src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/app/index.ts indexRepo
 - src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store/store.ts Store
 - src/test/indexer.test.ts test(indexRepo extracts symbols, edges, and resolves across files) —calls→ src/store/store.ts Store.close
@@ -1504,10 +1596,13 @@
 - src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/protocol/scip.ts encodeScip
 - src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/protocol/scip.ts scipToJson
 - src/test/scip.test.ts test(.scip binary roundtrips through encode/decode) —calls→ src/test/scip.test.ts sampleIndex
+- src/test/scip.test.ts test(a module *block* (kind module, name !== file) is a term descriptor (#9)) —calls→ src/protocol/extractor.ts symbolId
+- src/test/scip.test.ts test(a module *block* (kind module, name !== file) is a term descriptor (#9)) —calls→ src/protocol/scip.ts formatMoniker
+- src/test/scip.test.ts test(a module *block* (kind module, name !== file) is a term descriptor (#9)) —calls→ src/protocol/scip.ts monikerToId
+- src/test/scip.test.ts test(a module *block* (kind module, name !== file) is a term descriptor (#9)) —calls→ src/protocol/scip.ts monikerToParts
 - src/test/scip.test.ts test(kind mapping is a bijection on the mapped subset; testblock excluded) —references→ src/protocol/scip.ts KIND_TO_SCIP
 - src/test/scip.test.ts test(kind mapping is a bijection on the mapped subset; testblock excluded) —calls→ src/protocol/scip.ts kindFromScip
 - src/test/scip.test.ts test(module moniker is the file descriptor alone) —calls→ src/protocol/scip.ts formatMoniker
-- src/test/scip.test.ts test(module moniker rejects name !== file (id would be unrecoverable)) —calls→ src/protocol/scip.ts formatMoniker
 - src/test/scip.test.ts test(moniker format matches the documented shape (design §4.2)) —calls→ src/protocol/scip.ts formatMoniker
 - src/test/scip.test.ts test(moniker roundtrip recovers file/container/name exactly) —calls→ src/protocol/scip.ts formatMoniker
 - src/test/scip.test.ts test(moniker roundtrip recovers file/container/name exactly) —calls→ src/protocol/scip.ts monikerToParts
@@ -1563,54 +1658,56 @@
 
 ## Unresolved (aggregated)
 
-- 60× map (calls)
-- 58× join (calls)
-- 53× equal (calls)
-- 35× ok (calls)
-- 32× some (calls)
-- 30× deepEqual (calls)
+- 65× join (calls)
+- 62× map (calls)
+- 59× equal (calls)
+- 39× ok (calls)
+- 35× some (calls)
+- 32× deepEqual (calls)
 - 28× Error (calls)
 - 28× get (calls)
 - 27× prepare (calls)
-- 24× node:path (imports)
+- 26× node:path (imports)
+- 25× node:fs (imports)
+- 24× filter (calls)
 - 24× stringify (calls)
-- 23× node:fs (imports)
 - 23× push (calls)
-- 22× filter (calls)
-- 22× rmSync (calls)
-- 21× test (calls)
+- 23× rmSync (calls)
+- 22× test (calls)
+- 21× writeFileSync (calls)
 - 20× Map (calls)
-- 20× writeFileSync (calls)
-- 19× Set (calls)
-- 18× find (calls)
-- 18× mkdtempSync (calls)
-- 18× tmpdir (calls)
-- 17× has (calls)
+- 20× Set (calls)
+- 20× mkdtempSync (calls)
+- 20× tmpdir (calls)
+- 19× find (calls)
+- 18× has (calls)
 - 17× slice (calls)
 - 15× all (calls)
+- 15× split (calls)
+- 14× node:assert/strict (imports)
+- 14× node:test (imports)
+- 14× parse (calls)
 - 14× set (calls)
-- 14× split (calls)
-- 13× node:assert/strict (imports)
-- 13× node:test (imports)
-- 13× parse (calls)
+- 13× existsSync (calls)
+- 13× resolve (calls)
 - 12× mkdirSync (calls)
-- 11× existsSync (calls)
-- 11× node:os (imports)
-- 11× resolve (calls)
+- 12× node:os (imports)
+- 12× spawnSync (calls)
 - 11× sort (calls)
+- 10× dirname (calls)
 - 10× readFileSync (calls)
 - 9× includes (calls)
 - 9× run (calls)
-- 9× spawnSync (calls)
-- 9× throws (calls)
 - 8× @scip-code/scip (imports)
-- 8× dirname (calls)
 - 8× endsWith (calls)
 - 8× isArray (calls)
 - 8× keys (calls)
 - 8× now (calls)
+- 8× throws (calls)
+- 7× fileURLToPath (calls)
 - 7× match (calls)
 - 7× max (calls)
+- 7× node:url (imports)
 - 7× startsWith (calls)
 - 7× trim (calls)
 - 6× add (calls)
@@ -1622,15 +1719,13 @@
 - 5× createHash (calls)
 - 5× digest (calls)
 - 5× error (calls)
-- 5× fileURLToPath (calls)
-- 5× node:url (imports)
+- 5× node:child_process (imports)
 - 5× openLibrarian (calls)
 - 5× update (calls)
 - 4× every (calls)
 - 4× isIdentifier (calls)
 - 4× isInteger (calls)
 - 4× next/server (imports)
-- 4× node:child_process (imports)
 - 4× node:crypto (imports)
 - 4× relative (calls)
 - 4× round (calls)
