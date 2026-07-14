@@ -202,6 +202,9 @@ node bin/librarian.js graph handleRequest --db shared.db --repo backend  # --rep
 node bin/librarian.js stats --db shared.db                          # repos / repo 別内訳
 ```
 
+- `index` / `import` が最後に出す summary は **per-repo**(#29): `symbols` / `edges` /
+  `unresolvedEdges` はその run の repo の行数であって db 全体の累計ではない
+  (`filesSeen` / `filesIndexed` と集計単位が揃う)。db 全体の内訳は `stats` を見る。
 - diff 系(`retrieve`/`pack`/`review`/`eval`)はソース本文を repos テーブルの root から
   読む。同じ相対パスが複数 repo にある場合は `--repo <name>` で diff の属する repo を
   指定する。インデックス時と root が移動した場合は `--root <dir>` で上書き。

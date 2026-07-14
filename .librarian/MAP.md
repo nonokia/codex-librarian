@@ -7,9 +7,9 @@
 ## Stats
 
 - files: 46
-- symbols: 423
-- edges: 2176 (unresolved: 1184)
-- symbols by kind: class=6, function=141, interface=51, method=35, module=46, testblock=79, typealias=12, variable=53
+- symbols: 425
+- edges: 2185 (unresolved: 1188)
+- symbols by kind: class=6, function=141, interface=51, method=36, module=46, testblock=80, typealias=12, variable=53
 
 ## Files
 
@@ -31,10 +31,10 @@
 - function extractorFor L36-38 `(file: string, extractors: Extractor[]): Extractor | null`
 - function contentHash L40-42 `(text: string): string`
 - function namespaceIds L50-66 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
-- interface IndexReport L68-79
-- function indexRepo L97-165 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
-- interface ScipImportReport L167-173
-- function importScip L191-266 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[] } = {}): ScipImportReport`
+- interface IndexReport L74-88
+- function indexRepo L106-174 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
+- interface ScipImportReport L176-182
+- function importScip L200-275 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[] } = {}): ScipImportReport`
 
 ### src/app/loop.ts
 
@@ -281,7 +281,7 @@
 - interface NeighborRow L68-72
 - variable SCHEMA_VERSION L75-75
 - variable SCHEMA L77-158
-- class Store L160-611
+- class Store L160-634
 - method Store.constructor L163-182 `(path: string)`
 - method Store.close L184-186 `(): void`
 - method Store.getMeta L188-193 `(key: string): string | null`
@@ -302,12 +302,13 @@
     byExtension: Record<string, number>;
     byRepo: Record<string, { files: number; symbols: number }>;
   }`
-- method Store.findSymbols L337-349 `(query: string, limit = 20, repo?: string): SymbolRow[]`
-- method Store.symbolsInFile L351-359 `(file: string, repo?: string): SymbolRow[]`
-- method Store.neighborhood L365-390 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
-- method Store.edgesOf L392-404 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
-- method Store.edgesFromFile L410-425 `(repo: string, file: string): EdgeRow[]`
-- method Store.logRetrieval L429-458 `(entry: {
+- method Store.statsForRepo L343-357 `(repo: string): { symbols: number; edges: number; unresolvedEdges: number }`
+- method Store.findSymbols L360-372 `(query: string, limit = 20, repo?: string): SymbolRow[]`
+- method Store.symbolsInFile L374-382 `(file: string, repo?: string): SymbolRow[]`
+- method Store.neighborhood L388-413 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
+- method Store.edgesOf L415-427 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
+- method Store.edgesFromFile L433-448 `(repo: string, file: string): EdgeRow[]`
+- method Store.logRetrieval L452-481 `(entry: {
     source: string;
     signature: string;
     strategy: string;
@@ -318,12 +319,12 @@
     usedChars: number;
     latencyMs: number;
   }): number`
-- method Store.updateRetrievalOutcome L460-481 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
-- method Store.listRetrievals L483-487 `(limit = 20): Record<string, unknown>[]`
-- method Store.getPattern L489-497 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
-- method Store.putPattern L499-509 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
-- method Store.listPatterns L511-515 `(): Record<string, unknown>[]`
-- method Store.recordEval L517-545 `(entry: {
+- method Store.updateRetrievalOutcome L483-504 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
+- method Store.listRetrievals L506-510 `(limit = 20): Record<string, unknown>[]`
+- method Store.getPattern L512-520 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
+- method Store.putPattern L522-532 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
+- method Store.listPatterns L534-538 `(): Record<string, unknown>[]`
+- method Store.recordEval L540-568 `(entry: {
     golden: string;
     cases: number;
     microRecall: number;
@@ -334,11 +335,11 @@
     usedCache: boolean;
     note?: string;
   }): void`
-- method Store.evalHistory L547-551 `(): Record<string, unknown>[]`
-- method Store.resolvedEdgesJoined L558-591 `(): JoinedEdge[]`
-- method Store.unresolvedSummary L594-603 `(): { name: string; kind: EdgeKind; count: number }[]`
-- method Store.symbolById L605-610 `(id: string): SymbolRow | null`
-- function rowToSymbol L613-627 `(r: unknown): SymbolRow`
+- method Store.evalHistory L570-574 `(): Record<string, unknown>[]`
+- method Store.resolvedEdgesJoined L581-614 `(): JoinedEdge[]`
+- method Store.unresolvedSummary L617-626 `(): { name: string; kind: EdgeKind; count: number }[]`
+- method Store.symbolById L628-633 `(id: string): SymbolRow | null`
+- function rowToSymbol L636-650 `(r: unknown): SymbolRow`
 
 ### src/test/contextpack.test.ts
 
@@ -426,10 +427,11 @@
 
 - function twoRepos L15-33 `(): { alphaRoot: string; betaRoot: string }`
 - testblock test(two repos share one db without path or symbol-id collisions) L35-73
-- testblock test(single-repo flow keeps working without --repo-name (basename default)) L75-82
-- testblock test(retrieval scopes seeds by repo and reads source from the right root) L84-114
-- testblock test(map prefixes paths with the repo only when the db is multi-repo) L116-132
-- testblock test(a pre-v2 (single-repo) db is rejected with re-index guidance) L134-143
+- testblock test(index summary counts are per-repo, not the db-wide total (#29)) L75-101
+- testblock test(single-repo flow keeps working without --repo-name (basename default)) L103-110
+- testblock test(retrieval scopes seeds by repo and reads source from the right root) L112-142
+- testblock test(map prefixes paths with the repo only when the db is multi-repo) L144-160
+- testblock test(a pre-v2 (single-repo) db is rejected with re-index guidance) L162-171
 
 ### src/test/registry.test.ts
 
@@ -733,7 +735,7 @@
 - src/app/index.ts importScip —calls→ src/store/store.ts Store.removeFiles
 - src/app/index.ts importScip —calls→ src/store/store.ts Store.replaceFile
 - src/app/index.ts importScip —calls→ src/store/store.ts Store.setMeta
-- src/app/index.ts importScip —calls→ src/store/store.ts Store.stats
+- src/app/index.ts importScip —calls→ src/store/store.ts Store.statsForRepo
 - src/app/index.ts importScip —calls→ src/store/store.ts Store.upsertRepo
 - src/app/index.ts indexRepo —references→ src/app/index.ts IndexReport
 - src/app/index.ts indexRepo —calls→ src/app/index.ts contentHash
@@ -749,7 +751,7 @@
 - src/app/index.ts indexRepo —calls→ src/store/store.ts Store.removeFiles
 - src/app/index.ts indexRepo —calls→ src/store/store.ts Store.replaceFile
 - src/app/index.ts indexRepo —calls→ src/store/store.ts Store.setMeta
-- src/app/index.ts indexRepo —calls→ src/store/store.ts Store.stats
+- src/app/index.ts indexRepo —calls→ src/store/store.ts Store.statsForRepo
 - src/app/index.ts indexRepo —calls→ src/store/store.ts Store.upsertRepo
 - src/app/index.ts namespaceIds —references→ src/protocol/extractor.ts ExtractionResult
 - src/app/loop.ts CANDIDATE_STRATEGIES —references→ src/app/loop.ts NamedStrategy
@@ -1383,6 +1385,11 @@
 - src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/store/store.ts Store.getMeta
 - src/test/map.test.ts test(no-op reindex leaves the store untouched (self-index idempotence)) —calls→ src/test/map.test.ts fixtureRepo
 - src/test/multirepo.test.ts test(a pre-v2 (single-repo) db is rejected with re-index guidance) —calls→ src/store/store.ts Store
+- src/test/multirepo.test.ts test(index summary counts are per-repo, not the db-wide total (#29)) —calls→ src/app/index.ts indexRepo
+- src/test/multirepo.test.ts test(index summary counts are per-repo, not the db-wide total (#29)) —calls→ src/store/store.ts Store
+- src/test/multirepo.test.ts test(index summary counts are per-repo, not the db-wide total (#29)) —calls→ src/store/store.ts Store.stats
+- src/test/multirepo.test.ts test(index summary counts are per-repo, not the db-wide total (#29)) —calls→ src/store/store.ts Store.statsForRepo
+- src/test/multirepo.test.ts test(index summary counts are per-repo, not the db-wide total (#29)) —calls→ src/test/multirepo.test.ts twoRepos
 - src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/app/index.ts indexRepo
 - src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/core/map.ts buildMap
 - src/test/multirepo.test.ts test(map prefixes paths with the repo only when the db is multi-repo) —calls→ src/core/map.ts renderMapMarkdown
@@ -1565,13 +1572,13 @@
 
 - 60× map (calls)
 - 58× join (calls)
-- 53× equal (calls)
-- 35× ok (calls)
+- 54× equal (calls)
+- 36× ok (calls)
 - 32× some (calls)
 - 30× deepEqual (calls)
+- 29× get (calls)
 - 28× Error (calls)
-- 28× get (calls)
-- 27× prepare (calls)
+- 28× prepare (calls)
 - 24× node:path (imports)
 - 24× stringify (calls)
 - 23× node:fs (imports)
