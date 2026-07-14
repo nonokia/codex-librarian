@@ -6,23 +6,23 @@
 
 ## Stats
 
-- files: 50
-- symbols: 473
-- edges: 2472 (unresolved: 1322)
-- symbols by kind: class=8, function=150, interface=51, method=38, module=50, testblock=99, typealias=12, variable=65
+- files: 52
+- symbols: 511
+- edges: 2945 (unresolved: 1685)
+- symbols by kind: class=8, function=159, interface=55, method=45, module=52, testblock=109, typealias=12, variable=71
 
 ## Files
 
 ### src/app/eval.ts
 
-- interface ExpectedEntry L17-21
-- interface GoldenCase L23-36
-- interface CaseResult L38-51
-- interface EvalReport L53-67
-- function loadGoldenFile L69-78 `(path: string): GoldenCase[]`
-- function hunksForCase L80-92 `(store: Store, c: GoldenCase)`
-- function matches L94-98 `(item: ContextItem, exp: ExpectedEntry): boolean`
-- function runEval L100-167 `(store: Store, rootDir: RootResolver, cases: GoldenCase[], opts: { hops?: number; budget?: number; strategy?: Strategy; useCache?: boolean } = {}): EvalReport`
+- interface ExpectedEntry L17-23
+- interface GoldenCase L25-38
+- interface CaseResult L40-53
+- interface EvalReport L55-69
+- function loadGoldenFile L71-80 `(path: string): GoldenCase[]`
+- function hunksForCase L82-94 `(store: Store, c: GoldenCase)`
+- function matches L96-101 `(item: ContextItem, exp: ExpectedEntry): boolean`
+- function runEval L103-173 `(store: Store, rootDir: RootResolver, cases: GoldenCase[], opts: { hops?: number; budget?: number; strategy?: Strategy; useCache?: boolean } = {}): EvalReport`
 
 ### src/app/index.ts
 
@@ -35,6 +35,18 @@
 - function indexRepo L109-177 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
 - interface ScipImportReport L179-185
 - function importScip L210-285 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[]; preferScip?: boolean } = {}): ScipImportReport`
+
+### src/app/link.ts
+
+- interface PackageLink L35-42
+- interface LinkMap L44-46
+- interface LinkReport L48-60
+- function defaultLinkMapPath L62-64 `(dbPath: string): string`
+- function loadLinkMap L66-68 `(path: string): LinkMap`
+- function parseLinkMap L70-86 `(raw: unknown, at = 'link map'): LinkMap`
+- function splitBinding L94-98 `(toName: string): { spec: string; imported: string } | null`
+- function link L100-183 `(store: Store, map: LinkMap, opts: { dryRun?: boolean } = {}): LinkReport`
+- function unlink L186-189 `(store: Store): { unlinked: number; crossRepoEdges: number }`
 
 ### src/app/loop.ts
 
@@ -77,16 +89,16 @@
 
 ### src/cli.ts
 
-- interface Flags L19-46
-- function parseArgs L48-95 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
-- function defaultDb L97-100 `(repoRoot?: string): string`
-- function emit L102-104 `(value: unknown, pretty: boolean): void`
-- function fail L106-109 `(message: string): never`
-- variable HELP L111-156
-- function openStore L158-162 `(flags: Flags): Store`
-- function compactSymbol L164-174 `(s: SymbolRow)`
-- function rootResolver L180-188 `(store: Store, flags: Flags): (repo: string) => string | null`
-- function main L190-458 `(): void`
+- interface Flags L20-51
+- function parseArgs L53-103 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
+- function defaultDb L105-108 `(repoRoot?: string): string`
+- function emit L110-112 `(value: unknown, pretty: boolean): void`
+- function fail L114-117 `(message: string): never`
+- variable HELP L119-170
+- function openStore L172-176 `(flags: Flags): Store`
+- function compactSymbol L178-188 `(s: SymbolRow)`
+- function rootResolver L194-202 `(store: Store, flags: Flags): (repo: string) => string | null`
+- function main L204-504 `(): void`
 
 ### src/core/contextpack.ts
 
@@ -182,16 +194,17 @@
 ### src/extractors/ts.ts
 
 - variable EXTENSIONS L21-21
-- class TypeScriptExtractor L23-206
-- method TypeScriptExtractor.extract L26-205 `(rootDir: string, files: string[]): ExtractionResult[]`
-- variable TEST_BLOCK_CALLEES L215-215
-- function testBlockCall L217-233 `(node: ts.Node): { name: string; body: ts.Node } | null`
-- function classifyDeclaration L235-270 `(node: ts.Node): { name: string; kind: SymbolKind; nameNode: ts.Node | null } | null`
-- function calleeNameNode L273-277 `(expr: ts.Expression): ts.Node | null`
-- function isBareReference L284-310 `(node: ts.Identifier): boolean`
-- function signatureOf L312-327 `(node: ts.Node, sf: ts.SourceFile): string | null`
-- function docOf L329-337 `(node: ts.Node): string | null`
-- function dedupeEdges L339-347 `(edges: EdgeRow[]): EdgeRow[]`
+- class TypeScriptExtractor L23-235
+- method TypeScriptExtractor.extract L26-234 `(rootDir: string, files: string[]): ExtractionResult[]`
+- function importBindings L250-258 `(node: ts.ImportDeclaration, spec: string): string[]`
+- variable TEST_BLOCK_CALLEES L267-267
+- function testBlockCall L269-285 `(node: ts.Node): { name: string; body: ts.Node } | null`
+- function classifyDeclaration L287-322 `(node: ts.Node): { name: string; kind: SymbolKind; nameNode: ts.Node | null } | null`
+- function calleeNameNode L325-329 `(expr: ts.Expression): ts.Node | null`
+- function isBareReference L336-362 `(node: ts.Identifier): boolean`
+- function signatureOf L364-379 `(node: ts.Node, sf: ts.SourceFile): string | null`
+- function docOf L381-389 `(node: ts.Node): string | null`
+- function dedupeEdges L391-399 `(edges: EdgeRow[]): EdgeRow[]`
 
 ### src/protocol/extractor.ts
 
@@ -294,24 +307,25 @@
 - interface SymbolRow L34-45
 - interface RepoRow L47-51
 - interface EdgeRow L53-59
-- interface EdgeEndpoint L61-67
-- interface JoinedEdge L69-73
-- interface NeighborRow L75-79
-- variable SCHEMA_VERSION L82-82
-- variable SCHEMA L84-165
-- class Store L167-641
-- method Store.constructor L170-189 `(path: string)`
-- method Store.close L191-193 `(): void`
-- method Store.getMeta L195-200 `(key: string): string | null`
-- method Store.setMeta L202-206 `(key: string, value: string): void`
-- method Store.upsertRepo L208-215 `(name: string, root: string): void`
-- method Store.getRepo L217-222 `(name: string): RepoRow | null`
-- method Store.listRepos L224-232 `(): RepoRow[]`
-- method Store.fileHash L234-239 `(repo: string, path: string): string | null`
-- method Store.replaceFile L242-271 `(repo: string, path: string, hash: string, symbols: Omit<SymbolRow, 'repo'>[], edges: EdgeRow[]): void`
-- method Store.removeFiles L273-282 `(repo: string, paths: string[]): void`
-- method Store.listFiles L284-295 `(repo?: string): { repo: string; path: string; hash: string }[]`
-- method Store.stats L297-341 `(): {
+- interface UnresolvedEdge L62-68
+- interface EdgeEndpoint L70-76
+- interface JoinedEdge L78-82
+- interface NeighborRow L84-88
+- variable SCHEMA_VERSION L91-91
+- variable SCHEMA L93-174
+- class Store L176-773
+- method Store.constructor L179-198 `(path: string)`
+- method Store.close L200-202 `(): void`
+- method Store.getMeta L204-209 `(key: string): string | null`
+- method Store.setMeta L211-215 `(key: string, value: string): void`
+- method Store.upsertRepo L217-224 `(name: string, root: string): void`
+- method Store.getRepo L226-231 `(name: string): RepoRow | null`
+- method Store.listRepos L233-241 `(): RepoRow[]`
+- method Store.fileHash L243-248 `(repo: string, path: string): string | null`
+- method Store.replaceFile L251-280 `(repo: string, path: string, hash: string, symbols: Omit<SymbolRow, 'repo'>[], edges: EdgeRow[]): void`
+- method Store.removeFiles L282-291 `(repo: string, paths: string[]): void`
+- method Store.listFiles L293-304 `(repo?: string): { repo: string; path: string; hash: string }[]`
+- method Store.stats L306-350 `(): {
     files: number;
     symbols: number;
     edges: number;
@@ -320,13 +334,13 @@
     byExtension: Record<string, number>;
     byRepo: Record<string, { files: number; symbols: number }>;
   }`
-- method Store.statsForRepo L350-364 `(repo: string): { symbols: number; edges: number; unresolvedEdges: number }`
-- method Store.findSymbols L367-379 `(query: string, limit = 20, repo?: string): SymbolRow[]`
-- method Store.symbolsInFile L381-389 `(file: string, repo?: string): SymbolRow[]`
-- method Store.neighborhood L395-420 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
-- method Store.edgesOf L422-434 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
-- method Store.edgesFromFile L440-455 `(repo: string, file: string): EdgeRow[]`
-- method Store.logRetrieval L459-488 `(entry: {
+- method Store.statsForRepo L359-373 `(repo: string): { symbols: number; edges: number; unresolvedEdges: number }`
+- method Store.findSymbols L376-388 `(query: string, limit = 20, repo?: string): SymbolRow[]`
+- method Store.symbolsInFile L390-398 `(file: string, repo?: string): SymbolRow[]`
+- method Store.neighborhood L404-429 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
+- method Store.edgesOf L431-443 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
+- method Store.edgesFromFile L449-464 `(repo: string, file: string): EdgeRow[]`
+- method Store.logRetrieval L468-497 `(entry: {
     source: string;
     signature: string;
     strategy: string;
@@ -337,12 +351,12 @@
     usedChars: number;
     latencyMs: number;
   }): number`
-- method Store.updateRetrievalOutcome L490-511 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
-- method Store.listRetrievals L513-517 `(limit = 20): Record<string, unknown>[]`
-- method Store.getPattern L519-527 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
-- method Store.putPattern L529-539 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
-- method Store.listPatterns L541-545 `(): Record<string, unknown>[]`
-- method Store.recordEval L547-575 `(entry: {
+- method Store.updateRetrievalOutcome L499-520 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
+- method Store.listRetrievals L522-526 `(limit = 20): Record<string, unknown>[]`
+- method Store.getPattern L528-536 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
+- method Store.putPattern L538-548 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
+- method Store.listPatterns L550-554 `(): Record<string, unknown>[]`
+- method Store.recordEval L556-584 `(entry: {
     golden: string;
     cases: number;
     microRecall: number;
@@ -353,11 +367,18 @@
     usedCache: boolean;
     note?: string;
   }): void`
-- method Store.evalHistory L577-581 `(): Record<string, unknown>[]`
-- method Store.resolvedEdgesJoined L588-621 `(): JoinedEdge[]`
-- method Store.unresolvedSummary L624-633 `(): { name: string; kind: EdgeKind; count: number }[]`
-- method Store.symbolById L635-640 `(id: string): SymbolRow | null`
-- function rowToSymbol L643-657 `(r: unknown): SymbolRow`
+- method Store.evalHistory L586-590 `(): Record<string, unknown>[]`
+- method Store.resolvedEdgesJoined L597-630 `(): JoinedEdge[]`
+- method Store.unresolvedSummary L633-642 `(): { name: string; kind: EdgeKind; count: number }[]`
+- method Store.symbolById L644-649 `(id: string): SymbolRow | null`
+- method Store.unresolvedEdges L656-673 `(repo?: string): UnresolvedEdge[]`
+- method Store.topLevelSymbolsNamed L681-691 `(repo: string, name: string): SymbolRow[]`
+- method Store.moduleSymbol L693-698 `(repo: string, file: string): SymbolRow | null`
+- method Store.linkEdges L706-727 `(links: { fromId: string; toName: string; kind: EdgeKind; toId: string }[]): number`
+- method Store.crossRepoEdges L730-732 `(): JoinedEdge[]`
+- method Store.countCrossRepoEdges L734-743 `(): number`
+- method Store.unlinkCrossRepo L746-772 `(): number`
+- function rowToSymbol L775-789 `(r: unknown): SymbolRow`
 
 ### src/test/contextpack.test.ts
 
@@ -460,6 +481,27 @@
 - testblock test(indexRepo extracts symbols, edges, and resolves across files) L33-91
 - testblock test(test blocks become symbols so test edges are block-scoped, not module-scoped) L93-133
 - testblock test(re-index is incremental: unchanged files are not rewritten) L135-150
+
+### src/test/link.test.ts
+
+- variable repoRoot L21-21
+- variable fixture L22-22
+- variable coreRoot L23-23
+- variable appRoot L24-24
+- function indexedPair L27-32 `(dbPath = ':memory:'): Store`
+- variable MAP L34-34
+- function roots L35-35 `(repo: string)`
+- variable OVERDUE_DIFF L38-45
+- testblock test(the extractor names external imports AND their use sites by package) L47-62
+- testblock test(a method call that shares an export name is never linked) L64-94
+- testblock test(without a declaration nothing is linked (no false edges, no degrade)) L96-107
+- testblock test(link resolves cross-repo calls through the declared package) L109-138
+- testblock test(a diff in the library repo packs the app repo's callers (#27 acceptance)) L140-162
+- testblock test(the golden set measures the difference: unlinked 6/14, linked 14/14) L164-176
+- testblock test(link is idempotent, and --clear restores the edges as extracted) L178-205
+- testblock test(an ambiguous name is refused, not guessed) L207-249
+- testblock test(a declaration pointing at an unindexed repo fails loudly) L251-258
+- testblock test(the link map is validated, and the fixture map parses) L260-269
 
 ### src/test/loop.test.ts
 
@@ -632,6 +674,7 @@
 - src/app/index.ts → src/protocol/scip-ingest.ts
 - src/app/index.ts → src/protocol/scip.ts
 - src/app/index.ts → src/store/store.ts
+- src/app/link.ts → src/store/store.ts
 - src/app/loop.ts → src/app/eval.ts
 - src/app/loop.ts → src/app/review.ts
 - src/app/loop.ts → src/core/retrieval.ts
@@ -646,6 +689,7 @@
 - src/app/review.ts → src/core/contextpack.ts
 - src/cli.ts → src/app/eval.ts
 - src/cli.ts → src/app/index.ts
+- src/cli.ts → src/app/link.ts
 - src/cli.ts → src/app/loop.ts
 - src/cli.ts → src/app/review.ts
 - src/cli.ts → src/core/contextpack.ts
@@ -731,6 +775,13 @@
 - src/test/extractor-terraform.test.ts → src/store/store.ts
 - src/test/indexer.test.ts → src/app/index.ts
 - src/test/indexer.test.ts → src/store/store.ts
+- src/test/link.test.ts → src/app/eval.ts
+- src/test/link.test.ts → src/app/index.ts
+- src/test/link.test.ts → src/app/link.ts
+- src/test/link.test.ts → src/core/contextpack.ts
+- src/test/link.test.ts → src/core/diff.ts
+- src/test/link.test.ts → src/core/retrieval.ts
+- src/test/link.test.ts → src/store/store.ts
 - src/test/loop.test.ts → src/app/eval.ts
 - src/test/loop.test.ts → src/app/index.ts
 - src/test/loop.test.ts → src/app/loop.ts
@@ -830,6 +881,26 @@
 - src/app/index.ts indexRepo —calls→ src/store/store.ts Store.statsForRepo
 - src/app/index.ts indexRepo —calls→ src/store/store.ts Store.upsertRepo
 - src/app/index.ts namespaceIds —references→ src/protocol/extractor.ts ExtractionResult
+- src/app/link.ts LinkMap —references→ src/app/link.ts PackageLink
+- src/app/link.ts link —references→ src/app/link.ts LinkMap
+- src/app/link.ts link —references→ src/app/link.ts LinkReport
+- src/app/link.ts link —references→ src/app/link.ts PackageLink
+- src/app/link.ts link —calls→ src/app/link.ts splitBinding
+- src/app/link.ts link —references→ src/store/store.ts EdgeKind
+- src/app/link.ts link —references→ src/store/store.ts Store
+- src/app/link.ts link —calls→ src/store/store.ts Store.countCrossRepoEdges
+- src/app/link.ts link —calls→ src/store/store.ts Store.linkEdges
+- src/app/link.ts link —calls→ src/store/store.ts Store.listRepos
+- src/app/link.ts link —calls→ src/store/store.ts Store.moduleSymbol
+- src/app/link.ts link —calls→ src/store/store.ts Store.topLevelSymbolsNamed
+- src/app/link.ts link —calls→ src/store/store.ts Store.unresolvedEdges
+- src/app/link.ts loadLinkMap —references→ src/app/link.ts LinkMap
+- src/app/link.ts loadLinkMap —calls→ src/app/link.ts parseLinkMap
+- src/app/link.ts parseLinkMap —references→ src/app/link.ts LinkMap
+- src/app/link.ts parseLinkMap —references→ src/app/link.ts PackageLink
+- src/app/link.ts unlink —references→ src/store/store.ts Store
+- src/app/link.ts unlink —calls→ src/store/store.ts Store.countCrossRepoEdges
+- src/app/link.ts unlink —calls→ src/store/store.ts Store.unlinkCrossRepo
 - src/app/loop.ts CANDIDATE_STRATEGIES —references→ src/app/loop.ts NamedStrategy
 - src/app/loop.ts CANDIDATE_STRATEGIES —references→ src/app/loop.ts W
 - src/app/loop.ts CANDIDATE_STRATEGIES —references→ src/core/retrieval.ts DEFAULT_STRATEGY
@@ -896,6 +967,10 @@
 - src/cli.ts main —calls→ src/app/eval.ts runEval
 - src/cli.ts main —calls→ src/app/index.ts importScip
 - src/cli.ts main —calls→ src/app/index.ts indexRepo
+- src/cli.ts main —calls→ src/app/link.ts defaultLinkMapPath
+- src/cli.ts main —calls→ src/app/link.ts link
+- src/cli.ts main —calls→ src/app/link.ts loadLinkMap
+- src/cli.ts main —calls→ src/app/link.ts unlink
 - src/cli.ts main —calls→ src/app/loop.ts learn
 - src/cli.ts main —calls→ src/app/loop.ts recordReviewOutcome
 - src/cli.ts main —calls→ src/app/review.ts buildReviewRequest
@@ -921,6 +996,7 @@
 - src/cli.ts main —references→ src/store/store.ts NeighborRow
 - src/cli.ts main —calls→ src/store/store.ts Store
 - src/cli.ts main —calls→ src/store/store.ts Store.close
+- src/cli.ts main —calls→ src/store/store.ts Store.countCrossRepoEdges
 - src/cli.ts main —calls→ src/store/store.ts Store.edgesOf
 - src/cli.ts main —calls→ src/store/store.ts Store.evalHistory
 - src/cli.ts main —calls→ src/store/store.ts Store.findSymbols
@@ -1068,6 +1144,7 @@
 - src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts classifyDeclaration
 - src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts dedupeEdges
 - src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts docOf
+- src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts importBindings
 - src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts isBareReference
 - src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts signatureOf
 - src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/extractors/ts.ts testBlockCall
@@ -1225,12 +1302,15 @@
 - src/store/store.ts NeighborRow —extends→ src/store/store.ts SymbolRow
 - src/store/store.ts NeighborRow —references→ src/store/store.ts SymbolRow
 - src/store/store.ts SymbolRow —references→ src/store/store.ts SymbolKind
+- src/store/store.ts UnresolvedEdge —references→ src/store/store.ts EdgeKind
 - src/store/store.ts rowToSymbol —references→ src/store/store.ts SymbolKind
 - src/store/store.ts rowToSymbol —references→ src/store/store.ts SymbolRow
 - src/store/store.ts Store.constructor —references→ src/store/store.ts SCHEMA
 - src/store/store.ts Store.constructor —references→ src/store/store.ts SCHEMA_VERSION
 - src/store/store.ts Store.constructor —calls→ src/store/store.ts Store.getMeta
 - src/store/store.ts Store.constructor —calls→ src/store/store.ts Store.setMeta
+- src/store/store.ts Store.crossRepoEdges —references→ src/store/store.ts JoinedEdge
+- src/store/store.ts Store.crossRepoEdges —calls→ src/store/store.ts Store.resolvedEdgesJoined
 - src/store/store.ts Store.edgesFromFile —references→ src/store/store.ts EdgeKind
 - src/store/store.ts Store.edgesFromFile —references→ src/store/store.ts EdgeRow
 - src/store/store.ts Store.edgesOf —references→ src/store/store.ts EdgeKind
@@ -1238,7 +1318,10 @@
 - src/store/store.ts Store.findSymbols —references→ src/store/store.ts SymbolRow
 - src/store/store.ts Store.findSymbols —references→ src/store/store.ts rowToSymbol
 - src/store/store.ts Store.getRepo —references→ src/store/store.ts RepoRow
+- src/store/store.ts Store.linkEdges —references→ src/store/store.ts EdgeKind
 - src/store/store.ts Store.listRepos —references→ src/store/store.ts RepoRow
+- src/store/store.ts Store.moduleSymbol —references→ src/store/store.ts SymbolRow
+- src/store/store.ts Store.moduleSymbol —calls→ src/store/store.ts rowToSymbol
 - src/store/store.ts Store.neighborhood —references→ src/store/store.ts EdgeKind
 - src/store/store.ts Store.neighborhood —references→ src/store/store.ts NeighborRow
 - src/store/store.ts Store.neighborhood —calls→ src/store/store.ts rowToSymbol
@@ -1252,6 +1335,10 @@
 - src/store/store.ts Store.symbolById —calls→ src/store/store.ts rowToSymbol
 - src/store/store.ts Store.symbolsInFile —references→ src/store/store.ts SymbolRow
 - src/store/store.ts Store.symbolsInFile —references→ src/store/store.ts rowToSymbol
+- src/store/store.ts Store.topLevelSymbolsNamed —references→ src/store/store.ts SymbolRow
+- src/store/store.ts Store.topLevelSymbolsNamed —references→ src/store/store.ts rowToSymbol
+- src/store/store.ts Store.unresolvedEdges —references→ src/store/store.ts EdgeKind
+- src/store/store.ts Store.unresolvedEdges —references→ src/store/store.ts UnresolvedEdge
 - src/store/store.ts Store.unresolvedSummary —references→ src/store/store.ts EdgeKind
 - src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/app/index.ts indexRepo
 - src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/core/contextpack.ts assembleReviewPack
@@ -1539,6 +1626,71 @@
 - src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store/store.ts Store.findSymbols
 - src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/store/store.ts Store.symbolsInFile
 - src/test/indexer.test.ts test(test blocks become symbols so test edges are block-scoped, not module-scoped) —calls→ src/test/indexer.test.ts fixtureRepo
+- src/test/link.test.ts MAP —references→ src/app/link.ts LinkMap
+- src/test/link.test.ts appRoot —references→ src/test/link.test.ts fixture
+- src/test/link.test.ts coreRoot —references→ src/test/link.test.ts fixture
+- src/test/link.test.ts fixture —references→ src/test/link.test.ts repoRoot
+- src/test/link.test.ts indexedPair —calls→ src/app/index.ts indexRepo
+- src/test/link.test.ts indexedPair —calls→ src/store/store.ts Store
+- src/test/link.test.ts indexedPair —references→ src/store/store.ts Store
+- src/test/link.test.ts indexedPair —references→ src/test/link.test.ts appRoot
+- src/test/link.test.ts indexedPair —references→ src/test/link.test.ts coreRoot
+- src/test/link.test.ts roots —references→ src/test/link.test.ts appRoot
+- src/test/link.test.ts roots —references→ src/test/link.test.ts coreRoot
+- src/test/link.test.ts test(a declaration pointing at an unindexed repo fails loudly) —calls→ src/app/link.ts link
+- src/test/link.test.ts test(a declaration pointing at an unindexed repo fails loudly) —calls→ src/store/store.ts Store.close
+- src/test/link.test.ts test(a declaration pointing at an unindexed repo fails loudly) —calls→ src/test/link.test.ts indexedPair
+- src/test/link.test.ts test(a diff in the library repo packs the app repo's callers (#27 acceptance)) —calls→ src/app/link.ts link
+- src/test/link.test.ts test(a diff in the library repo packs the app repo's callers (#27 acceptance)) —calls→ src/core/contextpack.ts assembleReviewPack
+- src/test/link.test.ts test(a diff in the library repo packs the app repo's callers (#27 acceptance)) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/link.test.ts test(a diff in the library repo packs the app repo's callers (#27 acceptance)) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/link.test.ts test(a diff in the library repo packs the app repo's callers (#27 acceptance)) —calls→ src/store/store.ts Store.close
+- src/test/link.test.ts test(a diff in the library repo packs the app repo's callers (#27 acceptance)) —references→ src/test/link.test.ts MAP
+- src/test/link.test.ts test(a diff in the library repo packs the app repo's callers (#27 acceptance)) —references→ src/test/link.test.ts OVERDUE_DIFF
+- src/test/link.test.ts test(a diff in the library repo packs the app repo's callers (#27 acceptance)) —calls→ src/test/link.test.ts indexedPair
+- src/test/link.test.ts test(a diff in the library repo packs the app repo's callers (#27 acceptance)) —references→ src/test/link.test.ts roots
+- src/test/link.test.ts test(a method call that shares an export name is never linked) —calls→ src/app/index.ts indexRepo
+- src/test/link.test.ts test(a method call that shares an export name is never linked) —calls→ src/app/link.ts link
+- src/test/link.test.ts test(a method call that shares an export name is never linked) —calls→ src/store/store.ts Store
+- src/test/link.test.ts test(a method call that shares an export name is never linked) —calls→ src/store/store.ts Store.close
+- src/test/link.test.ts test(a method call that shares an export name is never linked) —calls→ src/store/store.ts Store.crossRepoEdges
+- src/test/link.test.ts test(an ambiguous name is refused, not guessed) —calls→ src/app/index.ts indexRepo
+- src/test/link.test.ts test(an ambiguous name is refused, not guessed) —calls→ src/app/link.ts link
+- src/test/link.test.ts test(an ambiguous name is refused, not guessed) —calls→ src/store/store.ts Store
+- src/test/link.test.ts test(an ambiguous name is refused, not guessed) —calls→ src/store/store.ts Store.close
+- src/test/link.test.ts test(an ambiguous name is refused, not guessed) —calls→ src/store/store.ts Store.crossRepoEdges
+- src/test/link.test.ts test(an ambiguous name is refused, not guessed) —calls→ src/store/store.ts Store.unresolvedEdges
+- src/test/link.test.ts test(link is idempotent, and --clear restores the edges as extracted) —calls→ src/app/link.ts link
+- src/test/link.test.ts test(link is idempotent, and --clear restores the edges as extracted) —calls→ src/app/link.ts unlink
+- src/test/link.test.ts test(link is idempotent, and --clear restores the edges as extracted) —calls→ src/store/store.ts Store.close
+- src/test/link.test.ts test(link is idempotent, and --clear restores the edges as extracted) —references→ src/test/link.test.ts MAP
+- src/test/link.test.ts test(link is idempotent, and --clear restores the edges as extracted) —calls→ src/test/link.test.ts indexedPair
+- src/test/link.test.ts test(link resolves cross-repo calls through the declared package) —calls→ src/app/link.ts link
+- src/test/link.test.ts test(link resolves cross-repo calls through the declared package) —calls→ src/store/store.ts Store.close
+- src/test/link.test.ts test(link resolves cross-repo calls through the declared package) —calls→ src/store/store.ts Store.crossRepoEdges
+- src/test/link.test.ts test(link resolves cross-repo calls through the declared package) —calls→ src/store/store.ts Store.unresolvedEdges
+- src/test/link.test.ts test(link resolves cross-repo calls through the declared package) —references→ src/test/link.test.ts MAP
+- src/test/link.test.ts test(link resolves cross-repo calls through the declared package) —calls→ src/test/link.test.ts indexedPair
+- src/test/link.test.ts test(the extractor names external imports AND their use sites by package) —calls→ src/store/store.ts Store.close
+- src/test/link.test.ts test(the extractor names external imports AND their use sites by package) —calls→ src/store/store.ts Store.unresolvedEdges
+- src/test/link.test.ts test(the extractor names external imports AND their use sites by package) —calls→ src/test/link.test.ts indexedPair
+- src/test/link.test.ts test(the golden set measures the difference: unlinked 6/14, linked 14/14) —calls→ src/app/eval.ts loadGoldenFile
+- src/test/link.test.ts test(the golden set measures the difference: unlinked 6/14, linked 14/14) —calls→ src/app/eval.ts runEval
+- src/test/link.test.ts test(the golden set measures the difference: unlinked 6/14, linked 14/14) —calls→ src/app/link.ts link
+- src/test/link.test.ts test(the golden set measures the difference: unlinked 6/14, linked 14/14) —calls→ src/store/store.ts Store.close
+- src/test/link.test.ts test(the golden set measures the difference: unlinked 6/14, linked 14/14) —references→ src/test/link.test.ts MAP
+- src/test/link.test.ts test(the golden set measures the difference: unlinked 6/14, linked 14/14) —calls→ src/test/link.test.ts indexedPair
+- src/test/link.test.ts test(the golden set measures the difference: unlinked 6/14, linked 14/14) —references→ src/test/link.test.ts repoRoot
+- src/test/link.test.ts test(the golden set measures the difference: unlinked 6/14, linked 14/14) —references→ src/test/link.test.ts roots
+- src/test/link.test.ts test(the link map is validated, and the fixture map parses) —calls→ src/app/link.ts loadLinkMap
+- src/test/link.test.ts test(the link map is validated, and the fixture map parses) —calls→ src/app/link.ts parseLinkMap
+- src/test/link.test.ts test(the link map is validated, and the fixture map parses) —references→ src/test/link.test.ts MAP
+- src/test/link.test.ts test(the link map is validated, and the fixture map parses) —references→ src/test/link.test.ts fixture
+- src/test/link.test.ts test(without a declaration nothing is linked (no false edges, no degrade)) —calls→ src/app/link.ts link
+- src/test/link.test.ts test(without a declaration nothing is linked (no false edges, no degrade)) —calls→ src/store/store.ts Store.close
+- src/test/link.test.ts test(without a declaration nothing is linked (no false edges, no degrade)) —calls→ src/store/store.ts Store.countCrossRepoEdges
+- src/test/link.test.ts test(without a declaration nothing is linked (no false edges, no degrade)) —calls→ src/store/store.ts Store.stats
+- src/test/link.test.ts test(without a declaration nothing is linked (no false edges, no degrade)) —calls→ src/test/link.test.ts indexedPair
 - src/test/loop.test.ts CHAIN_CASES —references→ src/app/eval.ts GoldenCase
 - src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/app/index.ts indexRepo
 - src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/core/diff.ts parseUnifiedDiff
@@ -1779,79 +1931,104 @@
 
 ## Unresolved (aggregated)
 
-- 73× join (calls)
-- 66× equal (calls)
-- 64× map (calls)
-- 48× ok (calls)
-- 42× some (calls)
-- 35× deepEqual (calls)
-- 29× get (calls)
-- 28× Error (calls)
-- 28× node:path (imports)
-- 28× prepare (calls)
-- 27× node:fs (imports)
-- 26× filter (calls)
-- 26× rmSync (calls)
-- 24× stringify (calls)
-- 24× writeFileSync (calls)
-- 23× find (calls)
-- 23× mkdtempSync (calls)
-- 23× push (calls)
-- 23× test (calls)
-- 23× tmpdir (calls)
-- 20× Map (calls)
-- 20× Set (calls)
-- 18× has (calls)
-- 17× slice (calls)
-- 16× split (calls)
-- 15× all (calls)
-- 15× existsSync (calls)
-- 15× node:assert/strict (imports)
-- 15× node:test (imports)
-- 15× parse (calls)
-- 15× resolve (calls)
-- 14× set (calls)
-- 14× spawnSync (calls)
-- 13× node:os (imports)
-- 12× dirname (calls)
-- 12× mkdirSync (calls)
-- 11× sort (calls)
-- 10× readFileSync (calls)
+- 74× map (calls)
+- 70× equal (calls)
+- 62× node:path#join (calls)
+- 53× ok (calls)
+- 43× some (calls)
+- 39× deepEqual (calls)
+- 35× prepare (calls)
+- 31× get (calls)
+- 30× Error (calls)
+- 30× filter (calls)
+- 30× node:path (imports)
+- 29× node:fs (imports)
+- 29× stringify (calls)
+- 26× find (calls)
+- 26× node:fs#mkdtempSync (calls)
+- 26× node:fs#rmSync (calls)
+- 26× node:fs#writeFileSync (calls)
+- 26× node:os#tmpdir (calls)
+- 25× node:path#join (imports)
+- 24× join (calls)
+- 24× push (calls)
+- 21× Map (calls)
+- 21× Set (calls)
+- 19× all (calls)
+- 19× has (calls)
+- 18× slice (calls)
+- 17× split (calls)
+- 16× node:assert/strict (imports)
+- 16× node:path#resolve (calls)
+- 16× node:test (imports)
+- 16× node:test#test (calls)
+- 16× node:test#test (imports)
+- 16× parse (calls)
+- 15× node:fs#existsSync (calls)
+- 15× node:fs#writeFileSync (imports)
+- 15× set (calls)
+- 14× node:child_process#spawnSync (calls)
+- 14× node:fs#mkdirSync (calls)
+- 14× node:fs#mkdtempSync (imports)
+- 14× node:os (imports)
+- 14× node:os#tmpdir (imports)
+- 14× node:path#dirname (calls)
+- 14× node:path#resolve (imports)
+- 13× node:path#dirname (imports)
+- 12× includes (calls)
+- 12× sort (calls)
+- 11× node:fs#mkdirSync (imports)
+- 11× node:fs#readFileSync (calls)
+- 11× node:fs#rmSync (imports)
+- 11× run (calls)
+- 10× node:fs#readFileSync (imports)
+- 10× node:url (imports)
+- 10× node:url#fileURLToPath (calls)
+- 10× node:url#fileURLToPath (imports)
+- 10× throws (calls)
 - 9× @scip-code/scip (imports)
-- 9× fileURLToPath (calls)
-- 9× includes (calls)
-- 9× node:url (imports)
-- 9× run (calls)
+- 9× isArray (calls)
 - 8× endsWith (calls)
-- 8× isArray (calls)
+- 8× exec (calls)
 - 8× keys (calls)
+- 8× node:fs#existsSync (imports)
 - 8× now (calls)
-- 8× throws (calls)
+- 8× startsWith (calls)
+- 8× test (calls)
+- 7× @scip-code/scip#SymbolRole (imports)
 - 7× match (calls)
 - 7× max (calls)
-- 7× startsWith (calls)
 - 7× trim (calls)
 - 6× add (calls)
 - 6× entries (calls)
-- 6× exec (calls)
 - 6× json (calls)
 - 6× node:child_process (imports)
+- 6× node:child_process#spawnSync (imports)
 - 5× @/lib/librarian (imports)
+- 5× @/lib/librarian#openLibrarian (calls)
+- 5× @/lib/librarian#openLibrarian (imports)
+- 5× @scip-code/scip#SymbolInformation_Kind (imports)
 - 5× Number (calls)
-- 5× createHash (calls)
 - 5× digest (calls)
 - 5× error (calls)
-- 5× openLibrarian (calls)
+- 5× node:crypto#createHash (calls)
+- 5× node:path#delimiter (imports)
 - 5× update (calls)
+- 4× @scip-code/scip#Index (imports)
+- 4× close (calls)
 - 4× every (calls)
 - 4× isIdentifier (calls)
 - 4× isInteger (calls)
 - 4× next/server (imports)
+- 4× next/server#NextRequest (imports)
+- 4× next/server#NextResponse (imports)
 - 4× node:crypto (imports)
-- 4× relative (calls)
+- 4× node:crypto#createHash (imports)
+- 4× node:path#relative (calls)
+- 4× node:path#relative (imports)
+- 4× node:path#sep (imports)
 - 4× round (calls)
-- 3× close (calls)
-- 3× create (calls)
+- 4× values (calls)
 - 3× flatMap (calls)
 - 3× getText (calls)
 - 3× isArrowFunction (calls)
@@ -1860,14 +2037,17 @@
 - 3× isMethodDeclaration (calls)
 - 3× isPropertyAccessExpression (calls)
 - 3× isVariableDeclaration (calls)
-- 3× values (calls)
+- 3× localeCompare (calls)
+- 3× node:sqlite (imports)
+- 3× node:sqlite#DatabaseSync (calls)
+- 3× node:sqlite#DatabaseSync (imports)
 - 2× @anthropic-ai/sdk (imports)
 - 2× @bufbuild/protobuf (imports)
+- 2× @bufbuild/protobuf#MessageInitShape (imports)
+- 2× @scip-code/scip#TextEncoding (imports)
 - 2× Anthropic (calls)
-- 2× DatabaseSync (calls)
 - 2× String (calls)
-- 2× basename (calls)
-- 2× extname (calls)
+- 2× create (calls)
 - 2× fetch (calls)
 - 2× findSymbols (calls)
 - 2× forEach (calls)
@@ -1875,32 +2055,56 @@
 - 2× isConstructorDeclaration (calls)
 - 2× isEnumDeclaration (calls)
 - 2× isFunctionExpression (calls)
+- 2× isImportSpecifier (calls)
 - 2× isInterfaceDeclaration (calls)
 - 2× isJsxOpeningElement (calls)
 - 2× isJsxSelfClosingElement (calls)
 - 2× isNewExpression (calls)
 - 2× isTypeAliasDeclaration (calls)
-- 2× localeCompare (calls)
+- 2× lastIndexOf (calls)
 - 2× log (calls)
 - 2× min (calls)
 - 2× neighborhood (calls)
-- 2× node:sqlite (imports)
+- 2× node:path#basename (calls)
+- 2× node:path#extname (calls)
+- 2× node:path#extname (imports)
+- 2× notEqual (calls)
 - 2× react (imports)
+- 2× react#useState (calls)
+- 2× react#useState (imports)
 - 2× replace (calls)
 - 2× symbolById (calls)
 - 2× then (calls)
 - 2× toFixed (calls)
-- 2× useState (calls)
 - 1× ../../dist/store/store.js (imports)
+- 1× ../../dist/store/store.js#RepoRow (imports)
+- 1× ../../dist/store/store.js#Store (calls)
+- 1× ../../dist/store/store.js#Store (imports)
 - 1× ./globals.css (imports)
 - 1× @/components/AskPanel (imports)
 - 1× @/components/EvalChart (imports)
 - 1× @/components/GraphExplorer (imports)
+- 1× @/lib/librarian#SymbolRow (imports)
+- 1× @bufbuild/protobuf#JsonValue (imports)
+- 1× @bufbuild/protobuf#create (calls)
+- 1× @bufbuild/protobuf#create (imports)
+- 1× @bufbuild/protobuf#fromBinary (calls)
+- 1× @bufbuild/protobuf#fromBinary (imports)
+- 1× @bufbuild/protobuf#fromJson (calls)
+- 1× @bufbuild/protobuf#fromJson (imports)
+- 1× @bufbuild/protobuf#toBinary (calls)
+- 1× @bufbuild/protobuf#toBinary (imports)
+- 1× @bufbuild/protobuf#toJson (calls)
+- 1× @bufbuild/protobuf#toJson (imports)
+- 1× @scip-code/scip#DocumentSchema (imports)
+- 1× @scip-code/scip#IndexSchema (imports)
+- 1× @scip-code/scip#OccurrenceSchema (imports)
+- 1× @scip-code/scip#PositionEncoding (imports)
+- 1× @scip-code/scip#SymbolInformationSchema (imports)
 - 1× AskPanel (calls)
 - 1× EvalChart (calls)
 - 1× GraphExplorer (calls)
 - 1× Link (calls)
-- 1× Store (calls)
 - 1× URLSearchParams (calls)
 - 1× catch (calls)
 - 1× cos (calls)
@@ -1913,8 +2117,6 @@
 - 1× exit (calls)
 - 1× floor (calls)
 - 1× forEachChild (calls)
-- 1× fromBinary (calls)
-- 1× fromJson (calls)
 - 1× getAliasedSymbol (calls)
 - 1× getEnd (calls)
 - 1× getJSDocCommentsAndTags (calls)
@@ -1923,16 +2125,16 @@
 - 1× getStart (calls)
 - 1× getSymbolAtLocation (calls)
 - 1× getTypeChecker (calls)
-- 1× isAbsolute (calls)
+- 1× indexOf (calls)
 - 1× isBindingElement (calls)
 - 1× isClassLike (calls)
 - 1× isDirectory (calls)
 - 1× isHeritageClause (calls)
 - 1× isImportClause (calls)
 - 1× isImportDeclaration (calls)
-- 1× isImportSpecifier (calls)
 - 1× isJSDoc (calls)
 - 1× isJsxClosingElement (calls)
+- 1× isNamedImports (calls)
 - 1× isNamespaceImport (calls)
 - 1× isParameter (calls)
 - 1× isPropertyAssignment (calls)
@@ -1941,27 +2143,31 @@
 - 1× isSourceFile (calls)
 - 1× isStringLiteral (calls)
 - 1× isVariableStatement (calls)
-- 1× lastIndexOf (calls)
 - 1× listPatterns (calls)
 - 1× listRepos (calls)
 - 1× listRetrievals (calls)
 - 1× next (imports)
+- 1× next#Metadata (imports)
 - 1× next/link (imports)
-- 1× notEqual (calls)
+- 1× node:fs#readdirSync (calls)
+- 1× node:fs#readdirSync (imports)
+- 1× node:path#basename (imports)
+- 1× node:path#isAbsolute (calls)
+- 1× node:path#isAbsolute (imports)
 - 1× pop (calls)
-- 1× readdirSync (calls)
+- 1× react#useCallback (calls)
+- 1× react#useCallback (imports)
+- 1× react#useEffect (calls)
+- 1× react#useEffect (imports)
+- 1× react#useMemo (calls)
+- 1× react#useMemo (imports)
 - 1× reduce (calls)
 - 1× replaceAll (calls)
 - 1× sin (calls)
 - 1× splice (calls)
 - 1× sqrt (calls)
 - 1× stats (calls)
-- 1× toBinary (calls)
-- 1× toJson (calls)
 - 1× trimEnd (calls)
 - 1× typescript (imports)
-- 1× useCallback (calls)
-- 1× useEffect (calls)
-- 1× useMemo (calls)
 - 1× write (calls)
 

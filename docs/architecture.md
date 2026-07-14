@@ -31,9 +31,10 @@
 - 対象言語: **TypeScriptのみ**(第一言語)。多言語対応は抽象インターフェースだけ用意し実装しない。
 - 対象リポジトリ規模: 〜数十万行。複数リポジトリを同一 SQLite にインデックスして
   横断検索・グラフ探索できる(マルチレポ、#11。schema v2 で `repos` 次元を追加)。
-  リポジトリ間の import は静的には解決不能なので `resolved = 0` のまま隔離する
-  (§8 リスク 2 の不変条件を維持)。package 名 → repo のマッピングによる
-  リポジトリ間 import 解決は将来課題。
+  リポジトリ間の import は抽出だけでは解決不能なので `resolved = 0` のまま隔離する
+  (§8 リスク 2 の不変条件を維持)。**欠けているのは「package 名 → repo」という 1 つの
+  事実だけ**であり、これを明示宣言(`links.json`)として与えると `librarian link` が
+  未解決エッジを再解決する(ADR-8、#27。宣言が無ければ何も起きない — 隔離が既定)。
 - 提供機能: (a) PR単位の文脈付きAIレビュー、(b) コードベースへの意味検索+グラフ探索Q&A、(c) 検索パターンの自己改善ループ。
 
 ### 3.2 Non-goals — Nexonとの意図的な差分
@@ -146,6 +147,10 @@ v1のフィードバック信号は簡素でよい: (a) LLMレスポンスがCon
 **ADR-7: 抽出器はプロトコル準拠のプラグイン。発見・登録は明示レジストリ、ワイヤ契約は SCIP+ 封筒。**
 理由: librarian のコア価値は store/retrieval であり、パース・抽出は第三者が差し替え・追加できるべき。ADR-6 の SCIP+ 封筒(stdin/stdout の単一 JSON、protobuf 非依存)+ moniker→id の決定的再計算(#16)+ repo-unaware invariant(#11)で、事実上のプラグイン ABI は既に存在する。ADR-7 はこれを公開契約に格上げし、(1) 発見・登録を `.librarian/extractors.json`(拡張子→コマンドの明示宣言)に集約、(2) 言語別アダプタを 1 つの汎用サブプロセスランナー(`SubprocessExtractor`)に畳み、(3) `--capabilities` ハンドシェイクで封筒バージョンを交渉する。信頼モデルは**明示登録のみ・自動ダウンロード無し・PATH 規約による暗黙発見を採らない**(暗黙の信頼と環境差の非決定性を排除)。ADR-2 と非衝突(抽出は言語ごと native のまま。プラグイン化は「発見・登録の外部化」であって「TS Compiler API を捨てる」ことではない — TS は in-process 実装のまま特別扱い)。ADR-6 と非衝突(ワイヤ契約は SCIP+ 封筒そのもの。プロトコルはその発見・実行規約を足すだけ)。ADR-1 と非衝突(保存先は SQLite のまま)。
 トレードオフ: 公開契約はバージョニングとの後方互換コミットメント(封筒スキーマは追加のみ、major は `--capabilities` で交渉)。プラグイン = 任意コマンド実行の信頼境界を利用者に開く。既存 Go/PHP はレジストリ経由で動き eval 完全一致(#16 と同じゲート)。設計の全文は `docs/plugin-protocol.md`(issue #22)。
+
+**ADR-8: リポジトリ間 import 解決は index の一部ではなく、明示宣言を入力とする後段の別ステップ(`librarian link`)。**
+理由: 「`@acme/core` は隣の repo だ」はどちらのツリーにも書かれていない外部知識であり、抽出器が知り得ない(repo-unaware invariant、#11)。これを index に埋め込むと index の入力が「その repo のツリー」から「db 全体の状態」に広がり、決定性(同じツリー → 同じ行)が壊れる。よって (1) 写像は `.librarian/links.json` の**明示宣言のみ**(package.json 等からの自動推測はしない — ADR-7 と同じ信頼モデル)、(2) call site の名前は**推測で一致させず**、抽出器が記録した import binding エッジ(`<spec>#<imported>`、`docs/plugin-protocol.md`)を辿って束縛する。曖昧(対象 repo に同名の module-scope 宣言が複数)なら**リンクせず拒否**、メソッド・default/namespace import は `resolved = 0` のまま残す。(3) `link` は冪等かつ可逆(`--clear` で抽出直後の行に戻る)。宣言が無い db では cross-repo エッジは 1 本も作られず、graph/pack/eval は #27 以前と同一。
+トレードオフ: 完全性は捨てている(メソッド越え・binding を吐かない言語は繋がらない)が、それが §8 リスク 2 の「偽エッジを作らない」を守る対価。宣言の運用コスト(repo を跨ぐ度に 1 行)と、`index` 後に `link` を再実行する運用(変更ファイルの cross-repo エッジは再抽出で unresolved に戻る)を利用者に負わせる。数値は `docs/cross-repo-baseline.md`(同一 golden で link なし 0.429 → link あり 1.000)。
 
 ## 6. フェーズ計画
 

@@ -125,8 +125,30 @@ export class TypeScriptExtractor implements Extractor {
       const bucket = perFile.get(file)!;
       const moduleId = declToId.get(sf)!;
 
+      /**
+       * The package a name is bound from, when the import that brought it in
+       * does not resolve inside the repo — `<specifier>#<imported>` (#27).
+       * Only an identifier the checker traced to an ImportSpecifier qualifies,
+       * which is what keeps `seen.add(v)` (a method named like an imported
+       * `add`) out: its callee is a property, bound by nothing.
+       */
+      const externalBinding = (sym: ts.Symbol | undefined): string | null => {
+        for (const d of sym?.declarations ?? []) {
+          if (!ts.isImportSpecifier(d)) continue;
+          const decl = d.parent.parent.parent;
+          if (!ts.isStringLiteral(decl.moduleSpecifier)) continue;
+          const targetSf = checker
+            .getSymbolAtLocation(decl.moduleSpecifier)
+            ?.declarations?.find(ts.isSourceFile);
+          if (targetSf && declToId.has(targetSf)) return null; // in-repo: resolves normally
+          return `${decl.moduleSpecifier.text}#${(d.propertyName ?? d.name).text}`;
+        }
+        return null;
+      };
+
       const resolveTarget = (node: ts.Node): { id: string | null; name: string } => {
-        let sym = checker.getSymbolAtLocation(node);
+        const local = checker.getSymbolAtLocation(node);
+        let sym = local;
         if (sym && sym.flags & ts.SymbolFlags.Alias) sym = checker.getAliasedSymbol(sym);
         const name = node.getText(sf);
         for (const d of sym?.declarations ?? []) {
@@ -139,7 +161,10 @@ export class TypeScriptExtractor implements Extractor {
             cur = cur.parent;
           }
         }
-        return { id: null, name };
+        // Unresolved. A bare name cannot be attributed to anything later, so
+        // when the name IS an external import, say so: the edge carries the
+        // package it came from, and `librarian link` (#27) needs no guessing.
+        return { id: null, name: externalBinding(local) ?? name };
       };
 
       const enclosingSymbolId = (node: ts.Node): string => {
@@ -168,7 +193,11 @@ export class TypeScriptExtractor implements Extractor {
           const resolvedModule = checker.getSymbolAtLocation(node.moduleSpecifier);
           const targetSf = resolvedModule?.declarations?.find(ts.isSourceFile);
           const targetId = targetSf ? declToId.get(targetSf) ?? null : null;
-          addEdge(moduleId, { id: targetId, name: node.moduleSpecifier.text }, 'imports');
+          const spec = node.moduleSpecifier.text;
+          addEdge(moduleId, { id: targetId, name: spec }, 'imports');
+          if (targetId === null) for (const b of importBindings(node, spec)) {
+            addEdge(moduleId, { id: null, name: b }, 'imports');
+          }
         } else if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
           const callee = calleeNameNode(node.expression);
           if (callee) addEdge(enclosingSymbolId(node), resolveTarget(callee), 'calls');
@@ -203,6 +232,29 @@ export class TypeScriptExtractor implements Extractor {
     const { index, ext } = extractionResultsToScipPlus('librarian-ts', rootDir, results);
     return scipPlusToExtractionResults(index, ext);
   }
+}
+
+/**
+ * Named bindings of an import the repo cannot resolve — i.e. an external
+ * package (#27) — as `imports` edges of their own: `<specifier>#<imported>`,
+ * or `<specifier>#<imported> as <local>` when the local name differs. They say
+ * which external names a file depends on, and give `librarian link` the edge to
+ * resolve for the import itself. The *use* sites are named by `externalBinding`
+ * above, so linking never has to match a bare name against a package.
+ *
+ * Default and namespace imports are deliberately not emitted: their use sites
+ * carry a local alias or a property access, which cannot be bound back to a
+ * declaration name without type resolution. They stay unresolved — the
+ * invariant is no false edges, not completeness.
+ */
+function importBindings(node: ts.ImportDeclaration, spec: string): string[] {
+  const named = node.importClause?.namedBindings;
+  if (!named || !ts.isNamedImports(named)) return [];
+  return named.elements.map((el) => {
+    const imported = (el.propertyName ?? el.name).text;
+    const local = el.name.text;
+    return local === imported ? `${spec}#${imported}` : `${spec}#${imported} as ${local}`;
+  });
 }
 
 /**

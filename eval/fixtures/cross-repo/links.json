@@ -1,0 +1,5 @@
+{
+  "packages": [
+    { "package": "@acme/core", "repo": "acme-core", "entry": "src/index.ts" }
+  ]
+}

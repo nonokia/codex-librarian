@@ -275,5 +275,42 @@ node bin/librarian.js stats --db shared.db                          # repos / re
   読む。同じ相対パスが複数 repo にある場合は `--repo <name>` で diff の属する repo を
   指定する。インデックス時と root が移動した場合は `--root <dir>` で上書き。
 - v2 より前の db は開けない(再インデックスを案内するエラーになる)。
-- リポジトリ間の import は静的には解決できないため `resolved = 0` のまま
-  (unresolved として隔離)。package 名 → repo マッピングによる解決は将来課題。
+- リポジトリ間の import は抽出だけでは解決できないため、既定では `resolved = 0` のまま
+  隔離される。繋ぐには次の `librarian link` で **package 名 → repo を明示宣言**する。
+
+## リポジトリ間 import の解決 — `librarian link`(issue #27 / ADR-8)
+
+「`@acme/core` という指定子は、隣にインデックスしたあの repo のことだ」— この 1 つの事実は
+どちらのツリーにも書かれていない。宣言として渡すと、抽出器が開けたまま残したエッジが
+繋がる。
+
+```jsonc
+// .librarian/links.json(db の隣。--map <file> で任意の場所を指定可)
+{ "packages": [ { "package": "@acme/core", "repo": "acme-core", "entry": "src/index.ts" } ] }
+```
+
+```bash
+node bin/librarian.js index ~/src/acme-core --db shared.db --repo-name acme-core
+node bin/librarian.js index ~/src/acme-app  --db shared.db --repo-name acme-app
+node bin/librarian.js link --db shared.db --dry-run --pretty   # 何が繋がるかを先に見る
+node bin/librarian.js link --db shared.db                      # {"newlyResolved":14,...}
+node bin/librarian.js link --db shared.db --clear              # 抽出直後の状態に戻す
+```
+
+繋がった後は `graph` / `pack` / `review` が repo を跨いで近傍を展開する(retrieval 側に
+repo の特別扱いは無い — 普通の resolved エッジとして辿るだけ)。
+
+- **宣言が無ければ何も起きない**。link 未実行なら cross-repo エッジは 0 本で、
+  graph/pack/eval の結果は #27 以前と同一(TS golden の micro recall 87.0% は不変)。
+- **推測しない**。call site の名前は、そのファイルが宣言済み package から**実際に binding
+  している**場合にだけ束縛される(抽出器が `imports @acme/core#createTask` として記録する)。
+  対象 repo に同名の module-scope 宣言が複数あれば繋がず `ambiguous` として報告する。
+- **冪等・可逆**。2 回目の link は何も足さない。`--clear` は抽出器が吐いた行に戻す。
+- メソッド呼び出し・default/namespace import・宣言のない package は `resolved = 0` のまま
+  (型解決が要るものは繋がない)。binding を吐くのは現状 TS 抽出器のみ(他言語は
+  `docs/plugin-protocol.md` §8.1 の規約で opt-in 可能)。
+- `index` は変更ファイルのエッジを作り直すため、その cross-repo エッジは unresolved に戻る。
+  CI では **index → link** を 1 セットにする。
+
+数値(同一 golden・link の有無だけを変えた A/B): micro recall **0.429 → 1.000**
+— `docs/cross-repo-baseline.md`、fixture は `eval/fixtures/cross-repo/`。

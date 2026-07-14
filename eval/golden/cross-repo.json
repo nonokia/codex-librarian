@@ -1,0 +1,42 @@
+{
+  "cases": [
+    {
+      "id": "crf-001",
+      "title": "@acme/core の overdue 判定条件を変える(ライブラリ → 利用側への波及)",
+      "note": "expected はコードリーディングで作成: 同 repo の呼び出し元(MemStore.overdueTasks)・引数の型契約(Task)に加え、パッケージ利用側 acme-app の呼び出し元 2 つ(overdueCount / 別名 import の overdueTitles)と、その先の transport 層(handleOverdue)。link 未実行時、acme-app 側の 3 件は原理的に取れない",
+      "target": { "file": "src/task.ts", "symbol": "overdue", "repo": "acme-core" },
+      "expected": [
+        { "file": "src/store.ts", "symbol": "overdueTasks", "repo": "acme-core" },
+        { "file": "src/task.ts", "symbol": "Task", "repo": "acme-core" },
+        { "file": "src/service.ts", "symbol": "overdueCount", "repo": "acme-app" },
+        { "file": "src/report.ts", "symbol": "overdueTitles", "repo": "acme-app" },
+        { "file": "src/api.ts", "symbol": "handleOverdue", "repo": "acme-app" }
+      ]
+    },
+    {
+      "id": "crf-002",
+      "title": "@acme/core の createTask のバリデーション変更(空 title で throw)",
+      "note": "expected: 同 repo の呼び出し元(MemStore.add)と型(Task)、利用側の呼び出し元(addTask)、その先の handleCreate、addTask の回帰テスト",
+      "target": { "file": "src/task.ts", "symbol": "createTask", "repo": "acme-core" },
+      "expected": [
+        { "file": "src/store.ts", "symbol": "add", "repo": "acme-core" },
+        { "file": "src/task.ts", "symbol": "Task", "repo": "acme-core" },
+        { "file": "src/service.ts", "symbol": "addTask", "repo": "acme-app" },
+        { "file": "src/api.ts", "symbol": "handleCreate", "repo": "acme-app" },
+        { "file": "src/service.test.ts", "repo": "acme-app" }
+      ]
+    },
+    {
+      "id": "crf-003",
+      "title": "利用側 acme-app の addTask を変える(利用側 → ライブラリ契約への逆方向)",
+      "note": "expected: 同 repo の呼び出し元(handleCreate)とテスト、そして依存先である @acme/core の契約(createTask / MemStore)。cross-repo は呼び出し元方向だけでなく呼び出し先方向にも要る",
+      "target": { "file": "src/service.ts", "symbol": "addTask", "repo": "acme-app" },
+      "expected": [
+        { "file": "src/api.ts", "symbol": "handleCreate", "repo": "acme-app" },
+        { "file": "src/service.test.ts", "repo": "acme-app" },
+        { "file": "src/task.ts", "symbol": "createTask", "repo": "acme-core" },
+        { "file": "src/store.ts", "symbol": "MemStore", "repo": "acme-core" }
+      ]
+    }
+  ]
+}

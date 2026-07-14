@@ -18,6 +18,8 @@ export interface ExpectedEntry {
   file: string;
   /** bare symbol name; omitted = any symbol of that file (incl. module) counts */
   symbol?: string;
+  /** repo name, for golden sets spanning several repos in one index (#11/#27) */
+  repo?: string;
 }
 
 export interface GoldenCase {
@@ -31,7 +33,7 @@ export interface GoldenCase {
    * OR: point at a symbol in the indexed tree; the harness synthesizes a
    * one-line hunk at its current span so cases don't rot as lines move.
    */
-  target?: { file: string; symbol?: string };
+  target?: { file: string; symbol?: string; repo?: string };
   expected: ExpectedEntry[];
 }
 
@@ -80,7 +82,7 @@ export function loadGoldenFile(path: string): GoldenCase[] {
 function hunksForCase(store: Store, c: GoldenCase) {
   if (c.diff) return parseUnifiedDiff(c.diff);
   const t = c.target!;
-  const symbols = store.symbolsInFile(t.file);
+  const symbols = store.symbolsInFile(t.file, t.repo);
   if (symbols.length === 0) throw new Error(`target file not in index: ${t.file}`);
   let span: [number, number] = [1, 1];
   if (t.symbol) {
@@ -93,6 +95,7 @@ function hunksForCase(store: Store, c: GoldenCase) {
 
 function matches(item: ContextItem, exp: ExpectedEntry): boolean {
   if (item.file !== exp.file) return false;
+  if (exp.repo !== undefined && item.repo !== exp.repo) return false;
   if (!exp.symbol) return true;
   return item.name === exp.symbol || item.name.endsWith(`.${exp.symbol}`);
 }
@@ -107,7 +110,10 @@ export function runEval(
 
   for (const c of cases) {
     try {
-      const pack: ContextPack = retrieveForDiff(store, rootDir, hunksForCase(store, c), opts);
+      // a case's diff belongs to one repo: scope the seeds to it when the case
+      // says which, so two repos sharing a path in one index can't cross-seed
+      const seedOpts = c.target?.repo ? { ...opts, repo: c.target.repo } : opts;
+      const pack: ContextPack = retrieveForDiff(store, rootDir, hunksForCase(store, c), seedOpts);
       const all = [...pack.seeds, ...pack.items];
       // seeds don't count as retrieval wins: the diff already contains them
       const seedIds = new Set(pack.seeds.map((s) => s.id));
