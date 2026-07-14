@@ -38,6 +38,7 @@ const LANGUAGE: Record<LibrarianScheme, string> = {
   'librarian-ts': 'typescript',
   'librarian-go': 'go',
   'librarian-php': 'php',
+  'librarian-py': 'python',
   'librarian-terraform': 'terraform',
 };
 

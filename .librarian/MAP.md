@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 48
-- symbols: 448
-- edges: 2311 (unresolved: 1246)
-- symbols by kind: class=7, function=146, interface=51, method=37, module=48, testblock=87, typealias=12, variable=60
+- files: 50
+- symbols: 473
+- edges: 2472 (unresolved: 1322)
+- symbols by kind: class=8, function=150, interface=51, method=38, module=50, testblock=99, typealias=12, variable=65
 
 ## Files
 
@@ -32,9 +32,9 @@
 - function contentHash L40-42 `(text: string): string`
 - function namespaceIds L50-66 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
 - interface IndexReport L74-88
-- function indexRepo L106-174 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
-- interface ScipImportReport L176-182
-- function importScip L200-275 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[] } = {}): ScipImportReport`
+- function indexRepo L109-177 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
+- interface ScipImportReport L179-185
+- function importScip L210-285 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[]; preferScip?: boolean } = {}): ScipImportReport`
 
 ### src/app/loop.ts
 
@@ -54,15 +54,15 @@
 
 ### src/app/registry.ts
 
-- function builtinExtractors L32-34 `(): Extractor[]`
-- interface RegistryEntry L37-48
-- function onPath L50-55 `(name: string): string | null`
-- function registryCommandResolver L62-72 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
-- function entryToExtractor L74-83 `(entry: RegistryEntry, root: string): SubprocessExtractor`
-- function parseRegistry L86-98 `(raw: unknown): RegistryEntry[]`
-- function parseEntry L100-126 `(raw: unknown, i: number): RegistryEntry`
-- function loadRegistry L129-139 `(root: string): RegistryEntry[]`
-- function resolveExtractors L147-165 `(root: string): Extractor[]`
+- function builtinExtractors L33-41 `(): Extractor[]`
+- interface RegistryEntry L44-55
+- function onPath L57-62 `(name: string): string | null`
+- function registryCommandResolver L69-79 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
+- function entryToExtractor L81-90 `(entry: RegistryEntry, root: string): SubprocessExtractor`
+- function parseRegistry L93-105 `(raw: unknown): RegistryEntry[]`
+- function parseEntry L107-133 `(raw: unknown, i: number): RegistryEntry`
+- function loadRegistry L136-146 `(root: string): RegistryEntry[]`
+- function resolveExtractors L154-172 `(root: string): Extractor[]`
 
 ### src/app/review.ts
 
@@ -77,16 +77,16 @@
 
 ### src/cli.ts
 
-- interface Flags L19-44
-- function parseArgs L46-91 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
-- function defaultDb L93-96 `(repoRoot?: string): string`
-- function emit L98-100 `(value: unknown, pretty: boolean): void`
-- function fail L102-105 `(message: string): never`
-- variable HELP L107-149
-- function openStore L151-155 `(flags: Flags): Store`
-- function compactSymbol L157-167 `(s: SymbolRow)`
-- function rootResolver L173-181 `(store: Store, flags: Flags): (repo: string) => string | null`
-- function main L183-446 `(): void`
+- interface Flags L19-46
+- function parseArgs L48-95 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
+- function defaultDb L97-100 `(repoRoot?: string): string`
+- function emit L102-104 `(value: unknown, pretty: boolean): void`
+- function fail L106-109 `(message: string): never`
+- variable HELP L111-156
+- function openStore L158-162 `(flags: Flags): Store`
+- function compactSymbol L164-174 `(s: SymbolRow)`
+- function rootResolver L180-188 `(store: Store, flags: Flags): (repo: string) => string | null`
+- function main L190-458 `(): void`
 
 ### src/core/contextpack.ts
 
@@ -149,6 +149,15 @@
 - class PhpExtractor L58-67
 - method PhpExtractor.constructor L59-66 `()`
 
+### src/extractors/python.ts
+
+- function pyExtractorDir L41-43 `(): string`
+- function onPath L45-50 `(name: string): string | null`
+- function resolvePythonExtractorCommand L52-58 `(): SubprocessCommand | null`
+- variable UNAVAILABLE_WARNING L60-63
+- class PythonExtractor L65-74
+- method PythonExtractor.constructor L66-73 `()`
+
 ### src/extractors/subprocess.ts
 
 - variable MAX_OUTPUT L30-30
@@ -193,15 +202,15 @@
 
 ### src/protocol/scip-emit.ts
 
-- variable LANGUAGE L37-42
-- function parentOf L45-54 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
-- function extractionResultsToScipPlus L56-186 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
+- variable LANGUAGE L37-43
+- function parentOf L46-55 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
+- function extractionResultsToScipPlus L57-187 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
 
 ### src/protocol/scip-export.ts
 
-- variable SCHEME_BY_EXTENSION L22-34
-- interface ScipExportResult L36-48
-- function storeToScipPlus L50-108 `(store: Store, repo: string): ScipExportResult`
+- variable SCHEME_BY_EXTENSION L22-36
+- interface ScipExportResult L38-50
+- function storeToScipPlus L52-110 `(store: Store, repo: string): ScipExportResult`
 
 ### src/protocol/scip-ingest.ts
 
@@ -252,31 +261,31 @@
 - function kindFromScip L316-318 `(kind: SymbolInformation_Kind): SymbolKind | null`
 - variable DEGRADE_KIND_FROM_SCIP L329-358
 - function degradeKindFromScip L360-362 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- typealias LibrarianScheme L378-378
-- interface MonikerParts L380-392
-- typealias DescriptorSuffix L394-402
-- interface ParsedDescriptor L404-408
-- interface ParsedMoniker L410-416
-- interface LibrarianSymbolKey L419-423
-- variable IDENT_CHAR L425-425
-- variable SIMPLE_IDENT L426-426
-- variable TYPE_KINDS L427-427
-- function escapeIdent L429-432 `(name: string): string`
-- function descriptorFor L434-439 `(name: string, kind: SymbolKind): string`
-- function formatLocal L441-444 `(n: number): string`
-- function isLocalSymbol L446-448 `(symbol: string): boolean`
-- function formatMoniker L450-469 `(scheme: LibrarianScheme, parts: MonikerParts): string`
-- function readHeaderField L472-486 `(s: string, i: number, what: string): [string, number]`
-- function readIdent L488-509 `(s: string, i: number): [string, number]`
-- function parseMoniker L511-584 `(moniker: string): ParsedMoniker`
-- function monikerToParts L592-603 `(moniker: string): LibrarianSymbolKey`
-- function monikerToId L605-608 `(moniker: string, kind: SymbolKind): string`
-- typealias ExternalMonikerKey L623-627
-- function externalMonikerKey L629-652 `(moniker: string): ExternalMonikerKey`
-- interface ScipMultiLineRange L659-664
-- interface ScipSingleLineRange L666-670
-- function spanToScipRange L673-678 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
-- function scipRangeToSpan L680-691 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
+- typealias LibrarianScheme L378-383
+- interface MonikerParts L385-397
+- typealias DescriptorSuffix L399-407
+- interface ParsedDescriptor L409-413
+- interface ParsedMoniker L415-421
+- interface LibrarianSymbolKey L424-428
+- variable IDENT_CHAR L430-430
+- variable SIMPLE_IDENT L431-431
+- variable TYPE_KINDS L432-432
+- function escapeIdent L434-437 `(name: string): string`
+- function descriptorFor L439-444 `(name: string, kind: SymbolKind): string`
+- function formatLocal L446-449 `(n: number): string`
+- function isLocalSymbol L451-453 `(symbol: string): boolean`
+- function formatMoniker L455-474 `(scheme: LibrarianScheme, parts: MonikerParts): string`
+- function readHeaderField L477-491 `(s: string, i: number, what: string): [string, number]`
+- function readIdent L493-514 `(s: string, i: number): [string, number]`
+- function parseMoniker L516-589 `(moniker: string): ParsedMoniker`
+- function monikerToParts L597-608 `(moniker: string): LibrarianSymbolKey`
+- function monikerToId L610-613 `(moniker: string, kind: SymbolKind): string`
+- typealias ExternalMonikerKey L628-632
+- function externalMonikerKey L634-657 `(moniker: string): ExternalMonikerKey`
+- interface ScipMultiLineRange L664-669
+- interface ScipSingleLineRange L671-675
+- function spanToScipRange L678-683 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
+- function scipRangeToSpan L685-696 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
 
 ### src/store/store.ts
 
@@ -407,6 +416,26 @@
 - testblock test(without a php interpreter the claimed files degrade to file-level modules) L150-172
 - testblock test(--capabilities answers the plugin-protocol handshake, reads no stdin) L174-183
 
+### src/test/extractor-python.test.ts
+
+- variable repoRoot L18-18
+- variable fixture L19-19
+- variable script L20-20
+- variable python L22-22
+- function indexedFixture L24-28 `(): Store`
+- testblock test(python fixture indexes with the full symbol taxonomy) L30-44
+- testblock test(extends covers base classes and method overrides) L46-82
+- testblock test(calls resolve through self, the MRO, and injected interfaces) L84-131
+- testblock test(comprehension element types resolve their calls) L133-145
+- testblock test(annotations and constants become references to repo symbols) L147-163
+- testblock test(pytest functions and unittest methods become testblock symbols) L165-175
+- testblock test(a diff against a python method seeds retrieval and packs its test context) L177-190
+- testblock test(eval baseline on the python golden set (docs/python-baseline.md)) L192-200
+- testblock test(native rows win over a degrade scip-python import, unless --prefer-scip) L202-241
+- testblock test(a file whose syntax the interpreter cannot parse degrades to file level) L243-256
+- testblock test(without a python interpreter the claimed files degrade to file-level modules) L258-276
+- testblock test(--capabilities answers the plugin-protocol handshake, reads no stdin) L278-286
+
 ### src/test/extractor-terraform.test.ts
 
 - variable repoRoot L17-17
@@ -489,14 +518,14 @@
 - function normalize L69-79 `(results: ExtractionResult[])`
 - testblock test(export → full ingest roundtrips store rows exactly (Step 4 export half)) L81-89
 - testblock test(mixed-language export: per-document schemes, one librarian ToolInfo, path-sorted docs) L91-108
-- testblock test(files without a moniker scheme are reported, not silently dropped) L110-118
-- testblock test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) L120-155
-- variable PY L163-163
-- typealias DocumentInit L165-165
-- function pythonishIndex L167-228 `(extraDocuments: DocumentInit[] = [])`
-- testblock test(degrade ingest maps an ext-less index per §4.5) L230-271
-- testblock test(degrade importScip e2e flags the route and persists rows) L273-289
-- testblock test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) L291-342
+- testblock test(files without a moniker scheme are reported, not silently dropped) L110-119
+- testblock test(importScip e2e: sidecar route reproduces the rows, re-import is a no-op) L121-156
+- variable PY L164-164
+- typealias DocumentInit L166-166
+- function pythonishIndex L168-229 `(extraDocuments: DocumentInit[] = [])`
+- testblock test(degrade ingest maps an ext-less index per §4.5) L231-272
+- testblock test(degrade importScip e2e flags the route and persists rows) L274-293
+- testblock test(dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index and import coexist) L295-352
 
 ### src/test/scip.test.ts
 
@@ -609,6 +638,7 @@
 - src/app/loop.ts → src/store/store.ts
 - src/app/registry.ts → src/extractors/go.ts
 - src/app/registry.ts → src/extractors/php.ts
+- src/app/registry.ts → src/extractors/python.ts
 - src/app/registry.ts → src/extractors/subprocess.ts
 - src/app/registry.ts → src/extractors/terraform.ts
 - src/app/registry.ts → src/extractors/ts.ts
@@ -631,6 +661,7 @@
 - src/core/retrieval.ts → src/store/store.ts
 - src/extractors/go.ts → src/extractors/subprocess.ts
 - src/extractors/php.ts → src/extractors/subprocess.ts
+- src/extractors/python.ts → src/extractors/subprocess.ts
 - src/extractors/subprocess.ts → src/protocol/extractor.ts
 - src/extractors/subprocess.ts → src/protocol/scip-ingest.ts
 - src/extractors/subprocess.ts → src/protocol/scip.ts
@@ -682,6 +713,14 @@
 - src/test/extractor-php.test.ts → src/extractors/php.ts
 - src/test/extractor-php.test.ts → src/protocol/scip.ts
 - src/test/extractor-php.test.ts → src/store/store.ts
+- src/test/extractor-python.test.ts → src/app/eval.ts
+- src/test/extractor-python.test.ts → src/app/index.ts
+- src/test/extractor-python.test.ts → src/core/contextpack.ts
+- src/test/extractor-python.test.ts → src/core/diff.ts
+- src/test/extractor-python.test.ts → src/core/retrieval.ts
+- src/test/extractor-python.test.ts → src/extractors/python.ts
+- src/test/extractor-python.test.ts → src/protocol/scip.ts
+- src/test/extractor-python.test.ts → src/store/store.ts
 - src/test/extractor-terraform.test.ts → src/app/eval.ts
 - src/test/extractor-terraform.test.ts → src/app/index.ts
 - src/test/extractor-terraform.test.ts → src/core/contextpack.ts
@@ -822,6 +861,7 @@
 - src/app/loop.ts recordReviewOutcome —calls→ src/store/store.ts Store.updateRetrievalOutcome
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/go.ts GoExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/php.ts PhpExtractor
+- src/app/registry.ts builtinExtractors —calls→ src/extractors/python.ts PythonExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/terraform.ts TerraformExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/ts.ts TypeScriptExtractor
 - src/app/registry.ts builtinExtractors —references→ src/protocol/extractor.ts Extractor
@@ -985,6 +1025,13 @@
 - src/extractors/php.ts resolvePhpExtractorCommand —calls→ src/extractors/php.ts phpExtractorDir
 - src/extractors/php.ts PhpExtractor.constructor —references→ src/extractors/php.ts UNAVAILABLE_WARNING
 - src/extractors/php.ts PhpExtractor.constructor —references→ src/extractors/php.ts resolvePhpExtractorCommand
+- src/extractors/python.ts PythonExtractor —extends→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/python.ts PythonExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/python.ts resolvePythonExtractorCommand —calls→ src/extractors/python.ts onPath
+- src/extractors/python.ts resolvePythonExtractorCommand —calls→ src/extractors/python.ts pyExtractorDir
+- src/extractors/python.ts resolvePythonExtractorCommand —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/extractors/python.ts PythonExtractor.constructor —references→ src/extractors/python.ts UNAVAILABLE_WARNING
+- src/extractors/python.ts PythonExtractor.constructor —references→ src/extractors/python.ts resolvePythonExtractorCommand
 - src/extractors/subprocess.ts SubprocessExtractor —references→ src/extractors/subprocess.ts SubprocessCommand
 - src/extractors/subprocess.ts SubprocessExtractor —extends→ src/protocol/extractor.ts Extractor
 - src/extractors/subprocess.ts SubprocessExtractor —references→ src/protocol/extractor.ts Extractor
@@ -1358,6 +1405,73 @@
 - src/test/extractor-php.test.ts test(type hints become references to repo types) —calls→ src/test/extractor-php.test.ts indexedFixture
 - src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/php.ts PhpExtractor
 - src/test/extractor-php.test.ts test(without a php interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
+- src/test/extractor-python.test.ts fixture —references→ src/test/extractor-python.test.ts repoRoot
+- src/test/extractor-python.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
+- src/test/extractor-python.test.ts indexedFixture —calls→ src/store/store.ts Store
+- src/test/extractor-python.test.ts indexedFixture —references→ src/store/store.ts Store
+- src/test/extractor-python.test.ts indexedFixture —references→ src/test/extractor-python.test.ts fixture
+- src/test/extractor-python.test.ts script —references→ src/test/extractor-python.test.ts repoRoot
+- src/test/extractor-python.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/protocol/scip.ts PROTOCOL_NAME
+- src/test/extractor-python.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/protocol/scip.ts PROTOCOL_VERSION
+- src/test/extractor-python.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —calls→ src/protocol/scip.ts parseCapabilities
+- src/test/extractor-python.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(--capabilities answers the plugin-protocol handshake, reads no stdin) —references→ src/test/extractor-python.test.ts script
+- src/test/extractor-python.test.ts test(a diff against a python method seeds retrieval and packs its test context) —calls→ src/core/contextpack.ts assembleReviewPack
+- src/test/extractor-python.test.ts test(a diff against a python method seeds retrieval and packs its test context) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/extractor-python.test.ts test(a diff against a python method seeds retrieval and packs its test context) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/extractor-python.test.ts test(a diff against a python method seeds retrieval and packs its test context) —calls→ src/store/store.ts Store.close
+- src/test/extractor-python.test.ts test(a diff against a python method seeds retrieval and packs its test context) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-python.test.ts test(a diff against a python method seeds retrieval and packs its test context) —references→ src/test/extractor-python.test.ts fixture
+- src/test/extractor-python.test.ts test(a diff against a python method seeds retrieval and packs its test context) —calls→ src/test/extractor-python.test.ts indexedFixture
+- src/test/extractor-python.test.ts test(a diff against a python method seeds retrieval and packs its test context) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(a file whose syntax the interpreter cannot parse degrades to file level) —calls→ src/extractors/python.ts PythonExtractor
+- src/test/extractor-python.test.ts test(a file whose syntax the interpreter cannot parse degrades to file level) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
+- src/test/extractor-python.test.ts test(a file whose syntax the interpreter cannot parse degrades to file level) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(annotations and constants become references to repo symbols) —calls→ src/store/store.ts Store.close
+- src/test/extractor-python.test.ts test(annotations and constants become references to repo symbols) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-python.test.ts test(annotations and constants become references to repo symbols) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-python.test.ts test(annotations and constants become references to repo symbols) —calls→ src/test/extractor-python.test.ts indexedFixture
+- src/test/extractor-python.test.ts test(annotations and constants become references to repo symbols) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(calls resolve through self, the MRO, and injected interfaces) —calls→ src/store/store.ts Store.close
+- src/test/extractor-python.test.ts test(calls resolve through self, the MRO, and injected interfaces) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-python.test.ts test(calls resolve through self, the MRO, and injected interfaces) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-python.test.ts test(calls resolve through self, the MRO, and injected interfaces) —calls→ src/test/extractor-python.test.ts indexedFixture
+- src/test/extractor-python.test.ts test(calls resolve through self, the MRO, and injected interfaces) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(comprehension element types resolve their calls) —calls→ src/store/store.ts Store.close
+- src/test/extractor-python.test.ts test(comprehension element types resolve their calls) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-python.test.ts test(comprehension element types resolve their calls) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-python.test.ts test(comprehension element types resolve their calls) —calls→ src/test/extractor-python.test.ts indexedFixture
+- src/test/extractor-python.test.ts test(comprehension element types resolve their calls) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(eval baseline on the python golden set (docs/python-baseline.md)) —calls→ src/app/eval.ts loadGoldenFile
+- src/test/extractor-python.test.ts test(eval baseline on the python golden set (docs/python-baseline.md)) —calls→ src/app/eval.ts runEval
+- src/test/extractor-python.test.ts test(eval baseline on the python golden set (docs/python-baseline.md)) —calls→ src/store/store.ts Store.close
+- src/test/extractor-python.test.ts test(eval baseline on the python golden set (docs/python-baseline.md)) —references→ src/test/extractor-python.test.ts fixture
+- src/test/extractor-python.test.ts test(eval baseline on the python golden set (docs/python-baseline.md)) —calls→ src/test/extractor-python.test.ts indexedFixture
+- src/test/extractor-python.test.ts test(eval baseline on the python golden set (docs/python-baseline.md)) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(eval baseline on the python golden set (docs/python-baseline.md)) —references→ src/test/extractor-python.test.ts repoRoot
+- src/test/extractor-python.test.ts test(extends covers base classes and method overrides) —calls→ src/store/store.ts Store.close
+- src/test/extractor-python.test.ts test(extends covers base classes and method overrides) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-python.test.ts test(extends covers base classes and method overrides) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-python.test.ts test(extends covers base classes and method overrides) —calls→ src/test/extractor-python.test.ts indexedFixture
+- src/test/extractor-python.test.ts test(extends covers base classes and method overrides) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(native rows win over a degrade scip-python import, unless --prefer-scip) —calls→ src/app/index.ts importScip
+- src/test/extractor-python.test.ts test(native rows win over a degrade scip-python import, unless --prefer-scip) —calls→ src/protocol/scip.ts createScipIndex
+- src/test/extractor-python.test.ts test(native rows win over a degrade scip-python import, unless --prefer-scip) —calls→ src/protocol/scip.ts encodeScip
+- src/test/extractor-python.test.ts test(native rows win over a degrade scip-python import, unless --prefer-scip) —calls→ src/store/store.ts Store
+- src/test/extractor-python.test.ts test(native rows win over a degrade scip-python import, unless --prefer-scip) —calls→ src/store/store.ts Store.close
+- src/test/extractor-python.test.ts test(native rows win over a degrade scip-python import, unless --prefer-scip) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-python.test.ts test(native rows win over a degrade scip-python import, unless --prefer-scip) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(pytest functions and unittest methods become testblock symbols) —calls→ src/store/store.ts Store.close
+- src/test/extractor-python.test.ts test(pytest functions and unittest methods become testblock symbols) —calls→ src/store/store.ts Store.symbolsInFile
+- src/test/extractor-python.test.ts test(pytest functions and unittest methods become testblock symbols) —calls→ src/test/extractor-python.test.ts indexedFixture
+- src/test/extractor-python.test.ts test(pytest functions and unittest methods become testblock symbols) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(python fixture indexes with the full symbol taxonomy) —calls→ src/store/store.ts Store.close
+- src/test/extractor-python.test.ts test(python fixture indexes with the full symbol taxonomy) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-python.test.ts test(python fixture indexes with the full symbol taxonomy) —calls→ src/store/store.ts Store.stats
+- src/test/extractor-python.test.ts test(python fixture indexes with the full symbol taxonomy) —calls→ src/test/extractor-python.test.ts indexedFixture
+- src/test/extractor-python.test.ts test(python fixture indexes with the full symbol taxonomy) —references→ src/test/extractor-python.test.ts python
+- src/test/extractor-python.test.ts test(without a python interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/python.ts PythonExtractor
+- src/test/extractor-python.test.ts test(without a python interpreter the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
 - src/test/extractor-terraform.test.ts builtBinary —references→ src/test/extractor-terraform.test.ts binary
 - src/test/extractor-terraform.test.ts builtBinary —references→ src/test/extractor-terraform.test.ts tfExtractorDir
 - src/test/extractor-terraform.test.ts fixture —references→ src/test/extractor-terraform.test.ts repoRoot
@@ -1665,68 +1779,68 @@
 
 ## Unresolved (aggregated)
 
-- 65× join (calls)
-- 62× map (calls)
-- 60× equal (calls)
-- 40× ok (calls)
-- 35× some (calls)
-- 32× deepEqual (calls)
+- 73× join (calls)
+- 66× equal (calls)
+- 64× map (calls)
+- 48× ok (calls)
+- 42× some (calls)
+- 35× deepEqual (calls)
 - 29× get (calls)
 - 28× Error (calls)
+- 28× node:path (imports)
 - 28× prepare (calls)
-- 26× node:path (imports)
-- 25× node:fs (imports)
-- 24× filter (calls)
+- 27× node:fs (imports)
+- 26× filter (calls)
+- 26× rmSync (calls)
 - 24× stringify (calls)
+- 24× writeFileSync (calls)
+- 23× find (calls)
+- 23× mkdtempSync (calls)
 - 23× push (calls)
-- 23× rmSync (calls)
-- 22× test (calls)
-- 21× writeFileSync (calls)
+- 23× test (calls)
+- 23× tmpdir (calls)
 - 20× Map (calls)
 - 20× Set (calls)
-- 20× mkdtempSync (calls)
-- 20× tmpdir (calls)
-- 19× find (calls)
 - 18× has (calls)
 - 17× slice (calls)
+- 16× split (calls)
 - 15× all (calls)
-- 15× split (calls)
-- 14× node:assert/strict (imports)
-- 14× node:test (imports)
-- 14× parse (calls)
+- 15× existsSync (calls)
+- 15× node:assert/strict (imports)
+- 15× node:test (imports)
+- 15× parse (calls)
+- 15× resolve (calls)
 - 14× set (calls)
-- 13× existsSync (calls)
-- 13× resolve (calls)
+- 14× spawnSync (calls)
+- 13× node:os (imports)
+- 12× dirname (calls)
 - 12× mkdirSync (calls)
-- 12× node:os (imports)
-- 12× spawnSync (calls)
 - 11× sort (calls)
-- 10× dirname (calls)
 - 10× readFileSync (calls)
+- 9× @scip-code/scip (imports)
+- 9× fileURLToPath (calls)
 - 9× includes (calls)
+- 9× node:url (imports)
 - 9× run (calls)
-- 8× @scip-code/scip (imports)
 - 8× endsWith (calls)
 - 8× isArray (calls)
 - 8× keys (calls)
 - 8× now (calls)
 - 8× throws (calls)
-- 7× fileURLToPath (calls)
 - 7× match (calls)
 - 7× max (calls)
-- 7× node:url (imports)
 - 7× startsWith (calls)
 - 7× trim (calls)
 - 6× add (calls)
 - 6× entries (calls)
 - 6× exec (calls)
 - 6× json (calls)
+- 6× node:child_process (imports)
 - 5× @/lib/librarian (imports)
 - 5× Number (calls)
 - 5× createHash (calls)
 - 5× digest (calls)
 - 5× error (calls)
-- 5× node:child_process (imports)
 - 5× openLibrarian (calls)
 - 5× update (calls)
 - 4× every (calls)

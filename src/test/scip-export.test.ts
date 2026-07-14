@@ -110,11 +110,12 @@ test('mixed-language export: per-document schemes, one librarian ToolInfo, path-
 test('files without a moniker scheme are reported, not silently dropped', () => {
   const store = new Store(':memory:');
   store.upsertRepo('fx', '/fixture');
-  store.replaceFile('fx', 'lib/tasks.py', 'h-py', [sym('lib/tasks.py', null, 'lib/tasks.py', 'module', 1, 5)], []);
+  // .rb has no extractor and therefore no moniker scheme (.py gained one in #6)
+  store.replaceFile('fx', 'lib/tasks.rb', 'h-rb', [sym('lib/tasks.rb', null, 'lib/tasks.rb', 'module', 1, 5)], []);
   const { files, skipped } = storeToScipPlus(store, 'fx');
   store.close();
   assert.equal(files, 0);
-  assert.deepEqual(skipped, ['lib/tasks.py']);
+  assert.deepEqual(skipped, ['lib/tasks.rb']);
 });
 
 test('importScip e2e: sidecar route reproduces the rows, re-import is a no-op', () => {
@@ -275,7 +276,10 @@ test('degrade importScip e2e flags the route and persists rows', () => {
   try {
     writeFileSync(join(dir, 'py.scip'), encodeScip(pythonishIndex()));
     const store = new Store(':memory:');
-    const report = importScip(store, join(dir, 'py.scip'), { repoName: 'py' });
+    // the degrade route serves languages no registered extractor claims; Python
+    // gained a native leg in #6, so the extractor set is emptied here to keep
+    // this test about the ingest itself (dispatch is the next test's subject).
+    const report = importScip(store, join(dir, 'py.scip'), { repoName: 'py', extractors: [] });
     assert.equal(report.degraded, true);
     assert.equal(report.skippedSymbols, 0);
     assert.equal(report.skippedNativeFiles, 0);
@@ -314,7 +318,13 @@ test('dispatch (§4.5 Step 5): degrade import skips native-claimed docs, index a
     ]);
     writeFileSync(join(dir, 'py.scip'), encodeScip(index));
 
-    const report = importScip(store, join(dir, 'py.scip'), { repoName: 'poly', root: dir });
+    // the extractor set is explicit (TS only): Python is natively claimed since
+    // #6, and this test is about a claimed extension losing to an unclaimed one
+    const report = importScip(store, join(dir, 'py.scip'), {
+      repoName: 'poly',
+      root: dir,
+      extractors: [new TypeScriptExtractor()],
+    });
     assert.equal(report.degraded, true);
     assert.equal(report.skippedNativeFiles, 1, 'the .ts document loses to the native extractor');
     assert.equal(report.filesSeen, 2, 'only the python documents ingest');

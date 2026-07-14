@@ -375,7 +375,12 @@ export function degradeKindFromScip(kind: SymbolInformation_Kind): SymbolKind | 
 // segment boundaries may differ for dotted names, the joined string cannot.
 // ---------------------------------------------------------------------------
 
-export type LibrarianScheme = 'librarian-ts' | 'librarian-go' | 'librarian-php' | 'librarian-terraform';
+export type LibrarianScheme =
+  | 'librarian-ts'
+  | 'librarian-go'
+  | 'librarian-php'
+  | 'librarian-py'
+  | 'librarian-terraform';
 
 export interface MonikerParts {
   file: string;
