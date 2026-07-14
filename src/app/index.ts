@@ -9,21 +9,11 @@ import { basename, dirname, extname, join, relative, resolve, sep } from 'node:p
 import type { ExtractionResult, Extractor } from '../protocol/extractor.js';
 import { scipIndexToExtractionResults, scipPlusToExtractionResults } from '../protocol/scip-ingest.js';
 import { decodeScip, parseExt } from '../protocol/scip.js';
-import { EXTENSIONS, TypeScriptExtractor } from '../extractors/ts.js';
-import { GoExtractor } from '../extractors/go.js';
-import { PhpExtractor } from '../extractors/php.js';
+import { EXTENSIONS } from '../extractors/ts.js';
+import { resolveExtractors } from './registry.js';
 import { Store } from '../store/store.js';
 
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', 'coverage', '.git', '.dlog', '.librarian', 'out', 'vendor']);
-
-/**
- * The extractor registry (#10). Language support = appending here; the store,
- * retrieval, and UI never learn which extractor produced a row. When two
- * extractors claim the same extension, the first registered wins.
- */
-export function defaultExtractors(): Extractor[] {
-  return [new TypeScriptExtractor(), new GoExtractor(), new PhpExtractor()];
-}
 
 export function discoverSourceFiles(rootDir: string, extensions: string[] = EXTENSIONS): string[] {
   const found: string[] = [];
@@ -111,7 +101,7 @@ export function indexRepo(
 ): IndexReport {
   const t0 = Date.now();
   const repo = opts.repoName ?? basename(resolve(rootDir));
-  const extractors = opts.extractors ?? defaultExtractors();
+  const extractors = opts.extractors ?? resolveExtractors(rootDir);
   const allExtensions = [...new Set(extractors.flatMap((x) => x.extensions))];
   const rel = (abs: string) => relative(rootDir, abs).split(sep).join('/');
   // --include: keep only files under the given root-relative prefixes
@@ -222,17 +212,21 @@ export function importScip(
     degraded = true;
   }
 
+  const projectRoot = index.metadata?.projectRoot.replace(/^file:\/\//, '') ?? '';
+  const root = resolve(opts.root ?? (projectRoot || dirname(resolve(scipPath))));
+  const repo = opts.repoName ?? basename(root);
+
+  // Native always wins (design §4.5): on the degrade route, drop documents whose
+  // extension a registered extractor (built-in or `.librarian/extractors.json`)
+  // claims — `librarian index` is the richer intake for those languages.
   let skippedNativeFiles = 0;
   if (degraded) {
-    const extractors = opts.extractors ?? defaultExtractors();
+    const extractors = opts.extractors ?? resolveExtractors(root);
     const kept = raw.filter((r) => extractorFor(r.file, extractors) === null);
     skippedNativeFiles = raw.length - kept.length;
     raw = kept;
   }
 
-  const projectRoot = index.metadata?.projectRoot.replace(/^file:\/\//, '') ?? '';
-  const root = resolve(opts.root ?? (projectRoot || dirname(resolve(scipPath))));
-  const repo = opts.repoName ?? basename(root);
   const results = namespaceIds(repo, raw);
 
   const known = new Map(store.listFiles(repo).map((f) => [f.path, f.hash]));

@@ -925,7 +925,28 @@ func run() error {
 	return e.emitEnvelope(files)
 }
 
+// capabilities answers the plugin-protocol handshake (issue #22 / ADR-7): one
+// JSON line, no stdin read, exit 0. The runner queries this to negotiate the
+// SCIP+ envelope major version before extracting.
+func capabilities() error {
+	return json.NewEncoder(os.Stdout).Encode(map[string]any{
+		"protocol":        "librarian-scip-plus",
+		"protocolVersion": 1,
+		"name":            monikerScheme,
+		"extensions":      []string{".go"},
+	})
+}
+
 func main() {
+	for _, a := range os.Args[1:] {
+		if a == "--capabilities" {
+			if err := capabilities(); err != nil {
+				fmt.Fprintln(os.Stderr, "error:", err)
+				os.Exit(1)
+			}
+			return
+		}
+	}
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

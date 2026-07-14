@@ -81,16 +81,23 @@ dlog の「変更前に `dlog why`」と対になるルール:
 - `docs/architecture.md` — アーキテクチャ設計書(WHY/WHAT)。フェーズ計画・ADR・成功指標。
 - `docs/phase0-report.md` — Phase 0 ベースライン計測と失敗分析。**retrieval を変更したら
   必ず `librarian eval` を回して数値を更新すること(ADR-4)。**
-- `docs/scip-design.md` — SCIP+ 設計(issue #16 / ADR-6 提案)。抽出器⇄store の交換
+- `docs/scip-design.md` — SCIP+ 設計(issue #16 / ADR-6)。抽出器⇄store の交換
   フォーマット。**ext サイドカーが retrieval 信号の正、ベース SCIP は標準準拠の投影。**
+- `docs/plugin-protocol.md` — 抽出器プラグインプロトコル設計(issue #22 / ADR-7)。SCIP+ 契約の
+  公開・レジストリ化。封筒 JSON Schema・moniker 文法・conformance の束ね(living reference)。
 - `src/store/store.ts` — Knowledge Store(`node:sqlite`)。files/symbols/edges + 再帰 CTE。
 - `src/protocol/extractor.ts` — Extractor インターフェース(多言語対応の抽象、公開面)。実装は
-  TS(`src/extractors/ts.ts`)・Go(`src/extractors/go.ts` + `go-extractor/`)・PHP
-  (`src/extractors/php.ts` + `php-extractor/`)。
+  TS(`src/extractors/ts.ts`、in-process)・Go(`src/extractors/go.ts` + `go-extractor/`)・PHP
+  (`src/extractors/php.ts` + `php-extractor/`)。Go/PHP は汎用ランナー
+  `src/extractors/subprocess.ts` に resolver を渡すリファレンスプラグイン。
+- `src/protocol/scip-plus.schema.json` — 封筒(`{scip, ext}`)の JSON Schema(プラグイン公開物)。
+- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP)+
+  `.librarian/extractors.json` の合成・拡張子上書き(`resolveExtractors`)。信頼モデル:
+  明示登録のみ・自動 DL/PATH 規約発見なし。
 - `go-extractor/` — Go 抽出バイナリ(`golang.org/x/tools/go/packages`)。stdin/stdout
-  JSON 契約。ビルド・配布は README の「Go リポジトリのインデックス」。
+  JSON 契約 + `--capabilities`。ビルド・配布は README の「Go リポジトリのインデックス」。
 - `php-extractor/` — PHP 抽出スクリプト(nikic/php-parser、`vendor/` 同梱)。stdin/stdout
-  JSON 契約。インタプリタ実行でビルド不要 — 詳細は README の「PHP リポジトリのインデックス」。
+  JSON 契約 + `--capabilities`。インタプリタ実行でビルド不要 — 詳細は README の「PHP リポジトリのインデックス」。
 - `src/protocol/scip.ts` — SCIP+ 境界(封筒/ext 型、`.scip` の protobuf encode/decode、Symbol
   文法パーサ、moniker⇄id 写像)。protobuf はこのファイルの外に出さない。
 - `src/protocol/scip-ingest.ts` — SCIP+ 封筒 → ExtractionResult 写像(native 経路。エッジは

@@ -51,8 +51,9 @@ graph-first な AI レビュー & 知識資産化プラットフォーム。
 
 ## Go リポジトリのインデックス
 
-`.go` ファイルは Go 製の抽出バイナリ(`go-extractor/`)で symbols/edges 化される。
-librarian は以下の順でバイナリを探す:
+`.go` ファイルは Go 製の抽出バイナリ(`go-extractor/`)で symbols/edges 化される。これは
+抽出器プラグインプロトコル(ADR-7、[`docs/plugin-protocol.md`](docs/plugin-protocol.md))の
+**リファレンスプラグイン**でもある(コンパイル型の実例)。librarian は以下の順でバイナリを探す:
 
 1. `LIBRARIAN_GO_EXTRACTOR` 環境変数(ビルド済みバイナリへのパス)
 2. `librarian-go-extractor` が `$PATH` 上にある(推奨: `go install ./go-extractor` 後、
@@ -68,8 +69,9 @@ librarian は以下の順でバイナリを探す:
 ## PHP リポジトリのインデックス
 
 `.php` ファイルは PHP 製の抽出スクリプト(`php-extractor/extract.php`、nikic/php-parser を
-`php-extractor/vendor/` に同梱)で symbols/edges 化される。**インタプリタ実行なのでビルド
-手順は無く、必要なのは `php` 処理系だけ**。librarian は以下の順でスクリプトを探す:
+`php-extractor/vendor/` に同梱)で symbols/edges 化される。プロトコルの**リファレンス
+プラグイン**のもう一方(インタプリタ型の実例)。**インタプリタ実行なのでビルド手順は無く、
+必要なのは `php` 処理系だけ**。librarian は以下の順でスクリプトを探す:
 
 1. `LIBRARIAN_PHP_EXTRACTOR` 環境変数(`extract.php` へのパス。隣に `vendor/` が必要)
 2. リポジトリ同梱の `php-extractor/extract.php`(既定)
@@ -117,6 +119,40 @@ richer な取り込み口。ext サイドカー付き(`librarian export --scip` 
 信号そのものなのでスキップされない。`index` と `import` はファイル削除の管轄を
 「自分が扱う拡張子」に限定するため、**同一 db・同一 repo で共存できる**
 (例: TS は native インデックス、Python は scip-python の import)。
+
+## 抽出器プラグイン(issue #22 / ADR-7)
+
+抽出器は**プロトコル準拠のプラグイン**。TS は in-process(TS Compiler API)、Go/PHP は
+プロトコルのリファレンスプラグイン(子プロセス)。第三者は**コードを書き換えずに**
+新言語プラグインを足せる — 契約の全文は [`docs/plugin-protocol.md`](docs/plugin-protocol.md)。
+
+**ワイヤ契約**: 子プロセスは `{root, files}` JSON を stdin で受け、SCIP+ 封筒 `{scip, ext}` を
+stdout に出す(protobuf 非依存。封筒スキーマは [`src/protocol/scip-plus.schema.json`](src/protocol/scip-plus.schema.json)、
+moniker 文法は [`docs/scip-design.md`](docs/scip-design.md) §4.2)。`--capabilities` で
+`{protocol, protocolVersion, name, extensions}` を返してバージョン交渉に応じる。
+
+**レジストリ** `.librarian/extractors.json`(拡張子→コマンドの明示宣言):
+
+```jsonc
+{
+  "version": 1,
+  "extractors": [
+    { "name": "librarian-rust", "extensions": [".rs"], "command": "librarian-rust-extractor", "args": [] }
+  ]
+}
+```
+
+`command` は PATH 上の名前・絶対パス・repo ルート相対パスのいずれか。宣言が同一拡張子の
+ビルトインを**上書き**する(例: `.go` を自前ビルドに差し替え)。宣言が無ければビルトイン
+(TS/Go/PHP)だけで従来どおり動く。
+
+**信頼モデル**: プラグイン = 任意コマンドの実行。**明示登録のみ・自動ダウンロード無し・
+PATH 規約による暗黙発見なし**。`.librarian/extractors.json` は repo にコミットされ、
+「このリポジトリは何を実行するか」が PR でレビューでき git 履歴に残る — サンドボックスは
+しないので、third-party プラグインの登録はそのコマンドに repo とマシンを預けることを意味する。
+
+**適合性(conformance)**: `eval/fixtures/<lang>-taskflow` + `eval/golden/<lang>-taskflow.json` を
+用意し `librarian eval` が green になれば適合。既存 Go/PHP はレジストリ経由でも eval 完全一致。
 
 ## 自己インデックス(dogfooding, issue #15)
 

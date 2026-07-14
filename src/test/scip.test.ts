@@ -14,8 +14,11 @@ import {
   kindFromScip,
   monikerToId,
   monikerToParts,
+  parseCapabilities,
   parseMoniker,
   parseScipPlus,
+  PROTOCOL_NAME,
+  PROTOCOL_VERSION,
   scipFromJson,
   scipRangeToSpan,
   scipToJson,
@@ -307,4 +310,41 @@ test('parseScipPlus rejects malformed envelopes with precise errors', () => {
   };
   badSpan.ext.documents[0].symbols[0].spanStart = '10';
   assert.throws(() => parseScipPlus(badSpan), /spanStart\/spanEnd must be integers/);
+});
+
+// --- capabilities handshake (issue #22 / ADR-7) ------------------------------
+
+test('parseCapabilities accepts a well-formed handshake reply', () => {
+  const caps = parseCapabilities({
+    protocol: PROTOCOL_NAME,
+    protocolVersion: PROTOCOL_VERSION,
+    name: 'librarian-go',
+    extensions: ['.go'],
+  });
+  assert.equal(caps.name, 'librarian-go');
+  assert.deepEqual(caps.extensions, ['.go']);
+});
+
+test('parseCapabilities rejects malformed replies with precise errors', () => {
+  assert.throws(() => parseCapabilities(null), /JSON object/);
+  assert.throws(() => parseCapabilities([]), /JSON object/);
+  assert.throws(
+    () => parseCapabilities({ protocol: 'other', protocolVersion: 1, name: 'x', extensions: [] }),
+    /protocol .* is not/
+  );
+  assert.throws(
+    () => parseCapabilities({ protocol: PROTOCOL_NAME, protocolVersion: '1', name: 'x', extensions: [] }),
+    /protocolVersion must be an integer/
+  );
+  assert.throws(
+    () => parseCapabilities({ protocol: PROTOCOL_NAME, protocolVersion: 1, name: '', extensions: [] }),
+    /name must be a non-empty string/
+  );
+  assert.throws(
+    () => parseCapabilities({ protocol: PROTOCOL_NAME, protocolVersion: 1, name: 'x', extensions: ['.go', 1] }),
+    /extensions must be an array of strings/
+  );
+  // A well-formed reply announcing an unknown major still parses (negotiation is the runner's call).
+  const future = parseCapabilities({ protocol: PROTOCOL_NAME, protocolVersion: 99, name: 'x', extensions: ['.x'] });
+  assert.equal(future.protocolVersion, 99);
 });

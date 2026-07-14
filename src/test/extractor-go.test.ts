@@ -11,6 +11,7 @@ import { GoExtractor } from '../extractors/go.js';
 import { parseUnifiedDiff } from '../core/diff.js';
 import { retrieveForDiff } from '../core/retrieval.js';
 import { assembleReviewPack } from '../core/contextpack.js';
+import { PROTOCOL_NAME, PROTOCOL_VERSION, parseCapabilities } from '../protocol/scip.js';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const goExtractorDir = join(repoRoot, 'go-extractor');
@@ -149,4 +150,14 @@ test('without a Go toolchain the claimed files degrade to file-level modules', (
     process.env.PATH = saved.path;
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('--capabilities answers the plugin-protocol handshake, reads no stdin', { skip: !hasGo }, () => {
+  const res = spawnSync(builtBinary(), ['--capabilities'], { encoding: 'utf8', input: 'IGNORED' });
+  assert.equal(res.status, 0);
+  const caps = parseCapabilities(JSON.parse(res.stdout));
+  assert.equal(caps.protocol, PROTOCOL_NAME);
+  assert.equal(caps.protocolVersion, PROTOCOL_VERSION);
+  assert.equal(caps.name, 'librarian-go');
+  assert.deepEqual(caps.extensions, ['.go']);
 });

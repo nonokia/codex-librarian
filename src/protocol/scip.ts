@@ -42,6 +42,32 @@ export interface ScipPlusEnvelope {
   ext: Ext;
 }
 
+// ---------------------------------------------------------------------------
+// Plugin protocol identity & capabilities handshake (issue #22 / ADR-7)
+// ---------------------------------------------------------------------------
+
+/**
+ * The wire contract IS the SCIP+ envelope; the plugin protocol adds only
+ * discovery/registration and this handshake. A subprocess plugin, invoked with
+ * `--capabilities` (and no stdin), prints one Capabilities JSON line so the
+ * runner can negotiate the envelope major version before extracting.
+ */
+export const PROTOCOL_NAME = 'librarian-scip-plus';
+
+/** Envelope major version this runner speaks. Grows only on a breaking change. */
+export const PROTOCOL_VERSION = 1;
+
+export interface Capabilities {
+  /** always PROTOCOL_NAME — identifies the envelope contract */
+  protocol: string;
+  /** envelope major the plugin speaks; the runner speaks PROTOCOL_VERSION */
+  protocolVersion: number;
+  /** the plugin's moniker scheme / ToolInfo.name, e.g. 'librarian-go' */
+  name: string;
+  /** extensions the plugin claims, e.g. ['.go'] */
+  extensions: string[];
+}
+
 /**
  * Ext is a delta on top of base SCIP, never a restatement of it: symbols the
  * base layer cannot carry as first-class (testblocks), and the edge list that
@@ -119,6 +145,39 @@ export function parseScipPlus(envelope: unknown): { index: Index; ext: Ext } {
     throw new Error('SCIP+ envelope requires both "scip" and "ext"');
   }
   return { index: scipFromJson(e.scip as JsonValue), ext: parseExt(e.ext) };
+}
+
+/**
+ * Validate a plugin's `--capabilities` reply (already JSON.parsed). Structural
+ * only — version negotiation (is protocolVersion one this runner speaks?) is
+ * the runner's call, so a well-formed reply announcing an unknown major still
+ * parses here and is rejected downstream with a clear message.
+ */
+export function parseCapabilities(raw: unknown): Capabilities {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    throw new Error('capabilities must be a JSON object');
+  }
+  const c = raw as Record<string, unknown>;
+  if (c.protocol !== PROTOCOL_NAME) {
+    throw new Error(
+      `capabilities.protocol ${JSON.stringify(c.protocol)} is not ${JSON.stringify(PROTOCOL_NAME)}`
+    );
+  }
+  if (!Number.isInteger(c.protocolVersion)) {
+    throw new Error('capabilities.protocolVersion must be an integer');
+  }
+  if (typeof c.name !== 'string' || c.name === '') {
+    throw new Error('capabilities.name must be a non-empty string');
+  }
+  if (!Array.isArray(c.extensions) || c.extensions.some((x) => typeof x !== 'string')) {
+    throw new Error('capabilities.extensions must be an array of strings');
+  }
+  return {
+    protocol: c.protocol,
+    protocolVersion: c.protocolVersion as number,
+    name: c.name,
+    extensions: c.extensions as string[],
+  };
 }
 
 /** Also the parser for a standalone `.scip-ext.json` sidecar (import path). */

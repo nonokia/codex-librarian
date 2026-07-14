@@ -11,6 +11,7 @@ import { PhpExtractor } from '../extractors/php.js';
 import { parseUnifiedDiff } from '../core/diff.js';
 import { retrieveForDiff } from '../core/retrieval.js';
 import { assembleReviewPack } from '../core/contextpack.js';
+import { PROTOCOL_NAME, PROTOCOL_VERSION, parseCapabilities } from '../protocol/scip.js';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const fixture = join(repoRoot, 'eval', 'fixtures', 'php-taskflow');
@@ -168,4 +169,15 @@ test('without a php interpreter the claimed files degrade to file-level modules'
     process.env.PATH = saved.path;
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('--capabilities answers the plugin-protocol handshake, reads no stdin', { skip: !hasPhp }, () => {
+  const script = join(repoRoot, 'php-extractor', 'extract.php');
+  const res = spawnSync('php', [script, '--capabilities'], { encoding: 'utf8', input: 'IGNORED' });
+  assert.equal(res.status, 0);
+  const caps = parseCapabilities(JSON.parse(res.stdout));
+  assert.equal(caps.protocol, PROTOCOL_NAME);
+  assert.equal(caps.protocolVersion, PROTOCOL_VERSION);
+  assert.equal(caps.name, 'librarian-php');
+  assert.deepEqual(caps.extensions, ['.php']);
 });
