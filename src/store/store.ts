@@ -87,6 +87,28 @@ export interface NeighborRow extends SymbolRow {
   direction: 'out' | 'in';
 }
 
+/** A file node in the collapsed hierarchy view (#28): symbol count per file. */
+export interface FileCount {
+  repo: string;
+  file: string;
+  symbols: number;
+}
+
+/**
+ * One rolled-up edge bundle between two files (#28). Individual symbol→symbol
+ * edges are aggregated to file granularity so the graph stays readable at
+ * scale. Unresolved edges have no target symbol, so `toRepo`/`toFile` are null.
+ */
+export interface CollapsedEdge {
+  fromRepo: string;
+  fromFile: string;
+  toRepo: string | null;
+  toFile: string | null;
+  kind: EdgeKind;
+  resolved: boolean;
+  count: number;
+}
+
 /** Bumped when the table shapes change incompatibly (v2: multi-repo, #11). */
 export const SCHEMA_VERSION = '2';
 
@@ -425,6 +447,70 @@ export class Store {
       depth: r.depth as number,
       edgeKind: r.edge_kind as EdgeKind,
       direction: r.direction as 'out' | 'in',
+    }));
+  }
+
+  /**
+   * Per-file symbol counts (#28). The web "書架を歩く" view builds its
+   * repo → directory → file → symbol hierarchy from this without loading every
+   * symbol row; drilling into a file's symbols uses `symbolsInFile`.
+   */
+  symbolCountsByFile(repo?: string): FileCount[] {
+    return (
+      this.db
+        .prepare(
+          `SELECT repo, file, COUNT(*) AS symbols
+           FROM symbols
+           WHERE (?1 IS NULL OR repo = ?1)
+           GROUP BY repo, file
+           ORDER BY repo, file`
+        )
+        .all(repo ?? null) as { repo: string; file: string; symbols: number }[]
+    ).map((r) => ({ repo: r.repo, file: r.file, symbols: r.symbols }));
+  }
+
+  /**
+   * The code graph collapsed to file granularity (#28). Every symbol→symbol
+   * edge is rolled up into a per-(from-file, to-file, kind, resolved) bundle
+   * with a count, so a dense neighborhood that would render as an unreadable
+   * hairball ("真っ黒") becomes at most one line per file pair and edge kind.
+   * Unresolved edges keep their kind but have no target file (toRepo/toFile
+   * null); the display layer folds these into per-file badges or repo-level
+   * rollups. Aggregation only — no display policy here (ADR-5). Cross-repo
+   * resolved edges (#27) are preserved: `?1` scopes the *from* side, the
+   * target repo may differ.
+   */
+  collapsedEdges(repo?: string): CollapsedEdge[] {
+    return (
+      this.db
+        .prepare(
+          `SELECT sf.repo AS from_repo, sf.file AS from_file,
+                  st.repo AS to_repo, st.file AS to_file,
+                  e.kind AS kind, e.resolved AS resolved, COUNT(*) AS n
+           FROM edges e
+           JOIN symbols sf ON sf.id = e.from_id
+           LEFT JOIN symbols st ON (e.resolved = 1 AND e.to_id != '' AND st.id = e.to_id)
+           WHERE (?1 IS NULL OR sf.repo = ?1)
+           GROUP BY from_repo, from_file, to_repo, to_file, e.kind, e.resolved
+           ORDER BY from_repo, from_file, to_repo, to_file, e.kind`
+        )
+        .all(repo ?? null) as {
+        from_repo: string;
+        from_file: string;
+        to_repo: string | null;
+        to_file: string | null;
+        kind: EdgeKind;
+        resolved: number;
+        n: number;
+      }[]
+    ).map((r) => ({
+      fromRepo: r.from_repo,
+      fromFile: r.from_file,
+      toRepo: r.to_repo,
+      toFile: r.to_file,
+      kind: r.kind,
+      resolved: r.resolved === 1,
+      count: r.n,
     }));
   }
 

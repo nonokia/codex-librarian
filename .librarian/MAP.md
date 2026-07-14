@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 52
-- symbols: 511
-- edges: 2945 (unresolved: 1685)
-- symbols by kind: class=8, function=159, interface=55, method=45, module=52, testblock=109, typealias=12, variable=71
+- files: 59
+- symbols: 559
+- edges: 3196 (unresolved: 1867)
+- symbols by kind: class=8, function=179, interface=66, method=47, module=59, testblock=112, typealias=14, variable=74
 
 ## Files
 
@@ -311,21 +311,23 @@
 - interface EdgeEndpoint L70-76
 - interface JoinedEdge L78-82
 - interface NeighborRow L84-88
-- variable SCHEMA_VERSION L91-91
-- variable SCHEMA L93-174
-- class Store L176-773
-- method Store.constructor L179-198 `(path: string)`
-- method Store.close L200-202 `(): void`
-- method Store.getMeta L204-209 `(key: string): string | null`
-- method Store.setMeta L211-215 `(key: string, value: string): void`
-- method Store.upsertRepo L217-224 `(name: string, root: string): void`
-- method Store.getRepo L226-231 `(name: string): RepoRow | null`
-- method Store.listRepos L233-241 `(): RepoRow[]`
-- method Store.fileHash L243-248 `(repo: string, path: string): string | null`
-- method Store.replaceFile L251-280 `(repo: string, path: string, hash: string, symbols: Omit<SymbolRow, 'repo'>[], edges: EdgeRow[]): void`
-- method Store.removeFiles L282-291 `(repo: string, paths: string[]): void`
-- method Store.listFiles L293-304 `(repo?: string): { repo: string; path: string; hash: string }[]`
-- method Store.stats L306-350 `(): {
+- interface FileCount L91-95
+- interface CollapsedEdge L102-110
+- variable SCHEMA_VERSION L113-113
+- variable SCHEMA L115-196
+- class Store L198-859
+- method Store.constructor L201-220 `(path: string)`
+- method Store.close L222-224 `(): void`
+- method Store.getMeta L226-231 `(key: string): string | null`
+- method Store.setMeta L233-237 `(key: string, value: string): void`
+- method Store.upsertRepo L239-246 `(name: string, root: string): void`
+- method Store.getRepo L248-253 `(name: string): RepoRow | null`
+- method Store.listRepos L255-263 `(): RepoRow[]`
+- method Store.fileHash L265-270 `(repo: string, path: string): string | null`
+- method Store.replaceFile L273-302 `(repo: string, path: string, hash: string, symbols: Omit<SymbolRow, 'repo'>[], edges: EdgeRow[]): void`
+- method Store.removeFiles L304-313 `(repo: string, paths: string[]): void`
+- method Store.listFiles L315-326 `(repo?: string): { repo: string; path: string; hash: string }[]`
+- method Store.stats L328-372 `(): {
     files: number;
     symbols: number;
     edges: number;
@@ -334,13 +336,15 @@
     byExtension: Record<string, number>;
     byRepo: Record<string, { files: number; symbols: number }>;
   }`
-- method Store.statsForRepo L359-373 `(repo: string): { symbols: number; edges: number; unresolvedEdges: number }`
-- method Store.findSymbols L376-388 `(query: string, limit = 20, repo?: string): SymbolRow[]`
-- method Store.symbolsInFile L390-398 `(file: string, repo?: string): SymbolRow[]`
-- method Store.neighborhood L404-429 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
-- method Store.edgesOf L431-443 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
-- method Store.edgesFromFile L449-464 `(repo: string, file: string): EdgeRow[]`
-- method Store.logRetrieval L468-497 `(entry: {
+- method Store.statsForRepo L381-395 `(repo: string): { symbols: number; edges: number; unresolvedEdges: number }`
+- method Store.findSymbols L398-410 `(query: string, limit = 20, repo?: string): SymbolRow[]`
+- method Store.symbolsInFile L412-420 `(file: string, repo?: string): SymbolRow[]`
+- method Store.neighborhood L426-451 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
+- method Store.symbolCountsByFile L458-470 `(repo?: string): FileCount[]`
+- method Store.collapsedEdges L483-515 `(repo?: string): CollapsedEdge[]`
+- method Store.edgesOf L517-529 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
+- method Store.edgesFromFile L535-550 `(repo: string, file: string): EdgeRow[]`
+- method Store.logRetrieval L554-583 `(entry: {
     source: string;
     signature: string;
     strategy: string;
@@ -351,12 +355,12 @@
     usedChars: number;
     latencyMs: number;
   }): number`
-- method Store.updateRetrievalOutcome L499-520 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
-- method Store.listRetrievals L522-526 `(limit = 20): Record<string, unknown>[]`
-- method Store.getPattern L528-536 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
-- method Store.putPattern L538-548 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
-- method Store.listPatterns L550-554 `(): Record<string, unknown>[]`
-- method Store.recordEval L556-584 `(entry: {
+- method Store.updateRetrievalOutcome L585-606 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
+- method Store.listRetrievals L608-612 `(limit = 20): Record<string, unknown>[]`
+- method Store.getPattern L614-622 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
+- method Store.putPattern L624-634 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
+- method Store.listPatterns L636-640 `(): Record<string, unknown>[]`
+- method Store.recordEval L642-670 `(entry: {
     golden: string;
     cases: number;
     microRecall: number;
@@ -367,18 +371,25 @@
     usedCache: boolean;
     note?: string;
   }): void`
-- method Store.evalHistory L586-590 `(): Record<string, unknown>[]`
-- method Store.resolvedEdgesJoined L597-630 `(): JoinedEdge[]`
-- method Store.unresolvedSummary L633-642 `(): { name: string; kind: EdgeKind; count: number }[]`
-- method Store.symbolById L644-649 `(id: string): SymbolRow | null`
-- method Store.unresolvedEdges L656-673 `(repo?: string): UnresolvedEdge[]`
-- method Store.topLevelSymbolsNamed L681-691 `(repo: string, name: string): SymbolRow[]`
-- method Store.moduleSymbol L693-698 `(repo: string, file: string): SymbolRow | null`
-- method Store.linkEdges L706-727 `(links: { fromId: string; toName: string; kind: EdgeKind; toId: string }[]): number`
-- method Store.crossRepoEdges L730-732 `(): JoinedEdge[]`
-- method Store.countCrossRepoEdges L734-743 `(): number`
-- method Store.unlinkCrossRepo L746-772 `(): number`
-- function rowToSymbol L775-789 `(r: unknown): SymbolRow`
+- method Store.evalHistory L672-676 `(): Record<string, unknown>[]`
+- method Store.resolvedEdgesJoined L683-716 `(): JoinedEdge[]`
+- method Store.unresolvedSummary L719-728 `(): { name: string; kind: EdgeKind; count: number }[]`
+- method Store.symbolById L730-735 `(id: string): SymbolRow | null`
+- method Store.unresolvedEdges L742-759 `(repo?: string): UnresolvedEdge[]`
+- method Store.topLevelSymbolsNamed L767-777 `(repo: string, name: string): SymbolRow[]`
+- method Store.moduleSymbol L779-784 `(repo: string, file: string): SymbolRow | null`
+- method Store.linkEdges L792-813 `(links: { fromId: string; toName: string; kind: EdgeKind; toId: string }[]): number`
+- method Store.crossRepoEdges L816-818 `(): JoinedEdge[]`
+- method Store.countCrossRepoEdges L820-829 `(): number`
+- method Store.unlinkCrossRepo L832-858 `(): number`
+- function rowToSymbol L861-875 `(r: unknown): SymbolRow`
+
+### src/test/collapsed-graph.test.ts
+
+- function fixtureRepo L14-33 `(): string`
+- testblock test(symbolCountsByFile aggregates per file and matches the raw rows) L35-48
+- testblock test(symbolCountsByFile can scope to one repo) L50-57
+- testblock test(collapsedEdges rolls symbol edges up to file granularity, conserving totals) L59-98
 
 ### src/test/contextpack.test.ts
 
@@ -602,9 +613,17 @@
 - variable MODEL L8-8
 - function POST L16-100 `(req: NextRequest)`
 
+### web/app/api/file/route.ts
+
+- function GET L5-11 `(req: NextRequest)`
+
 ### web/app/api/graph/route.ts
 
-- function GET L8-36 `(req: NextRequest)`
+- function GET L8-41 `(req: NextRequest)`
+
+### web/app/api/overview/route.ts
+
+- function GET L10-17 `()`
 
 ### web/app/api/source/route.ts
 
@@ -634,6 +653,18 @@
 - variable dynamic L4-4
 - function Dashboard L6-144 `()`
 
+### web/components/AggGraph.tsx
+
+- function AggGraph L11-77 `({
+  data,
+  onOpen,
+  emptyNote,
+}: {
+  data: AggGraphData;
+  onOpen?: (id: string) => void;
+  emptyNote?: string;
+})`
+
 ### web/components/AskPanel.tsx
 
 - interface Cited L5-9
@@ -647,11 +678,70 @@
 
 ### web/components/GraphExplorer.tsx
 
-- interface Sym L5-14
-- interface GraphData L15-19
-- variable KIND_COLOR L21-30
-- function layout L33-85 `(data: GraphData, W: number, H: number): Map<string, { x: number; y: number }>`
-- function GraphExplorer L87-231 `()`
+- function GraphExplorer L14-89 `()`
+
+### web/components/NeighborhoodPanel.tsx
+
+- variable NODE_THRESHOLD L16-16
+- function NeighborhoodPanel L18-179 `({
+  seedId,
+  onOpenSymbol,
+  onBack,
+}: {
+  seedId: string;
+  onOpenSymbol: (id: string) => void;
+  onBack: () => void;
+})`
+- function openFirstSymbol L182-187 `(nodeId: string, onOpenSymbol: (id: string) => void): Promise<void>`
+
+### web/components/OverviewPanel.tsx
+
+- variable FILE_THRESHOLD L18-18
+- function OverviewPanel L20-147 `({ onOpenSymbol }: { onOpenSymbol: (id: string) => void })`
+- function Tree L149-194 `({
+  node,
+  expanded,
+  setExpanded,
+  onOpenSymbol,
+  depth = 0,
+}: {
+  node: TreeNode;
+  expanded: Set<string>;
+  setExpanded: (fn: (prev: Set<string>) => Set<string>) => void;
+  onOpenSymbol: (id: string) => void;
+  depth?: number;
+})`
+- function FileSymbols L196-241 `({ repo, path, onOpenSymbol }: { repo: string; path: string; onOpenSymbol: (id: string) => void })`
+
+### web/lib/graph.ts
+
+- typealias EdgeKind L11-11
+- variable EDGE_KINDS L12-12
+- variable KIND_COLOR L15-22
+- function edgeDash L25-29 `(kind: EdgeKind): string | undefined`
+- interface Sym L31-40
+- interface GraphData L42-46
+- interface FileCount L48-52
+- interface CollapsedEdge L54-62
+- interface OverviewData L64-68
+- interface TreeNode L72-80
+- function buildForest L87-101 `(files: FileCount[]): TreeNode[]`
+- function insertFile L103-126 `(root: TreeNode, repo: string, file: string, symbols: number): void`
+- function collapseChains L128-137 `(node: TreeNode): void`
+- function sortTree L139-145 `(node: TreeNode): void`
+- typealias Level L149-149
+- interface AggNode L151-158
+- interface AggLink L159-164
+- interface AggGraph L165-168
+- function dirPrefix L171-175 `(file: string, depth: number): string`
+- function groupId L177-181 `(repo: string, file: string, level: Level, depth: number): string`
+- function groupLabel L182-187 `(repo: string, file: string, level: Level, depth: number): string`
+- interface AggregateOpts L189-195
+- function aggregate L202-230 `(files: FileCount[], edges: CollapsedEdge[], opts: AggregateOpts): AggGraph`
+- function autoLevel L237-240 `(files: FileCount[], multiRepo: boolean, threshold: number): Level`
+- function collapseByFile L243-269 `(graph: GraphData, kinds: Set<EdgeKind>): AggGraph`
+- interface XY L273-276
+- function forceLayout L282-344 `(nodes: { id: string; depth?: number }[], links: { source: string; target: string }[], W: number, H: number, seed?: string): Map<string, XY>`
 
 ### web/lib/librarian.ts
 
@@ -726,6 +816,8 @@
 - src/protocol/scip-ingest.ts → src/store/store.ts
 - src/protocol/scip.ts → src/protocol/extractor.ts
 - src/protocol/scip.ts → src/store/store.ts
+- src/test/collapsed-graph.test.ts → src/app/index.ts
+- src/test/collapsed-graph.test.ts → src/store/store.ts
 - src/test/contextpack.test.ts → src/app/index.ts
 - src/test/contextpack.test.ts → src/app/review.ts
 - src/test/contextpack.test.ts → src/core/contextpack.ts
@@ -816,6 +908,10 @@
 - src/test/scip.test.ts → src/protocol/extractor.ts
 - src/test/scip.test.ts → src/protocol/scip.ts
 - src/test/scip.test.ts → src/store/store.ts
+- web/components/GraphExplorer.tsx → web/components/NeighborhoodPanel.tsx
+- web/components/GraphExplorer.tsx → web/components/OverviewPanel.tsx
+- web/components/NeighborhoodPanel.tsx → web/components/AggGraph.tsx
+- web/components/OverviewPanel.tsx → web/components/AggGraph.tsx
 
 ## Edges (symbol → symbol, resolved)
 
@@ -1294,6 +1390,7 @@
 - src/protocol/scip.ts scipRangeToSpan —references→ src/protocol/scip.ts ScipMultiLineRange
 - src/protocol/scip.ts scipRangeToSpan —references→ src/protocol/scip.ts ScipSingleLineRange
 - src/protocol/scip.ts spanToScipRange —references→ src/protocol/scip.ts ScipMultiLineRange
+- src/store/store.ts CollapsedEdge —references→ src/store/store.ts EdgeKind
 - src/store/store.ts EdgeEndpoint —references→ src/store/store.ts SymbolKind
 - src/store/store.ts EdgeRow —references→ src/store/store.ts EdgeKind
 - src/store/store.ts JoinedEdge —references→ src/store/store.ts EdgeEndpoint
@@ -1305,6 +1402,8 @@
 - src/store/store.ts UnresolvedEdge —references→ src/store/store.ts EdgeKind
 - src/store/store.ts rowToSymbol —references→ src/store/store.ts SymbolKind
 - src/store/store.ts rowToSymbol —references→ src/store/store.ts SymbolRow
+- src/store/store.ts Store.collapsedEdges —references→ src/store/store.ts CollapsedEdge
+- src/store/store.ts Store.collapsedEdges —references→ src/store/store.ts EdgeKind
 - src/store/store.ts Store.constructor —references→ src/store/store.ts SCHEMA
 - src/store/store.ts Store.constructor —references→ src/store/store.ts SCHEMA_VERSION
 - src/store/store.ts Store.constructor —calls→ src/store/store.ts Store.getMeta
@@ -1333,6 +1432,7 @@
 - src/store/store.ts Store.stats —calls→ src/store/store.ts Store.listFiles
 - src/store/store.ts Store.symbolById —references→ src/store/store.ts SymbolRow
 - src/store/store.ts Store.symbolById —calls→ src/store/store.ts rowToSymbol
+- src/store/store.ts Store.symbolCountsByFile —references→ src/store/store.ts FileCount
 - src/store/store.ts Store.symbolsInFile —references→ src/store/store.ts SymbolRow
 - src/store/store.ts Store.symbolsInFile —references→ src/store/store.ts rowToSymbol
 - src/store/store.ts Store.topLevelSymbolsNamed —references→ src/store/store.ts SymbolRow
@@ -1340,6 +1440,21 @@
 - src/store/store.ts Store.unresolvedEdges —references→ src/store/store.ts EdgeKind
 - src/store/store.ts Store.unresolvedEdges —references→ src/store/store.ts UnresolvedEdge
 - src/store/store.ts Store.unresolvedSummary —references→ src/store/store.ts EdgeKind
+- src/test/collapsed-graph.test.ts test(collapsedEdges rolls symbol edges up to file granularity, conserving totals) —calls→ src/app/index.ts indexRepo
+- src/test/collapsed-graph.test.ts test(collapsedEdges rolls symbol edges up to file granularity, conserving totals) —calls→ src/store/store.ts Store
+- src/test/collapsed-graph.test.ts test(collapsedEdges rolls symbol edges up to file granularity, conserving totals) —calls→ src/store/store.ts Store.collapsedEdges
+- src/test/collapsed-graph.test.ts test(collapsedEdges rolls symbol edges up to file granularity, conserving totals) —calls→ src/store/store.ts Store.stats
+- src/test/collapsed-graph.test.ts test(collapsedEdges rolls symbol edges up to file granularity, conserving totals) —calls→ src/test/collapsed-graph.test.ts fixtureRepo
+- src/test/collapsed-graph.test.ts test(symbolCountsByFile aggregates per file and matches the raw rows) —calls→ src/app/index.ts indexRepo
+- src/test/collapsed-graph.test.ts test(symbolCountsByFile aggregates per file and matches the raw rows) —calls→ src/store/store.ts Store
+- src/test/collapsed-graph.test.ts test(symbolCountsByFile aggregates per file and matches the raw rows) —calls→ src/store/store.ts Store.symbolCountsByFile
+- src/test/collapsed-graph.test.ts test(symbolCountsByFile aggregates per file and matches the raw rows) —calls→ src/store/store.ts Store.symbolsInFile
+- src/test/collapsed-graph.test.ts test(symbolCountsByFile aggregates per file and matches the raw rows) —calls→ src/test/collapsed-graph.test.ts fixtureRepo
+- src/test/collapsed-graph.test.ts test(symbolCountsByFile can scope to one repo) —calls→ src/app/index.ts indexRepo
+- src/test/collapsed-graph.test.ts test(symbolCountsByFile can scope to one repo) —calls→ src/store/store.ts Store
+- src/test/collapsed-graph.test.ts test(symbolCountsByFile can scope to one repo) —calls→ src/store/store.ts Store.listRepos
+- src/test/collapsed-graph.test.ts test(symbolCountsByFile can scope to one repo) —calls→ src/store/store.ts Store.symbolCountsByFile
+- src/test/collapsed-graph.test.ts test(symbolCountsByFile can scope to one repo) —calls→ src/test/collapsed-graph.test.ts fixtureRepo
 - src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/app/index.ts indexRepo
 - src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/core/contextpack.ts assembleReviewPack
 - src/test/contextpack.test.ts test(assembleReviewPack sections items by direction and test-ness) —calls→ src/core/contextpack.ts renderReviewPack
@@ -1918,12 +2033,56 @@
 - web/components/AskPanel.tsx AskPanel.ask —references→ web/components/AskPanel.tsx AskPanel
 - web/components/AskPanel.tsx AskPanel.ask —references→ web/components/AskPanel.tsx AskPanel
 - web/components/EvalChart.tsx EvalChart —references→ web/components/EvalChart.tsx Row
-- web/components/GraphExplorer.tsx GraphData —references→ web/components/GraphExplorer.tsx Sym
-- web/components/GraphExplorer.tsx GraphExplorer —references→ web/components/GraphExplorer.tsx GraphData
-- web/components/GraphExplorer.tsx GraphExplorer —references→ web/components/GraphExplorer.tsx KIND_COLOR
-- web/components/GraphExplorer.tsx GraphExplorer —references→ web/components/GraphExplorer.tsx Sym
-- web/components/GraphExplorer.tsx GraphExplorer —calls→ web/components/GraphExplorer.tsx layout
-- web/components/GraphExplorer.tsx layout —references→ web/components/GraphExplorer.tsx GraphData
+- web/components/GraphExplorer.tsx GraphExplorer —calls→ web/components/NeighborhoodPanel.tsx NeighborhoodPanel
+- web/components/GraphExplorer.tsx GraphExplorer —calls→ web/components/OverviewPanel.tsx OverviewPanel
+- web/components/NeighborhoodPanel.tsx NeighborhoodPanel —calls→ web/components/AggGraph.tsx AggGraph
+- web/components/NeighborhoodPanel.tsx NeighborhoodPanel —references→ web/components/NeighborhoodPanel.tsx NODE_THRESHOLD
+- web/components/NeighborhoodPanel.tsx NeighborhoodPanel —calls→ web/components/NeighborhoodPanel.tsx openFirstSymbol
+- web/components/OverviewPanel.tsx OverviewPanel —calls→ web/components/AggGraph.tsx AggGraph
+- web/components/OverviewPanel.tsx OverviewPanel —references→ web/components/OverviewPanel.tsx FILE_THRESHOLD
+- web/components/OverviewPanel.tsx OverviewPanel —calls→ web/components/OverviewPanel.tsx Tree
+- web/components/OverviewPanel.tsx Tree —calls→ web/components/OverviewPanel.tsx FileSymbols
+- web/lib/graph.ts AggGraph —references→ web/lib/graph.ts AggLink
+- web/lib/graph.ts AggGraph —references→ web/lib/graph.ts AggNode
+- web/lib/graph.ts AggLink —references→ web/lib/graph.ts EdgeKind
+- web/lib/graph.ts AggregateOpts —references→ web/lib/graph.ts EdgeKind
+- web/lib/graph.ts AggregateOpts —references→ web/lib/graph.ts Level
+- web/lib/graph.ts CollapsedEdge —references→ web/lib/graph.ts EdgeKind
+- web/lib/graph.ts EDGE_KINDS —references→ web/lib/graph.ts EdgeKind
+- web/lib/graph.ts GraphData —references→ web/lib/graph.ts EdgeKind
+- web/lib/graph.ts GraphData —references→ web/lib/graph.ts Sym
+- web/lib/graph.ts OverviewData —references→ web/lib/graph.ts CollapsedEdge
+- web/lib/graph.ts OverviewData —references→ web/lib/graph.ts FileCount
+- web/lib/graph.ts aggregate —references→ web/lib/graph.ts AggGraph
+- web/lib/graph.ts aggregate —references→ web/lib/graph.ts AggLink
+- web/lib/graph.ts aggregate —references→ web/lib/graph.ts AggNode
+- web/lib/graph.ts aggregate —references→ web/lib/graph.ts AggregateOpts
+- web/lib/graph.ts aggregate —references→ web/lib/graph.ts CollapsedEdge
+- web/lib/graph.ts aggregate —references→ web/lib/graph.ts FileCount
+- web/lib/graph.ts aggregate —calls→ web/lib/graph.ts groupId
+- web/lib/graph.ts aggregate —calls→ web/lib/graph.ts groupLabel
+- web/lib/graph.ts autoLevel —references→ web/lib/graph.ts FileCount
+- web/lib/graph.ts autoLevel —references→ web/lib/graph.ts Level
+- web/lib/graph.ts buildForest —references→ web/lib/graph.ts FileCount
+- web/lib/graph.ts buildForest —references→ web/lib/graph.ts TreeNode
+- web/lib/graph.ts buildForest —calls→ web/lib/graph.ts collapseChains
+- web/lib/graph.ts buildForest —calls→ web/lib/graph.ts insertFile
+- web/lib/graph.ts buildForest —calls→ web/lib/graph.ts sortTree
+- web/lib/graph.ts collapseByFile —references→ web/lib/graph.ts AggGraph
+- web/lib/graph.ts collapseByFile —references→ web/lib/graph.ts AggLink
+- web/lib/graph.ts collapseByFile —references→ web/lib/graph.ts AggNode
+- web/lib/graph.ts collapseByFile —references→ web/lib/graph.ts EdgeKind
+- web/lib/graph.ts collapseByFile —references→ web/lib/graph.ts GraphData
+- web/lib/graph.ts collapseByFile —references→ web/lib/graph.ts Sym
+- web/lib/graph.ts collapseChains —references→ web/lib/graph.ts TreeNode
+- web/lib/graph.ts edgeDash —references→ web/lib/graph.ts EdgeKind
+- web/lib/graph.ts forceLayout —references→ web/lib/graph.ts XY
+- web/lib/graph.ts groupId —references→ web/lib/graph.ts Level
+- web/lib/graph.ts groupId —calls→ web/lib/graph.ts dirPrefix
+- web/lib/graph.ts groupLabel —references→ web/lib/graph.ts Level
+- web/lib/graph.ts groupLabel —calls→ web/lib/graph.ts dirPrefix
+- web/lib/graph.ts insertFile —references→ web/lib/graph.ts TreeNode
+- web/lib/graph.ts sortTree —references→ web/lib/graph.ts TreeNode
 - web/lib/librarian.ts cached —references→ web/lib/librarian.ts Librarian
 - web/lib/librarian.ts openLibrarian —references→ web/lib/librarian.ts Librarian
 - web/lib/librarian.ts openLibrarian —references→ web/lib/librarian.ts cached
@@ -1931,53 +2090,54 @@
 
 ## Unresolved (aggregated)
 
-- 74× map (calls)
-- 70× equal (calls)
-- 62× node:path#join (calls)
-- 53× ok (calls)
-- 43× some (calls)
+- 85× map (calls)
+- 73× equal (calls)
+- 63× node:path#join (calls)
+- 55× ok (calls)
+- 44× some (calls)
 - 39× deepEqual (calls)
-- 35× prepare (calls)
-- 31× get (calls)
+- 38× get (calls)
+- 37× prepare (calls)
+- 32× filter (calls)
+- 31× node:path (imports)
 - 30× Error (calls)
-- 30× filter (calls)
-- 30× node:path (imports)
-- 29× node:fs (imports)
+- 30× node:fs (imports)
 - 29× stringify (calls)
-- 26× find (calls)
-- 26× node:fs#mkdtempSync (calls)
+- 28× find (calls)
+- 27× node:fs#mkdtempSync (calls)
+- 27× node:fs#writeFileSync (calls)
+- 27× node:os#tmpdir (calls)
+- 26× Map (calls)
+- 26× Set (calls)
+- 26× join (calls)
 - 26× node:fs#rmSync (calls)
-- 26× node:fs#writeFileSync (calls)
-- 26× node:os#tmpdir (calls)
-- 25× node:path#join (imports)
-- 24× join (calls)
-- 24× push (calls)
-- 21× Map (calls)
-- 21× Set (calls)
-- 19× all (calls)
-- 19× has (calls)
-- 18× slice (calls)
-- 17× split (calls)
-- 16× node:assert/strict (imports)
+- 26× node:path#join (imports)
+- 26× push (calls)
+- 25× has (calls)
+- 22× split (calls)
+- 21× all (calls)
+- 21× slice (calls)
+- 19× set (calls)
+- 17× node:assert/strict (imports)
+- 17× node:test (imports)
+- 17× node:test#test (calls)
+- 17× node:test#test (imports)
+- 16× node:fs#writeFileSync (imports)
 - 16× node:path#resolve (calls)
-- 16× node:test (imports)
-- 16× node:test#test (calls)
-- 16× node:test#test (imports)
 - 16× parse (calls)
 - 15× node:fs#existsSync (calls)
-- 15× node:fs#writeFileSync (imports)
-- 15× set (calls)
+- 15× node:fs#mkdirSync (calls)
+- 15× node:fs#mkdtempSync (imports)
+- 15× node:os (imports)
+- 15× node:os#tmpdir (imports)
 - 14× node:child_process#spawnSync (calls)
-- 14× node:fs#mkdirSync (calls)
-- 14× node:fs#mkdtempSync (imports)
-- 14× node:os (imports)
-- 14× node:os#tmpdir (imports)
 - 14× node:path#dirname (calls)
 - 14× node:path#resolve (imports)
+- 14× sort (calls)
+- 13× includes (calls)
 - 13× node:path#dirname (imports)
-- 12× includes (calls)
-- 12× sort (calls)
-- 11× node:fs#mkdirSync (imports)
+- 12× json (calls)
+- 12× node:fs#mkdirSync (imports)
 - 11× node:fs#readFileSync (calls)
 - 11× node:fs#rmSync (imports)
 - 11× run (calls)
@@ -1987,7 +2147,9 @@
 - 10× node:url#fileURLToPath (imports)
 - 10× throws (calls)
 - 9× @scip-code/scip (imports)
+- 9× add (calls)
 - 9× isArray (calls)
+- 9× max (calls)
 - 8× endsWith (calls)
 - 8× exec (calls)
 - 8× keys (calls)
@@ -1995,40 +2157,49 @@
 - 8× now (calls)
 - 8× startsWith (calls)
 - 8× test (calls)
+- 7× @/lib/librarian (imports)
+- 7× @/lib/librarian#openLibrarian (calls)
+- 7× @/lib/librarian#openLibrarian (imports)
 - 7× @scip-code/scip#SymbolRole (imports)
+- 7× entries (calls)
 - 7× match (calls)
-- 7× max (calls)
 - 7× trim (calls)
-- 6× add (calls)
-- 6× entries (calls)
-- 6× json (calls)
+- 6× fetch (calls)
+- 6× next/server (imports)
+- 6× next/server#NextResponse (imports)
 - 6× node:child_process (imports)
 - 6× node:child_process#spawnSync (imports)
-- 5× @/lib/librarian (imports)
-- 5× @/lib/librarian#openLibrarian (calls)
-- 5× @/lib/librarian#openLibrarian (imports)
+- 6× values (calls)
 - 5× @scip-code/scip#SymbolInformation_Kind (imports)
 - 5× Number (calls)
 - 5× digest (calls)
 - 5× error (calls)
+- 5× localeCompare (calls)
+- 5× next/server#NextRequest (imports)
 - 5× node:crypto#createHash (calls)
 - 5× node:path#delimiter (imports)
+- 5× react (imports)
+- 5× react#useState (calls)
+- 5× then (calls)
 - 5× update (calls)
+- 4× @/lib/graph (imports)
 - 4× @scip-code/scip#Index (imports)
 - 4× close (calls)
 - 4× every (calls)
 - 4× isIdentifier (calls)
 - 4× isInteger (calls)
-- 4× next/server (imports)
-- 4× next/server#NextRequest (imports)
-- 4× next/server#NextResponse (imports)
+- 4× min (calls)
 - 4× node:crypto (imports)
 - 4× node:crypto#createHash (imports)
 - 4× node:path#relative (calls)
 - 4× node:path#relative (imports)
 - 4× node:path#sep (imports)
+- 4× react#useState (imports)
 - 4× round (calls)
-- 4× values (calls)
+- 3× @/lib/graph#KIND_COLOR (imports)
+- 3× @/lib/graph#Sym (imports)
+- 3× delete (calls)
+- 3× encodeURIComponent (calls)
 - 3× flatMap (calls)
 - 3× getText (calls)
 - 3× isArrowFunction (calls)
@@ -2037,10 +2208,19 @@
 - 3× isMethodDeclaration (calls)
 - 3× isPropertyAccessExpression (calls)
 - 3× isVariableDeclaration (calls)
-- 3× localeCompare (calls)
 - 3× node:sqlite (imports)
 - 3× node:sqlite#DatabaseSync (calls)
 - 3× node:sqlite#DatabaseSync (imports)
+- 3× react#useEffect (calls)
+- 3× react#useEffect (imports)
+- 3× react#useMemo (calls)
+- 3× react#useMemo (imports)
+- 2× @/lib/graph#EDGE_KINDS (imports)
+- 2× @/lib/graph#EdgeKind (imports)
+- 2× @/lib/graph#edgeDash (calls)
+- 2× @/lib/graph#edgeDash (imports)
+- 2× @/lib/graph#forceLayout (calls)
+- 2× @/lib/graph#forceLayout (imports)
 - 2× @anthropic-ai/sdk (imports)
 - 2× @bufbuild/protobuf (imports)
 - 2× @bufbuild/protobuf#MessageInitShape (imports)
@@ -2048,7 +2228,6 @@
 - 2× Anthropic (calls)
 - 2× String (calls)
 - 2× create (calls)
-- 2× fetch (calls)
 - 2× findSymbols (calls)
 - 2× forEach (calls)
 - 2× isClassDeclaration (calls)
@@ -2062,19 +2241,16 @@
 - 2× isNewExpression (calls)
 - 2× isTypeAliasDeclaration (calls)
 - 2× lastIndexOf (calls)
+- 2× listRepos (calls)
 - 2× log (calls)
-- 2× min (calls)
 - 2× neighborhood (calls)
 - 2× node:path#basename (calls)
 - 2× node:path#extname (calls)
 - 2× node:path#extname (imports)
 - 2× notEqual (calls)
-- 2× react (imports)
-- 2× react#useState (calls)
-- 2× react#useState (imports)
+- 2× reduce (calls)
 - 2× replace (calls)
 - 2× symbolById (calls)
-- 2× then (calls)
 - 2× toFixed (calls)
 - 1× ../../dist/store/store.js (imports)
 - 1× ../../dist/store/store.js#RepoRow (imports)
@@ -2084,6 +2260,19 @@
 - 1× @/components/AskPanel (imports)
 - 1× @/components/EvalChart (imports)
 - 1× @/components/GraphExplorer (imports)
+- 1× @/lib/graph#AggGraph as AggGraphData (imports)
+- 1× @/lib/graph#GraphData (imports)
+- 1× @/lib/graph#Level (imports)
+- 1× @/lib/graph#OverviewData (imports)
+- 1× @/lib/graph#TreeNode (imports)
+- 1× @/lib/graph#aggregate (calls)
+- 1× @/lib/graph#aggregate (imports)
+- 1× @/lib/graph#autoLevel (calls)
+- 1× @/lib/graph#autoLevel (imports)
+- 1× @/lib/graph#buildForest (calls)
+- 1× @/lib/graph#buildForest (imports)
+- 1× @/lib/graph#collapseByFile (calls)
+- 1× @/lib/graph#collapseByFile (imports)
 - 1× @/lib/librarian#SymbolRow (imports)
 - 1× @bufbuild/protobuf#JsonValue (imports)
 - 1× @bufbuild/protobuf#create (calls)
@@ -2107,14 +2296,15 @@
 - 1× Link (calls)
 - 1× URLSearchParams (calls)
 - 1× catch (calls)
+- 1× collapsedEdges (calls)
 - 1× cos (calls)
 - 1× createProgram (calls)
 - 1× cwd (calls)
 - 1× doesNotMatch (calls)
 - 1× edgesOf (calls)
-- 1× encodeURIComponent (calls)
 - 1× evalHistory (calls)
 - 1× exit (calls)
+- 1× finally (calls)
 - 1× floor (calls)
 - 1× forEachChild (calls)
 - 1× getAliasedSymbol (calls)
@@ -2144,7 +2334,6 @@
 - 1× isStringLiteral (calls)
 - 1× isVariableStatement (calls)
 - 1× listPatterns (calls)
-- 1× listRepos (calls)
 - 1× listRetrievals (calls)
 - 1× next (imports)
 - 1× next#Metadata (imports)
@@ -2157,16 +2346,13 @@
 - 1× pop (calls)
 - 1× react#useCallback (calls)
 - 1× react#useCallback (imports)
-- 1× react#useEffect (calls)
-- 1× react#useEffect (imports)
-- 1× react#useMemo (calls)
-- 1× react#useMemo (imports)
-- 1× reduce (calls)
 - 1× replaceAll (calls)
 - 1× sin (calls)
 - 1× splice (calls)
 - 1× sqrt (calls)
 - 1× stats (calls)
+- 1× symbolCountsByFile (calls)
+- 1× symbolsInFile (calls)
 - 1× trimEnd (calls)
 - 1× typescript (imports)
 - 1× write (calls)
