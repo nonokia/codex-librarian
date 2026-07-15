@@ -30,7 +30,7 @@ export interface Strategy {
 export const DEFAULT_STRATEGY: Strategy = {
   hops: 2,
   decay: 0.65,
-  weights: { calls: 1.0, extends: 0.9, references: 0.7, imports: 0.4 },
+  weights: { calls: 1.0, dispatches: 0.85, extends: 0.9, references: 0.7, imports: 0.4 },
   fileDamp: 0.5,
 };
 

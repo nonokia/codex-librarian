@@ -314,3 +314,34 @@ repo の特別扱いは無い — 普通の resolved エッジとして辿るだ
 
 数値(同一 golden・link の有無だけを変えた A/B): micro recall **0.429 → 1.000**
 — `docs/cross-repo-baseline.md`、fixture は `eval/fixtures/cross-repo/`。
+
+## フレームワーク規約の動的ディスパッチ — `librarian resolve-dispatches`(issue #43 / ADR-9)
+
+CakePHP の `$this->redirect(['controller'=>'Foo','action'=>'bar'])` は「次に `FooController::bar`
+を実行する」という**遷移**だが、`'bar'` が `bar()` を指すのは PHP の文法ではなくフレームワークの
+実行時規約であり、汎用パーサは関知しない。結果として画面遷移フローがグラフに存在しない。
+
+PHP 抽出器はこの遷移を新エッジ種別 `dispatches`(`resolved=0`、`dispatch <controller>#<action>`)
+として**事実だけ**記録し、`resolve-dispatches` が CakePHP の命名規約
+(`['controller'=>'Foo']` → クラス `FooController`、`['action'=>'bar']` → その public メソッド)で
+束縛する(`link` と同型の二段構え)。
+
+```bash
+node bin/librarian.js index ~/src/my-cake-app --db idx.db
+node bin/librarian.js resolve-dispatches --db idx.db --dry-run --pretty  # 何が繋がるかを先に見る
+node bin/librarian.js resolve-dispatches --db idx.db                     # {"newlyResolved":4,...}
+node bin/librarian.js resolve-dispatches --db idx.db --clear             # 抽出直後の状態に戻す
+```
+
+- **推測ではなく規約**。規約対象が存在しなければ `resolved=0` のまま(`missingTargets` に報告)、
+  同名 controller クラスが複数ファイルにあれば繋がず `ambiguous` として拒否する。
+- **リテラル文字列のみ**。変数・式で addressing された controller/action(`redirect($url)` 等)は
+  静的に解決不能なので抽出器がそもそも吐かない(スコープ外)。
+- **冪等・可逆**。2 回目は何も足さない。`--clear` は抽出器が吐いた unresolved 行に戻す。
+- 検出は現状 PHP(CakePHP redirect/setAction)のみ。エッジ種別と後段の骨格は言語非依存で、
+  他フレームワークは `docs/plugin-protocol.md` §8.2 の規約で opt-in できる。
+- `index` は変更ファイルのエッジを作り直すため resolved dispatch は unresolved に戻る。
+  CI では **index → resolve-dispatches** を 1 セットにする。
+
+数値(同一 golden・resolve の有無だけを変えた A/B): micro recall **0.273 → 1.000**
+— `docs/dispatch-baseline.md`、fixture は `eval/fixtures/cake-taskflow/`。

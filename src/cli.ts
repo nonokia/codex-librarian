@@ -15,6 +15,7 @@ import { assembleReviewPack, renderReviewPack } from './core/contextpack.js';
 import { generateReview, buildReviewRequest, renderReviewMarkdown, DEFAULT_MODEL } from './app/review.js';
 import { learn, recordReviewOutcome } from './app/loop.js';
 import { defaultLinkMapPath, link, loadLinkMap, unlink } from './app/link.js';
+import { clearDispatches, resolveDispatches } from './app/resolve-dispatches.js';
 import { buildMap, renderMapMarkdown } from './core/map.js';
 
 interface Flags {
@@ -148,6 +149,12 @@ Usage:
                                               from a declared package → repo map
                                               (default: <db-dir>/links.json).
                                               Nothing is linked without it;
+                                              --clear reverts to unresolved
+  librarian resolve-dispatches [--dry-run] [--clear] [--repo <name>]
+                                              Bind framework-convention dispatch
+                                              edges (#43): CakePHP redirect/
+                                              setAction → <Foo>Controller::<action>.
+                                              Convention-based, refuses ambiguity;
                                               --clear reverts to unresolved
   librarian pack <diff-file|->                Sectioned Context Pack (markdown)
   librarian review <diff-file|-> [--model M] [--dry-run] [--markdown]
@@ -386,6 +393,19 @@ function main(): void {
         store.close();
         fail((err as Error).message);
       }
+      break;
+    }
+    case 'resolve-dispatches': {
+      const store = openStore(flags);
+      if (flags.clear) {
+        const report = clearDispatches(store);
+        store.close();
+        emit(report, flags.pretty);
+        break;
+      }
+      const report = resolveDispatches(store, { dryRun: flags.dryRun, repo: flags.repo });
+      store.close();
+      emit(report, flags.pretty);
       break;
     }
     case 'learn': {

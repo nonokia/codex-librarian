@@ -1,0 +1,14 @@
+{
+  "name": "librarian/cake-taskflow-fixture",
+  "description": "Committed CakePHP-shaped PHP fixture for the librarian dispatches-edge eval (issue #43 / ADR-9). Exercises framework-convention dynamic dispatch (redirect/setAction).",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}

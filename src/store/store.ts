@@ -29,7 +29,7 @@ export type SymbolKind =
   | 'output'
   | 'locals';
 
-export type EdgeKind = 'calls' | 'imports' | 'extends' | 'references';
+export type EdgeKind = 'calls' | 'imports' | 'extends' | 'references' | 'dispatches';
 
 export interface SymbolRow {
   id: string;
@@ -776,6 +776,27 @@ export class Store {
     ).map(rowToSymbol);
   }
 
+  /**
+   * Candidate targets for a CakePHP-style dispatch (#43): the `<action>` method
+   * declared directly on class `<controllerClass>` in `repo`. The convention
+   * (`['controller'=>'Foo','action'=>'bar']` → `FooController::bar`) is applied
+   * by the caller (`resolve-dispatches`); the store only answers "which methods
+   * literally match this class + name". Testblocks are excluded — an action is a
+   * plain method. Every match is returned: an ambiguous name (two classes with
+   * the same short name across files) is the caller's to refuse, not the store's.
+   */
+  dispatchTargets(repo: string, controllerClass: string, action: string): SymbolRow[] {
+    return (
+      this.db
+        .prepare(
+          `SELECT * FROM symbols
+           WHERE repo = ? AND container = ? AND name = ? AND kind = 'method'
+           ORDER BY file, span_start`
+        )
+        .all(repo, controllerClass, action) as unknown[]
+    ).map(rowToSymbol);
+  }
+
   moduleSymbol(repo: string, file: string): SymbolRow | null {
     const row = this.db
       .prepare("SELECT * FROM symbols WHERE repo = ? AND file = ? AND kind = 'module'")
@@ -826,6 +847,44 @@ export class Store {
       )
       .get() as { n: number };
     return row.n;
+  }
+
+  /** Resolved `dispatches` edges in the store (0 until `resolve-dispatches` runs, #43). */
+  countResolvedDispatches(): number {
+    const row = this.db
+      .prepare("SELECT COUNT(*) AS n FROM edges WHERE kind = 'dispatches' AND resolved = 1")
+      .get() as { n: number };
+    return row.n;
+  }
+
+  /**
+   * Revert every resolved `dispatches` edge to the unresolved row the extractor
+   * emitted (`resolve-dispatches --clear`, #43). The raw `to_name` was preserved
+   * on resolution (via `linkEdges`), so this restores exactly the extracted row —
+   * the same reversibility contract `unlinkCrossRepo` gives cross-repo links.
+   */
+  unlinkDispatches(): number {
+    const rows = this.db
+      .prepare("SELECT from_id, to_id, to_name, kind FROM edges WHERE kind = 'dispatches' AND resolved = 1")
+      .all() as Record<string, unknown>[];
+    const del = this.db.prepare(
+      'DELETE FROM edges WHERE from_id = ? AND to_id = ? AND to_name = ? AND kind = ?'
+    );
+    const ins = this.db.prepare(
+      "INSERT OR REPLACE INTO edges(from_id, to_id, to_name, kind, resolved) VALUES(?,'',?,?,0)"
+    );
+    this.db.exec('BEGIN');
+    try {
+      for (const r of rows) {
+        del.run(r.from_id as string, r.to_id as string, r.to_name as string, r.kind as string);
+        ins.run(r.from_id as string, r.to_name as string, r.kind as string);
+      }
+      this.db.exec('COMMIT');
+    } catch (err) {
+      this.db.exec('ROLLBACK');
+      throw err;
+    }
+    return rows.length;
   }
 
   /** Revert every cross-repo edge to the unresolved row it was extracted as (`link --clear`). */

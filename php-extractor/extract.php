@@ -112,6 +112,9 @@ function scip_kind(string $kind): ?string
  */
 final class Extractor
 {
+    /** CakePHP: a route with a controller but no action defaults to `index` (#43). */
+    private const DEFAULT_ACTION = 'index';
+
     private string $root;
     /** @var array<string,bool> rel path => claimed */
     private array $claimed = [];
@@ -660,6 +663,11 @@ final class Extractor
         $line = $node->getStartLine();
         $from = $this->enclosing($file, $line);
 
+        // Framework-convention dispatch (#43 / ADR-9 Step 0): recorded IN ADDITION
+        // to the ordinary call edge below, so the runtime transition lands on the
+        // graph as an unresolved `dispatches` edge for `resolve-dispatches`.
+        $this->detectDispatch($file, $classFqn, $node, $line, $from);
+
         if ($node instanceof Node\Expr\FuncCall) {
             if ($node->name instanceof Node\Name) {
                 [$id, $name] = $this->resolveFunc($node->name, $ns);
@@ -699,6 +707,113 @@ final class Extractor
             }
             return;
         }
+    }
+
+    /**
+     * Framework-convention dispatch detection (#43 / ADR-9 Step 0). CakePHP
+     * addresses controller actions at runtime through strings the parser treats
+     * as opaque data:
+     *
+     *   $this->redirect(['controller' => 'Foo', 'action' => 'bar'])  → FooController::bar
+     *   $this->redirect(['action' => 'bar'])                         → <self>::bar
+     *   $this->redirect(['controller' => 'Foo'])                     → FooController::index
+     *   $this->setAction('bar')                                      → <self>::bar
+     *
+     * We emit a `dispatches` edge (`resolved=false`) whose name is the convention
+     * key `dispatch <controller>#<action>` — the raw routing values, no class
+     * suffix applied. Applying the `<name>Controller` + public-method convention
+     * is `librarian resolve-dispatches`'s job (Step 1): the plugin records facts,
+     * the post-step resolves them (the ADR-8 shape). Only literal-string routing
+     * is emitted; a variable/expression controller or action is genuinely dynamic
+     * and out of scope (ADR-9). `<self>` needs the enclosing `*Controller` class —
+     * without one, action-only redirects and setAction are skipped.
+     */
+    private function detectDispatch(string $file, ?string $classFqn, Node $node, int $line, string $from): void
+    {
+        if (!($node instanceof Node\Expr\MethodCall) && !($node instanceof Node\Expr\NullsafeMethodCall)) {
+            return;
+        }
+        if (!($node->name instanceof Node\Identifier)) {
+            return;
+        }
+        $method = $node->name->toString();
+        $self = $this->enclosingControllerConvention($classFqn);
+
+        if ($method === 'redirect') {
+            $arg = $node->args[0] ?? null;
+            if (!($arg instanceof Node\Arg) || !($arg->value instanceof Node\Expr\Array_)) {
+                return; // redirect('/url') or a non-array target: not a routing array
+            }
+            $route = $this->readRoutingArray($arg->value);
+            if ($route['dynamic']) {
+                return; // a controller/action key with a variable/expression value — out of scope
+            }
+            if ($route['controller'] === null && $route['action'] === null) {
+                return; // no controller/action key at all — not an action route we can name
+            }
+            $controller = $route['controller'] ?? $self; // controller omitted → same controller
+            if ($controller === null) {
+                return; // action-only redirect outside a controller — unknowable
+            }
+            $action = $route['action'] ?? self::DEFAULT_ACTION;
+            $this->addEdge($file, $from, null, 'dispatch ' . $controller . '#' . $action, 'dispatches', $line);
+            return;
+        }
+
+        if ($method === 'setAction') {
+            $arg = $node->args[0] ?? null;
+            if (!($arg instanceof Node\Arg) || !($arg->value instanceof Node\Scalar\String_) || $self === null) {
+                return;
+            }
+            $this->addEdge($file, $from, null, 'dispatch ' . $self . '#' . $arg->value->value, 'dispatches', $line);
+        }
+    }
+
+    /**
+     * Read a CakePHP routing array. Distinguishes three states per key so a
+     * *present but non-literal* controller/action (`['controller' => $var]`) is
+     * treated as dynamic (out of scope) rather than as an omitted key — the
+     * latter would emit a false same-controller/default-action transition.
+     *
+     * @return array{controller:?string,action:?string,dynamic:bool}
+     */
+    private function readRoutingArray(Node\Expr\Array_ $arr): array
+    {
+        $controller = null;
+        $action = null;
+        $dynamic = false;
+        foreach ($arr->items as $item) {
+            if ($item === null || !($item->key instanceof Node\Scalar\String_)) {
+                continue;
+            }
+            $key = $item->key->value;
+            if ($key !== 'controller' && $key !== 'action') {
+                continue;
+            }
+            if (!($item->value instanceof Node\Scalar\String_)) {
+                $dynamic = true; // controller/action addressed by a variable/expression
+                continue;
+            }
+            if ($key === 'controller') {
+                $controller = $item->value->value;
+            } else {
+                $action = $item->value->value;
+            }
+        }
+        return ['controller' => $controller, 'action' => $action, 'dynamic' => $dynamic];
+    }
+
+    /** routing-convention name of the enclosing controller class (`PostsController` → `Posts`), or null. */
+    private function enclosingControllerConvention(?string $classFqn): ?string
+    {
+        if ($classFqn === null) {
+            return null;
+        }
+        $short = $this->classByFqn[$classFqn]['short'] ?? null;
+        if ($short === null || $short === 'Controller' || !str_ends_with($short, 'Controller')) {
+            return null;
+        }
+        return substr($short, 0, -strlen('Controller'));
     }
 
     /** resolve a function name to a repo symbol, honoring the namespaced→global fallback. */
