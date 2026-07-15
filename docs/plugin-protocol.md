@@ -253,10 +253,14 @@ link 側は「ファイル内の名前表を引いて突き合わせる」必要
 package → repo の写像を持つのは store/app 層(`link`)だけ。
 
 **任意**である: 吐かないプラグインは cross-repo 解決が起きないだけで、degrade も偽エッジも
-発生しない(link はその言語のエッジに触れない)。現状 TS 抽出器(`importBindings`)が唯一の
-実装。link 側は言語を知らないので、同じ規約で吐けば無改造で効く。`link` が繋ぐのは
-**module-scope の宣言を名前で import したもの**だけで、メソッド・default/namespace import は
-`resolved = 0` のまま残す(型解決が要るため)。
+発生しない(link はその言語のエッジに触れない)。**TS / Go / Python / PHP の 4 抽出器が実装済み**
+(#27 で TS、#35 で Go/Python/PHP)。specifier の作り方は言語毎に自然な形を採る — Go は import
+path(`example.com/pkg#Name`)、Python は絶対 import の module パス(`pkg.mod#name`)、PHP は
+NameResolver 済み FQN の namespace prefix(`Acme\Core#Name`)。link 側は言語を知らないので、
+同じ規約で吐けば無改造で効く(唯一の言語依存は `forSpec()` の subpath 区切り: `/`・`.`・`\`)。
+`link` が繋ぐのは **module-scope の宣言を名前で import したもの**だけで、メソッド・
+default/namespace import は `resolved = 0` のまま残す(型解決が要るため)。数値と回帰は
+`docs/cross-repo-baseline.md`。
 
 ## 9. リファレンスプラグインの再位置付け(README)
 

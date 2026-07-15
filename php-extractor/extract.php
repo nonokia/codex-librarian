@@ -479,6 +479,24 @@ final class Extractor
 
     // ---- pass 2: edges ----
 
+    /**
+     * Name a use site by the package it came from when the target lives outside
+     * this repo — `<namespace-prefix>#<ShortName>` (#35, docs/plugin-protocol.md
+     * §8.1). NameResolver has already fully-qualified the reference, so the
+     * namespace prefix is the specifier and the last segment is the imported
+     * name. A global-namespace name (no `\`) has no specifier and stays raw:
+     * the invariant is no false edges, not completeness.
+     */
+    private function externalBinding(string $raw): ?string
+    {
+        $fq = fqn($raw);
+        $pos = strrpos($fq, '\\');
+        if ($pos === false) {
+            return null;
+        }
+        return substr($fq, 0, $pos) . '#' . substr($fq, $pos + 1);
+    }
+
     private function addEdge(string $file, string $fromId, ?string $toId, string $toName, string $kind, ?int $refLine = null): void
     {
         if ($toId !== null && $toId === $fromId) {
@@ -537,6 +555,14 @@ final class Extractor
             }
             $toId = $toFile !== null ? $this->moduleId($toFile) : null;
             $this->addEdge($file, $moduleId, $toId, $target, 'imports', $u->getStartLine());
+            // external `use` (#35 §8.1): also emit the `<ns>#<Name>` binding so
+            // `librarian link` can resolve the import itself, not just use sites.
+            if ($toId === null) {
+                $ext = $this->externalBinding($target);
+                if ($ext !== null) {
+                    $this->addEdge($file, $moduleId, null, $ext, 'imports', $u->getStartLine());
+                }
+            }
         }
     }
 
@@ -681,7 +707,12 @@ final class Extractor
         $raw = $name->toString();
         if ($name->isFullyQualified()) {
             $fq = fqn($raw);
-            return [$this->funcByFqn[$fq] ?? null, $raw];
+            if (isset($this->funcByFqn[$fq])) {
+                return [$this->funcByFqn[$fq], $raw];
+            }
+            // external function (#35 §8.1): a `use function Pkg\name` call that
+            // NameResolver fully-qualified but this repo does not declare.
+            return [null, $this->externalBinding($raw) ?? $raw];
         }
         // unqualified: try current namespace, then global (PHP's runtime rule)
         $candidates = [];
@@ -721,7 +752,9 @@ final class Extractor
         $targetFqn = $this->resolveClassRef($node->class, $classFqn);
         $label = 'new ' . $node->class->toString();
         if ($targetFqn === null) {
-            return [null, $label];
+            // external class (#35 §8.1): name the constructor call by origin, so
+            // `librarian link` binds it to the class in the declaring repo.
+            return [null, $this->externalBinding($node->class->toString()) ?? $label];
         }
         $ctor = $this->methodsByClassFqn[$targetFqn]['__construct'] ?? null;
         return [$ctor ?? ($this->classByFqn[$targetFqn]['id'] ?? null), $label];
@@ -782,7 +815,9 @@ final class Extractor
         if ($kind === 'references' && $toId === null) {
             return; // like the TS extractor: only resolved references are stored
         }
-        $this->addEdge($file, $fromId, $toId, $raw, $kind, $name->getStartLine());
+        // external extends/implements/trait (#35 §8.1): name by origin package
+        $toName = ($toId === null) ? ($this->externalBinding($raw) ?? $raw) : $raw;
+        $this->addEdge($file, $fromId, $toId, $toName, $kind, $name->getStartLine());
     }
 
     /** references for a type hint node, unwrapping nullable/union/intersection. */

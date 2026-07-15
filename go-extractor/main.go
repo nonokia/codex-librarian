@@ -336,6 +336,27 @@ func (e *extractor) resolveObj(obj types.Object) *string {
 	return &id
 }
 
+// externalBinding names a use site by the package it came from when the used
+// object belongs to a package this run did not extract — `<import-path>#<Name>`
+// (#35, docs/plugin-protocol.md §8.1). It is the Go analogue of the TS
+// extractor's externalBinding, and lets `librarian link` resolve a cross-repo
+// call without matching a bare name. Only package-level declarations qualify:
+// methods and struct fields need a receiver type to bind, so they keep the raw
+// name (the invariant is no false edges, not completeness). Returns "" for a
+// builtin, a claimed (in-repo) package, or a non-top-level object.
+func (e *extractor) externalBinding(obj types.Object) string {
+	if obj == nil || obj.Pkg() == nil {
+		return ""
+	}
+	if _, inRepo := e.modIDs[obj.Pkg().Path()]; inRepo {
+		return "" // a claimed package resolves through resolveObj, never by name
+	}
+	if obj.Parent() != obj.Pkg().Scope() {
+		return "" // method / field / local — not a name-importable declaration
+	}
+	return obj.Pkg().Path() + "#" + obj.Name()
+}
+
 func (e *extractor) collectEdges(file string, f *ast.File, pkg *packages.Package) {
 	bucket := e.results[file]
 	info := pkg.TypesInfo
@@ -390,7 +411,14 @@ func (e *extractor) collectEdges(file string, f *ast.File, pkg *packages.Package
 			case *types.Func:
 				calleeIdents[ident] = true
 				from := e.enclosing(file, e.line(x.Pos()))
-				addEdge(from, e.resolveObj(obj), types.ExprString(x.Fun), "calls", ident.Pos(), len(ident.Name))
+				toID := e.resolveObj(obj)
+				name := types.ExprString(x.Fun)
+				if toID == nil {
+					if b := e.externalBinding(obj); b != "" {
+						name = b
+					}
+				}
+				addEdge(from, toID, name, "calls", ident.Pos(), len(ident.Name))
 			case *types.TypeName:
 				// conversion T(v): the ident falls through to the
 				// references walk below, which is where it belongs
@@ -419,8 +447,15 @@ func (e *extractor) collectEdges(file string, f *ast.File, pkg *packages.Package
 				if obj := info.Uses[ident]; obj != nil {
 					if _, isType := obj.(*types.TypeName); isType {
 						calleeIdents[ident] = true
+						toID := e.resolveObj(obj)
+						name := types.ExprString(fld.Type)
+						if toID == nil {
+							if b := e.externalBinding(obj); b != "" {
+								name = b
+							}
+						}
 						// extends map to base-layer relationships, not occurrences — no position needed
-						addEdge(fromID, e.resolveObj(obj), types.ExprString(fld.Type), "extends", token.NoPos, 0)
+						addEdge(fromID, toID, name, "extends", token.NoPos, 0)
 					}
 				}
 			}

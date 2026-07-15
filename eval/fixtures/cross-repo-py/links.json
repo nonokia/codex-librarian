@@ -1,0 +1,1 @@
+{ "packages": [ { "package": "taskcore", "repo": "pycore", "entry": "taskcore/__init__.py" } ] }

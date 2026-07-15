@@ -92,9 +92,13 @@ test('calls resolve through the type checker; unresolved keep raw names', { skip
     edges.some((e) => e.kind === 'calls' && e.toId === storeIface.id && e.resolved),
     's.store.Add(t) resolves to the Store interface symbol'
   );
+  // §8.1 (#35): an external package-level call is named by the package it came
+  // from — `<import-path>#<Name>` — not its bare selector text. `fmt` is not a
+  // claimed repo, so nothing links it; the qualified name is what would let
+  // `librarian link` resolve it if it were.
   assert.ok(
-    edges.some((e) => e.kind === 'calls' && !e.resolved && e.toName === 'fmt.Errorf'),
-    'stdlib calls stay unresolved with the callee text as written'
+    edges.some((e) => e.kind === 'calls' && !e.resolved && e.toName === 'fmt#Errorf'),
+    'stdlib (external-package) calls are named by origin package, unresolved'
   );
   store.close();
 });

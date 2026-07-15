@@ -294,6 +294,7 @@ class Extractor:
         self.class_at = {}         # (rel, lineno) → class fqn
         self.returns = {}          # symbol id → (annotation name, is_container)
         self.bindings = {}         # rel → {local name: entry}
+        self.ext_bindings = {}     # rel → {local name: "<spec>#<imported>"} (cross-repo, #35)
 
     # ---- paths & modules ----
 
@@ -500,6 +501,7 @@ class Extractor:
         """Per-module name → entry. Imports bind names from other modules;
         `import a.b` also binds the dotted form so `a.b.f()` resolves."""
         binds = dict(self.top.get(self.module_of[rel], {}))
+        ext = self.ext_bindings.setdefault(rel, {})
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
@@ -520,6 +522,12 @@ class Extractor:
                         sub = "%s.%s" % (base, alias.name) if base else alias.name
                         entry = {"kind": "module", "module": sub, "file": self.resolve_module(sub)}
                     binds[alias.asname or alias.name] = entry
+                    # cross-repo binding (#35, docs/plugin-protocol.md §8.1): an
+                    # absolute `from pkg import name` the repo cannot resolve is an
+                    # external package. Record `<spec>#<imported>` for the local so
+                    # the use sites can be named by origin, never by bare name.
+                    if node.level == 0 and base and entry.get("file") is None:
+                        ext[alias.asname or alias.name] = "%s#%s" % (base, alias.name)
         return binds
 
     def import_from_module(self, rel, node):
@@ -700,6 +708,7 @@ class Extractor:
                     self.add_edge(rel, mod_id, to, alias.name, "imports", node.lineno)
             elif isinstance(node, ast.ImportFrom):
                 base = self.import_from_module(rel, node)
+                external = []  # (imported, asname) of names from an external package (#35)
                 for alias in node.names:
                     full = "%s.%s" % (base, alias.name) if base else alias.name
                     entry = None if alias.name == "*" else self.lookup_in_module(base, alias.name)
@@ -708,7 +717,20 @@ class Extractor:
                         or self.resolve_module(base)
                     )
                     to = self.module_id(file) if file else None
-                    self.add_edge(rel, mod_id, to, full, "imports", node.lineno)
+                    if to is None and node.level == 0 and base and alias.name != "*":
+                        external.append((alias.name, alias.asname))  # §8.1 binding, below
+                    else:
+                        self.add_edge(rel, mod_id, to, full, "imports", node.lineno)
+                # cross-repo import bindings (docs/plugin-protocol.md §8.1): the bare
+                # specifier once (so `link` can resolve module→entry file), then one
+                # `<spec>#<imported>[ as <local>]` per name so the import itself links.
+                if external:
+                    self.add_edge(rel, mod_id, None, base, "imports", node.lineno)
+                    for imported, asname in external:
+                        b = "%s#%s" % (base, imported)
+                        if asname and asname != imported:
+                            b += " as %s" % asname
+                        self.add_edge(rel, mod_id, None, b, "imports", node.lineno)
             elif isinstance(node, ast.ClassDef):
                 self.base_edges(rel, node)
         self.scope_edges(rel, tree.body, env={}, class_fqn=None)
@@ -724,7 +746,8 @@ class Extractor:
                 continue
             base_fqn = self.class_fqn_of(rel, name)
             to = self.classes[base_fqn]["id"] if base_fqn else None
-            self.add_edge(rel, from_id, to, name, "extends", base.lineno)
+            to_name = name if to else self.external_name(rel, name)
+            self.add_edge(rel, from_id, to, to_name, "extends", base.lineno)
 
     def scope_edges(self, rel, body, env, class_fqn):
         """Statements of a class body or module body."""
@@ -843,7 +866,17 @@ class Extractor:
         if name is None:
             return  # a call on a subscript/lambda/call — nothing nameable to record
         target = self.resolve_callable(rel, name, env)
-        self.add_edge(rel, from_id, target["id"] if target else None, name, "calls", call.lineno)
+        to_name = name if target else self.external_name(rel, name)
+        self.add_edge(rel, from_id, target["id"] if target else None, to_name, "calls", call.lineno)
+
+    def external_name(self, rel, name):
+        """A use-site callee/base named by its origin package (#35,
+        docs/plugin-protocol.md §8.1): when the name is exactly a local bound by
+        an unresolvable `from pkg import name`, return `<spec>#<imported>` so
+        `librarian link` can resolve it without matching a bare name. A dotted
+        access (`mod.thing`) or an unbound name is left exactly as written — the
+        invariant is no false edges, not completeness."""
+        return self.ext_bindings.get(rel, {}).get(name, name)
 
     def resolve_callable(self, rel, name, env):
         parts = name.split(".")

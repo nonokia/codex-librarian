@@ -100,11 +100,58 @@ retrieval の劣化ではない。
   エッジは「この指定子からこの名前を取った」という repo に依存しない事実だけを記録し、
   package → repo の写像は store/app 層(link)だけが持つ。
 
+## 多言語対応(issue #35)
+
+#27 時点では binding エッジを吐くのは TS 抽出器だけで、実機の複数リポジトリ index(Go /
+PHP / Python のみ、TS を 1 つも含まない構成)で `librarian link` が cross-repo エッジを
+ほぼ 0 本しか作れなかった。#35 で §8.1 の規約(`<specifier>#<imported>`)を **Go / Python /
+PHP** の 3 抽出器へ展開した。link 側は言語を知らないまま — 唯一の変更は `forSpec()` の
+subpath 区切りをエコシステム毎に広げたこと(TS/Go `/`・Python `.`・PHP `\`)。宣言済み
+package にしか当てないので、区切りを増やしても未宣言 package への誤マッチは起きない。
+
+各抽出器が use site をどう名乗るか(すべて `resolved=0`、方式は TS と同一 —「参照点が由来を
+名乗る」ので link は名前表引きが要らない):
+
+| 言語 | specifier の作り方 | 例(use site → toName) |
+| --- | --- | --- |
+| Go | `obj.Pkg().Path()`(型チェッカが持つ import path) | `task.CreateTask()` → `example.com/acme-core/task#CreateTask` |
+| Python | `from pkg import name` の module パス(絶対 import で in-repo 解決不能なもの) | `create_task()` → `taskcore#create_task`、別名 `is_overdue()` → `taskcore#overdue` |
+| PHP | NameResolver 済み FQN の namespace prefix | `new Task()` → `Acme\Core#Task`、`makeTask()` → `Acme\Core#makeTask` |
+
+**メソッド呼び出しは 3 言語とも生名のまま**(型解決が要る): Go の `t.Touch()`、Python の
+`_store.add(...)`、PHP の `$t->touch()` は `#` 修飾されないので構造的に link できない
+(偽エッジが作れない、#27 と同じ不変条件)。
+
+### Python ベースライン(`eval/fixtures/cross-repo-py`、golden `eval/golden/cross-repo-py.json`)
+
+TS を 1 つも含まない 2 repo(`pycore` = package `taskcore` / `pyapp` = それを import する
+利用側)。同じ golden・同じ index で **link の有無だけ**を変えた A/B(3 ケース、13 expected):
+
+| 指標 | link なし | link あり |
+| --- | --- | --- |
+| micro recall | **0.462** (6/13) | **1.000** (13/13) |
+| perfect cases | 0 / 3 | 3 / 3 |
+| cross-repo edges | 0 | 14 |
+
+link なしで取れている 6 件はすべて同一 repo 内の近傍で、これは #27 以前の TS と同じ
+「マルチレポの db に入れただけでは repo を跨ぐ影響は原理的に見えない」の数値化。
+回帰テストは `src/test/cross-repo-multilang.test.ts`(Python は committed fixture + golden、
+Go/PHP は `replace`/namespace の inline ペアで cross-repo call が張られ・メソッド呼び出しが
+張られないことを固定)。
+
+### 無回帰(既存言語の eval)
+
+binding エッジは **すべて `resolved=0`** で、BFS は unresolved を辿らないため、
+単一 repo の retrieval match は不変: python-taskflow 40/42・go-taskflow 45/47・
+php-taskflow 88.1% はいずれも #35 前後で一致(`src/test/extractor-{python,go,php}.test.ts`)。
+変わるのは外部呼び出しの unresolved 名の見え方だけ(例: Go は `fmt.Errorf` → `fmt#Errorf`、
+どの外部パッケージの何を使っているかが読めるようになる副次効果、TS の #27 と同じ)。
+
 ## 既知の限界(意図的)
 
-- **TS のみ**。binding エッジを吐くのは現状 TS 抽出器だけ。Go/PHP/Python/Terraform の
-  抽出器が同じ規約(`<spec>#<imported>`、`docs/plugin-protocol.md`)で binding を吐けば、
-  link 側は無改造で効く。吐かない言語では cross-repo 解決が起きないだけで degrade しない。
+- **Terraform はスコープ外**(#35)。HCL の module `source` が別 repo を指すのは参照グラフの
+  別問題で、call graph 言語の import binding とは筋が違う(必要なら別 issue)。TS/Go/Python/PHP の
+  4 言語が §8.1 を実装済み。吐かない言語では cross-repo 解決が起きないだけで degrade しない。
 - **メソッド**は繋がらない。`store.add()` の `add` を repo B の `MemStore::add` に結ぶには
   レシーバの型解決が要り、それは link(store 層)ではなく抽出器の仕事。
 - **再インデックスでリンクは消える**。`index` は変更ファイルのエッジを作り直すため、その

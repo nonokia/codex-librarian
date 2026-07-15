@@ -6,6 +6,8 @@ interface Cited {
   name: string;
   file: string;
   span: [number, number];
+  /** passed to the model as a signature card, not full source (#41) */
+  reduced?: boolean;
 }
 
 export default function AskPanel() {
@@ -79,7 +81,14 @@ export default function AskPanel() {
               <tbody>
                 {cited.map((c, i) => (
                   <tr key={i}>
-                    <td>{c.name}</td>
+                    <td>
+                      {c.name}
+                      {c.reduced && (
+                        <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}>
+                          (シグネチャのみ)
+                        </span>
+                      )}
+                    </td>
                     <td className="mono muted">{c.file}:{c.span[0]}-{c.span[1]}</td>
                   </tr>
                 ))}
