@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "id": "crpy-001",
+      "title": "taskcore の overdue 判定条件を変える(ライブラリ → 利用側への波及、Python)",
+      "note": "expected はコードリーディングで作成: 同 repo の呼び出し元(MemStore.overdue_tasks)・引数の型契約(Task)に加え、パッケージ利用側 py-app の呼び出し元 2 つ(overdue_count / 別名 import の overdue_titles)と、その先の transport 層(handle_overdue)。link 未実行時、py-app 側の 3 件は原理的に取れない",
+      "target": { "file": "taskcore/task.py", "symbol": "overdue", "repo": "pycore" },
+      "expected": [
+        { "file": "taskcore/store.py", "symbol": "overdue_tasks", "repo": "pycore" },
+        { "file": "taskcore/task.py", "symbol": "Task", "repo": "pycore" },
+        { "file": "app/service.py", "symbol": "overdue_count", "repo": "pyapp" },
+        { "file": "app/report.py", "symbol": "overdue_titles", "repo": "pyapp" },
+        { "file": "app/api.py", "symbol": "handle_overdue", "repo": "pyapp" }
+      ]
+    },
+    {
+      "id": "crpy-002",
+      "title": "taskcore の create_task のバリデーション変更(空 title で raise、Python)",
+      "note": "expected: 同 repo の呼び出し元(MemStore.add)と型(Task)、利用側の呼び出し元(add_task)、その先の handle_create、add_task の回帰テスト",
+      "target": { "file": "taskcore/task.py", "symbol": "create_task", "repo": "pycore" },
+      "expected": [
+        { "file": "taskcore/store.py", "symbol": "add", "repo": "pycore" },
+        { "file": "taskcore/task.py", "symbol": "Task", "repo": "pycore" },
+        { "file": "app/service.py", "symbol": "add_task", "repo": "pyapp" },
+        { "file": "app/api.py", "symbol": "handle_create", "repo": "pyapp" },
+        { "file": "tests/test_service.py", "repo": "pyapp" }
+      ]
+    },
+    {
+      "id": "crpy-003",
+      "title": "利用側 py-app の add_task を変える(利用側 → ライブラリ契約への逆方向、Python)",
+      "note": "expected: 同 repo の呼び出し元(handle_create)とテスト、そして依存先である taskcore の契約(create_task)。cross-repo は呼び出し元方向だけでなく呼び出し先方向にも要る。_store.add はメソッド呼び出しなので(型解決が要り)link は繋がない — MemStore は expected に含めない",
+      "target": { "file": "app/service.py", "symbol": "add_task", "repo": "pyapp" },
+      "expected": [
+        { "file": "app/api.py", "symbol": "handle_create", "repo": "pyapp" },
+        { "file": "tests/test_service.py", "repo": "pyapp" },
+        { "file": "taskcore/task.py", "symbol": "create_task", "repo": "pycore" }
+      ]
+    }
+  ]
+}

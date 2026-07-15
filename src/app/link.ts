@@ -59,6 +59,15 @@ export interface LinkReport {
   dryRun: boolean;
 }
 
+/**
+ * Ecosystem-specific subpath separators (#35). A package specifier can be a
+ * prefix of the actual import specifier a dependent writes: `@acme/core/sub`
+ * (TS), `example.com/mod/pkg` (Go), `acme.core.util` (Python), `Acme\Core\Thing`
+ * (PHP). The separator is how `forSpec` recognises the subpath while refusing to
+ * match a package name that merely shares a prefix (`acme_core` vs `acme_coreX`).
+ */
+const SUBPATH_SEPARATORS = ['/', '.', '\\'];
+
 export function defaultLinkMapPath(dbPath: string): string {
   return join(dirname(dbPath), 'links.json');
 }
@@ -110,8 +119,14 @@ export function link(store: Store, map: LinkMap, opts: { dryRun?: boolean } = {}
   // Longest specifier wins, so a subpath ("@acme/core/testing") can be declared
   // as its own package alongside the root one.
   const declared = [...map.packages].sort((a, b) => b.package.length - a.package.length);
+  // A subpath is the package plus one ecosystem-specific separator: `/` (TS,
+  // Go import paths), `.` (Python `acme.core.util`), `\` (PHP `Acme\Core\Thing`).
+  // Only *declared* packages are ever tested, so a separator can never create a
+  // spurious match against a package the user did not write down (#35).
   const forSpec = (spec: string): PackageLink | null =>
-    declared.find((p) => spec === p.package || spec.startsWith(`${p.package}/`)) ?? null;
+    declared.find(
+      (p) => spec === p.package || SUBPATH_SEPARATORS.some((sep) => spec.startsWith(`${p.package}${sep}`))
+    ) ?? null;
 
   const ambiguous = new Map<string, { package: string; name: string; candidates: string[] }>();
   const missing = new Map<string, { package: string; name: string }>();

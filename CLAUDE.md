@@ -142,12 +142,18 @@ dlog の「変更前に `dlog why`」と対になるルール:
   (`eval/golden/terraform-taskflow.json`)。
 - `src/app/link.ts` — リポジトリ間 import 解決(issue #27 / ADR-8)。`.librarian/links.json`
   の **明示宣言(package → repo)** を入力に、抽出器が残した unresolved エッジを再解決する
-  後段ステップ(`librarian link`)。**推測で名前一致させない** — TS 抽出器が吐く import
-  binding エッジ(`imports <spec>#<imported>`、`docs/plugin-protocol.md` §8.1)を辿って束縛し、
-  曖昧なら繋がない。冪等・可逆(`--clear`)。宣言が無い db では cross-repo エッジは 0 本で
-  #27 以前と同一。数値は `docs/cross-repo-baseline.md`(link なし 0.429 → あり 1.000)。
+  後段ステップ(`librarian link`)。**推測で名前一致させない** — 抽出器が吐く import
+  binding エッジ(`imports <spec>#<imported>`、`docs/plugin-protocol.md` §8.1、TS/Go/Python/PHP
+  の 4 言語が実装、#27/#35)を辿って束縛し、曖昧なら繋がない。`forSpec()` の subpath 区切りは
+  エコシステム毎(`/`・`.`・`\`)。冪等・可逆(`--clear`)。宣言が無い db では cross-repo エッジは
+  0 本で #27 以前と同一。数値は `docs/cross-repo-baseline.md`(TS link なし 0.429 → あり 1.000、
+  Python 0.462 → 1.000)。
 - `eval/fixtures/cross-repo/` — 相互参照する fixture ペア(`acme-core` = package `@acme/core`
   と、それを package 名で import する `acme-app`)。golden は `eval/golden/cross-repo.json`。
+- `eval/fixtures/cross-repo-py/` — 非 TS の cross-repo ペア(#35。`pycore` = package `taskcore`
+  と、それを import する `pyapp`)。TS を含まない index で link が効くことの eval 実証。
+  golden は `eval/golden/cross-repo-py.json`(link なし 6/13 → あり 13/13)。多言語の回帰は
+  `src/test/cross-repo-multilang.test.ts`(Python fixture + Go/PHP inline)。
 - `src/core/diff.ts` / `src/core/retrieval.ts` — unified diff → シード → 決定的展開(ADR-3
   stage 1)。
 - `src/app/eval.ts` + `eval/golden/` — Phase 0 評価ハーネスと正解セット(規律は
