@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 59
-- symbols: 559
-- edges: 3196 (unresolved: 1867)
-- symbols by kind: class=8, function=179, interface=66, method=47, module=59, testblock=112, typealias=14, variable=74
+- files: 61
+- symbols: 590
+- edges: 3377 (unresolved: 1965)
+- symbols by kind: class=8, function=186, interface=67, method=47, module=61, testblock=120, typealias=14, variable=87
 
 ## Files
 
@@ -41,12 +41,13 @@
 - interface PackageLink L35-42
 - interface LinkMap L44-46
 - interface LinkReport L48-60
-- function defaultLinkMapPath L62-64 `(dbPath: string): string`
-- function loadLinkMap L66-68 `(path: string): LinkMap`
-- function parseLinkMap L70-86 `(raw: unknown, at = 'link map'): LinkMap`
-- function splitBinding L94-98 `(toName: string): { spec: string; imported: string } | null`
-- function link L100-183 `(store: Store, map: LinkMap, opts: { dryRun?: boolean } = {}): LinkReport`
-- function unlink L186-189 `(store: Store): { unlinked: number; crossRepoEdges: number }`
+- variable SUBPATH_SEPARATORS L69-69
+- function defaultLinkMapPath L71-73 `(dbPath: string): string`
+- function loadLinkMap L75-77 `(path: string): LinkMap`
+- function parseLinkMap L79-95 `(raw: unknown, at = 'link map'): LinkMap`
+- function splitBinding L103-107 `(toName: string): { spec: string; imported: string } | null`
+- function link L109-198 `(store: Store, map: LinkMap, opts: { dryRun?: boolean } = {}): LinkReport`
+- function unlink L201-204 `(store: Store): { unlinked: number; crossRepoEdges: number }`
 
 ### src/app/loop.ts
 
@@ -133,13 +134,14 @@
 - typealias RootResolver L43-43
 - function rootOf L45-47 `(roots: RootResolver, repo: string): string | null`
 - interface Seed L49-52
-- interface ContextItem L54-66
-- interface ContextPack L68-81
-- function diffSignature L88-103 `(seeds: Seed[], unknownFiles: string[]): string`
-- function seedsFromDiff L110-137 `(store: Store, hunks: FileRanges[], repo?: string): { seeds: Seed[]; unknownFiles: string[] }`
-- interface Candidate L139-143
-- function expandContext L149-274 `(store: Store, roots: RootResolver, seeds: Seed[], opts: { strategy?: Strategy; hops?: number; budget?: number; withSource?: boolean } = {}): ContextPack`
-- function retrieveForDiff L282-306 `(store: Store, roots: RootResolver, hunks: FileRanges[], opts: { strategy?: Strategy; useCache?: boolean; hops?: number; budget?: number; withSource?: boolean; repo?: string } = {}): ContextPack`
+- interface ContextItem L54-68
+- interface Demote L78-81
+- interface ContextPack L83-96
+- function diffSignature L103-118 `(seeds: Seed[], unknownFiles: string[]): string`
+- function seedsFromDiff L125-152 `(store: Store, hunks: FileRanges[], repo?: string): { seeds: Seed[]; unknownFiles: string[] }`
+- interface Candidate L154-158
+- function expandContext L164-312 `(store: Store, roots: RootResolver, seeds: Seed[], opts: { strategy?: Strategy; hops?: number; budget?: number; withSource?: boolean; demote?: Demote } = {}): ContextPack`
+- function retrieveForDiff L320-344 `(store: Store, roots: RootResolver, hunks: FileRanges[], opts: { strategy?: Strategy; useCache?: boolean; hops?: number; budget?: number; withSource?: boolean; repo?: string } = {}): ContextPack`
 
 ### src/extractors/go.ts
 
@@ -399,6 +401,26 @@
 - testblock test(buildReviewRequest embeds the pack and demands structured output) L77-93
 - testblock test(renderReviewMarkdown counts graph-grounded findings) L95-122
 
+### src/test/cross-repo-multilang.test.ts
+
+- variable repoRoot L21-21
+- variable hasPython L22-22
+- variable hasGo L23-23
+- variable hasPhp L24-24
+- variable pyFixture L28-28
+- variable pyCore L29-29
+- variable pyApp L30-30
+- function pyRoots L31-31 `(repo: string)`
+- variable PY_MAP L32-32
+- function indexedPyPair L34-39 `(): Store`
+- testblock test(python extractor names external imports and use sites by package (§8.1)) L41-56
+- testblock test(python link resolves cross-repo calls through the declared package) L58-78
+- testblock test(the python golden set measures the difference: unlinked 6/13, linked 13/13) L80-92
+- variable goBinary L96-96
+- function goExtractor L97-107 `(): string`
+- testblock test(go link resolves a cross-repo call, and a method call stays raw (§8.1)) L109-158
+- testblock test(php link resolves cross-repo new/function calls, method call stays raw (§8.1)) L162-215
+
 ### src/test/dispatch.test.ts
 
 - class FooExtractor L21-73
@@ -427,11 +449,11 @@
 - function indexedFixture L37-42 `(): Store`
 - testblock test(go fixture indexes with the full symbol taxonomy) L44-58
 - testblock test(extends covers interface satisfaction and embedding) L60-84
-- testblock test(calls resolve through the type checker; unresolved keep raw names) L86-100
-- testblock test(TestXxx and t.Run subtests become nested testblock symbols) L102-116
-- testblock test(a diff against a Go method seeds retrieval and packs its callers) L118-131
-- testblock test(without a Go toolchain the claimed files degrade to file-level modules) L133-153
-- testblock test(--capabilities answers the plugin-protocol handshake, reads no stdin) L155-163
+- testblock test(calls resolve through the type checker; unresolved keep raw names) L86-104
+- testblock test(TestXxx and t.Run subtests become nested testblock symbols) L106-120
+- testblock test(a diff against a Go method seeds retrieval and packs its callers) L122-135
+- testblock test(without a Go toolchain the claimed files degrade to file-level modules) L137-157
+- testblock test(--capabilities answers the plugin-protocol handshake, reads no stdin) L159-167
 
 ### src/test/extractor-php.test.ts
 
@@ -555,6 +577,15 @@
 - variable hasGo L177-177
 - testblock test(Go driven through a registry entry reproduces the native eval aggregate) L179-202
 
+### src/test/retrieval-demote.test.ts
+
+- function fixture L19-44 `(): { root: string; store: Store }`
+- function seedOf L46-49 `(store: Store, name: string): Seed`
+- function CARD L51-51 `(s: SymbolRow)`
+- testblock test(without demote, an oversized candidate is elided (unchanged packing)) L53-63
+- testblock test(with demote, the oversized candidate becomes a reduced signature card) L65-83
+- testblock test(demote downgrades a candidate that fits but is oversized vs remaining budget) L85-107
+
 ### src/test/scip-emit.test.ts
 
 - function sym L10-31 `(file: string, container: string | null, name: string, kind: ExtractionResult['symbols'][number]['kind'], spanStart: number, spanEnd: number, signature: string | null = null, doc: string | null = null)`
@@ -610,8 +641,12 @@
 
 ### web/app/api/ask/route.ts
 
-- variable MODEL L8-8
-- function POST L16-100 `(req: NextRequest)`
+- variable MODEL L6-6
+- variable BUDGET L10-10
+- variable OVERSIZED_FRACTION L11-11
+- variable NO_SEEDS_NOTE L13-14
+- function signatureCard L21-27 `(sym: SymbolRow): string`
+- function POST L38-119 `(req: NextRequest)`
 
 ### web/app/api/file/route.ts
 
@@ -667,9 +702,9 @@
 
 ### web/components/AskPanel.tsx
 
-- interface Cited L5-9
-- function AskPanel L11-93 `()`
-- function AskPanel.ask L18-44 `()`
+- interface Cited L5-11
+- function AskPanel L13-102 `()`
+- function AskPanel.ask L20-46 `()`
 
 ### web/components/EvalChart.tsx
 
@@ -824,6 +859,10 @@
 - src/test/contextpack.test.ts → src/core/diff.ts
 - src/test/contextpack.test.ts → src/core/retrieval.ts
 - src/test/contextpack.test.ts → src/store/store.ts
+- src/test/cross-repo-multilang.test.ts → src/app/eval.ts
+- src/test/cross-repo-multilang.test.ts → src/app/index.ts
+- src/test/cross-repo-multilang.test.ts → src/app/link.ts
+- src/test/cross-repo-multilang.test.ts → src/store/store.ts
 - src/test/dispatch.test.ts → src/app/index.ts
 - src/test/dispatch.test.ts → src/core/diff.ts
 - src/test/dispatch.test.ts → src/core/retrieval.ts
@@ -894,6 +933,9 @@
 - src/test/registry.test.ts → src/app/registry.ts
 - src/test/registry.test.ts → src/protocol/scip.ts
 - src/test/registry.test.ts → src/store/store.ts
+- src/test/retrieval-demote.test.ts → src/app/index.ts
+- src/test/retrieval-demote.test.ts → src/core/retrieval.ts
+- src/test/retrieval-demote.test.ts → src/store/store.ts
 - src/test/scip-emit.test.ts → src/protocol/extractor.ts
 - src/test/scip-emit.test.ts → src/protocol/scip-emit.ts
 - src/test/scip-emit.test.ts → src/protocol/scip-ingest.ts
@@ -981,6 +1023,7 @@
 - src/app/link.ts link —references→ src/app/link.ts LinkMap
 - src/app/link.ts link —references→ src/app/link.ts LinkReport
 - src/app/link.ts link —references→ src/app/link.ts PackageLink
+- src/app/link.ts link —references→ src/app/link.ts SUBPATH_SEPARATORS
 - src/app/link.ts link —calls→ src/app/link.ts splitBinding
 - src/app/link.ts link —references→ src/store/store.ts EdgeKind
 - src/app/link.ts link —references→ src/store/store.ts Store
@@ -1149,6 +1192,7 @@
 - src/core/retrieval.ts ContextPack —references→ src/core/retrieval.ts ContextItem
 - src/core/retrieval.ts ContextPack —references→ src/core/retrieval.ts Strategy
 - src/core/retrieval.ts DEFAULT_STRATEGY —references→ src/core/retrieval.ts Strategy
+- src/core/retrieval.ts Demote —references→ src/store/store.ts SymbolRow
 - src/core/retrieval.ts Seed —references→ src/store/store.ts SymbolRow
 - src/core/retrieval.ts Strategy —references→ src/store/store.ts EdgeKind
 - src/core/retrieval.ts diffSignature —references→ src/core/retrieval.ts Seed
@@ -1157,6 +1201,8 @@
 - src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts ContextPack
 - src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts DEFAULT_BUDGET
 - src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts DEFAULT_STRATEGY
+- src/core/retrieval.ts expandContext —calls→ src/core/retrieval.ts Demote
+- src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts Demote
 - src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts RootResolver
 - src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts Seed
 - src/core/retrieval.ts expandContext —references→ src/core/retrieval.ts Strategy
@@ -1475,6 +1521,53 @@
 - src/test/contextpack.test.ts test(buildReviewRequest embeds the pack and demands structured output) —calls→ src/test/contextpack.test.ts fixtureRepo
 - src/test/contextpack.test.ts test(renderReviewMarkdown counts graph-grounded findings) —references→ src/app/review.ts ReviewResult
 - src/test/contextpack.test.ts test(renderReviewMarkdown counts graph-grounded findings) —calls→ src/app/review.ts renderReviewMarkdown
+- src/test/cross-repo-multilang.test.ts goExtractor —references→ src/test/cross-repo-multilang.test.ts goBinary
+- src/test/cross-repo-multilang.test.ts goExtractor —references→ src/test/cross-repo-multilang.test.ts repoRoot
+- src/test/cross-repo-multilang.test.ts indexedPyPair —calls→ src/app/index.ts indexRepo
+- src/test/cross-repo-multilang.test.ts indexedPyPair —calls→ src/store/store.ts Store
+- src/test/cross-repo-multilang.test.ts indexedPyPair —references→ src/store/store.ts Store
+- src/test/cross-repo-multilang.test.ts indexedPyPair —references→ src/test/cross-repo-multilang.test.ts pyApp
+- src/test/cross-repo-multilang.test.ts indexedPyPair —references→ src/test/cross-repo-multilang.test.ts pyCore
+- src/test/cross-repo-multilang.test.ts pyApp —references→ src/test/cross-repo-multilang.test.ts pyFixture
+- src/test/cross-repo-multilang.test.ts pyCore —references→ src/test/cross-repo-multilang.test.ts pyFixture
+- src/test/cross-repo-multilang.test.ts pyFixture —references→ src/test/cross-repo-multilang.test.ts repoRoot
+- src/test/cross-repo-multilang.test.ts pyRoots —references→ src/test/cross-repo-multilang.test.ts pyApp
+- src/test/cross-repo-multilang.test.ts pyRoots —references→ src/test/cross-repo-multilang.test.ts pyCore
+- src/test/cross-repo-multilang.test.ts test(go link resolves a cross-repo call, and a method call stays raw (§8.1)) —calls→ src/app/index.ts indexRepo
+- src/test/cross-repo-multilang.test.ts test(go link resolves a cross-repo call, and a method call stays raw (§8.1)) —calls→ src/app/link.ts link
+- src/test/cross-repo-multilang.test.ts test(go link resolves a cross-repo call, and a method call stays raw (§8.1)) —calls→ src/store/store.ts Store
+- src/test/cross-repo-multilang.test.ts test(go link resolves a cross-repo call, and a method call stays raw (§8.1)) —calls→ src/store/store.ts Store.close
+- src/test/cross-repo-multilang.test.ts test(go link resolves a cross-repo call, and a method call stays raw (§8.1)) —calls→ src/store/store.ts Store.crossRepoEdges
+- src/test/cross-repo-multilang.test.ts test(go link resolves a cross-repo call, and a method call stays raw (§8.1)) —calls→ src/store/store.ts Store.unresolvedEdges
+- src/test/cross-repo-multilang.test.ts test(go link resolves a cross-repo call, and a method call stays raw (§8.1)) —calls→ src/test/cross-repo-multilang.test.ts goExtractor
+- src/test/cross-repo-multilang.test.ts test(go link resolves a cross-repo call, and a method call stays raw (§8.1)) —references→ src/test/cross-repo-multilang.test.ts hasGo
+- src/test/cross-repo-multilang.test.ts test(php link resolves cross-repo new/function calls, method call stays raw (§8.1)) —calls→ src/app/index.ts indexRepo
+- src/test/cross-repo-multilang.test.ts test(php link resolves cross-repo new/function calls, method call stays raw (§8.1)) —calls→ src/app/link.ts link
+- src/test/cross-repo-multilang.test.ts test(php link resolves cross-repo new/function calls, method call stays raw (§8.1)) —calls→ src/store/store.ts Store
+- src/test/cross-repo-multilang.test.ts test(php link resolves cross-repo new/function calls, method call stays raw (§8.1)) —calls→ src/store/store.ts Store.close
+- src/test/cross-repo-multilang.test.ts test(php link resolves cross-repo new/function calls, method call stays raw (§8.1)) —calls→ src/store/store.ts Store.crossRepoEdges
+- src/test/cross-repo-multilang.test.ts test(php link resolves cross-repo new/function calls, method call stays raw (§8.1)) —calls→ src/store/store.ts Store.unresolvedEdges
+- src/test/cross-repo-multilang.test.ts test(php link resolves cross-repo new/function calls, method call stays raw (§8.1)) —references→ src/test/cross-repo-multilang.test.ts hasPhp
+- src/test/cross-repo-multilang.test.ts test(python extractor names external imports and use sites by package (§8.1)) —calls→ src/store/store.ts Store.close
+- src/test/cross-repo-multilang.test.ts test(python extractor names external imports and use sites by package (§8.1)) —calls→ src/store/store.ts Store.unresolvedEdges
+- src/test/cross-repo-multilang.test.ts test(python extractor names external imports and use sites by package (§8.1)) —references→ src/test/cross-repo-multilang.test.ts hasPython
+- src/test/cross-repo-multilang.test.ts test(python extractor names external imports and use sites by package (§8.1)) —calls→ src/test/cross-repo-multilang.test.ts indexedPyPair
+- src/test/cross-repo-multilang.test.ts test(python link resolves cross-repo calls through the declared package) —calls→ src/app/link.ts link
+- src/test/cross-repo-multilang.test.ts test(python link resolves cross-repo calls through the declared package) —calls→ src/store/store.ts Store.close
+- src/test/cross-repo-multilang.test.ts test(python link resolves cross-repo calls through the declared package) —calls→ src/store/store.ts Store.crossRepoEdges
+- src/test/cross-repo-multilang.test.ts test(python link resolves cross-repo calls through the declared package) —calls→ src/store/store.ts Store.unresolvedEdges
+- src/test/cross-repo-multilang.test.ts test(python link resolves cross-repo calls through the declared package) —references→ src/test/cross-repo-multilang.test.ts PY_MAP
+- src/test/cross-repo-multilang.test.ts test(python link resolves cross-repo calls through the declared package) —references→ src/test/cross-repo-multilang.test.ts hasPython
+- src/test/cross-repo-multilang.test.ts test(python link resolves cross-repo calls through the declared package) —calls→ src/test/cross-repo-multilang.test.ts indexedPyPair
+- src/test/cross-repo-multilang.test.ts test(the python golden set measures the difference: unlinked 6/13, linked 13/13) —calls→ src/app/eval.ts loadGoldenFile
+- src/test/cross-repo-multilang.test.ts test(the python golden set measures the difference: unlinked 6/13, linked 13/13) —calls→ src/app/eval.ts runEval
+- src/test/cross-repo-multilang.test.ts test(the python golden set measures the difference: unlinked 6/13, linked 13/13) —calls→ src/app/link.ts link
+- src/test/cross-repo-multilang.test.ts test(the python golden set measures the difference: unlinked 6/13, linked 13/13) —calls→ src/store/store.ts Store.close
+- src/test/cross-repo-multilang.test.ts test(the python golden set measures the difference: unlinked 6/13, linked 13/13) —references→ src/test/cross-repo-multilang.test.ts PY_MAP
+- src/test/cross-repo-multilang.test.ts test(the python golden set measures the difference: unlinked 6/13, linked 13/13) —references→ src/test/cross-repo-multilang.test.ts hasPython
+- src/test/cross-repo-multilang.test.ts test(the python golden set measures the difference: unlinked 6/13, linked 13/13) —calls→ src/test/cross-repo-multilang.test.ts indexedPyPair
+- src/test/cross-repo-multilang.test.ts test(the python golden set measures the difference: unlinked 6/13, linked 13/13) —references→ src/test/cross-repo-multilang.test.ts pyRoots
+- src/test/cross-repo-multilang.test.ts test(the python golden set measures the difference: unlinked 6/13, linked 13/13) —references→ src/test/cross-repo-multilang.test.ts repoRoot
 - src/test/dispatch.test.ts FooExtractor —extends→ src/protocol/extractor.ts Extractor
 - src/test/dispatch.test.ts FooExtractor —references→ src/protocol/extractor.ts Extractor
 - src/test/dispatch.test.ts test(an extractor only runs when one of its files changed) —calls→ src/app/index.ts indexRepo
@@ -1906,6 +1999,27 @@
 - src/test/registry.test.ts test(parseRegistry rejects malformed registries with precise errors) —calls→ src/app/registry.ts parseRegistry
 - src/test/registry.test.ts test(resolveExtractors overlays the registry over built-ins, registry wins per extension) —calls→ src/app/registry.ts resolveExtractors
 - src/test/registry.test.ts test(resolveExtractors returns exactly the built-ins when no registry file exists) —calls→ src/app/registry.ts resolveExtractors
+- src/test/retrieval-demote.test.ts CARD —references→ src/store/store.ts SymbolRow
+- src/test/retrieval-demote.test.ts fixture —calls→ src/app/index.ts indexRepo
+- src/test/retrieval-demote.test.ts fixture —calls→ src/store/store.ts Store
+- src/test/retrieval-demote.test.ts fixture —references→ src/store/store.ts Store
+- src/test/retrieval-demote.test.ts seedOf —references→ src/core/retrieval.ts Seed
+- src/test/retrieval-demote.test.ts seedOf —references→ src/store/store.ts Store
+- src/test/retrieval-demote.test.ts seedOf —calls→ src/store/store.ts Store.findSymbols
+- src/test/retrieval-demote.test.ts test(demote downgrades a candidate that fits but is oversized vs remaining budget) —calls→ src/core/retrieval.ts expandContext
+- src/test/retrieval-demote.test.ts test(demote downgrades a candidate that fits but is oversized vs remaining budget) —calls→ src/store/store.ts Store.close
+- src/test/retrieval-demote.test.ts test(demote downgrades a candidate that fits but is oversized vs remaining budget) —references→ src/test/retrieval-demote.test.ts CARD
+- src/test/retrieval-demote.test.ts test(demote downgrades a candidate that fits but is oversized vs remaining budget) —calls→ src/test/retrieval-demote.test.ts fixture
+- src/test/retrieval-demote.test.ts test(demote downgrades a candidate that fits but is oversized vs remaining budget) —calls→ src/test/retrieval-demote.test.ts seedOf
+- src/test/retrieval-demote.test.ts test(with demote, the oversized candidate becomes a reduced signature card) —calls→ src/core/retrieval.ts expandContext
+- src/test/retrieval-demote.test.ts test(with demote, the oversized candidate becomes a reduced signature card) —calls→ src/store/store.ts Store.close
+- src/test/retrieval-demote.test.ts test(with demote, the oversized candidate becomes a reduced signature card) —references→ src/test/retrieval-demote.test.ts CARD
+- src/test/retrieval-demote.test.ts test(with demote, the oversized candidate becomes a reduced signature card) —calls→ src/test/retrieval-demote.test.ts fixture
+- src/test/retrieval-demote.test.ts test(with demote, the oversized candidate becomes a reduced signature card) —calls→ src/test/retrieval-demote.test.ts seedOf
+- src/test/retrieval-demote.test.ts test(without demote, an oversized candidate is elided (unchanged packing)) —calls→ src/core/retrieval.ts expandContext
+- src/test/retrieval-demote.test.ts test(without demote, an oversized candidate is elided (unchanged packing)) —calls→ src/store/store.ts Store.close
+- src/test/retrieval-demote.test.ts test(without demote, an oversized candidate is elided (unchanged packing)) —calls→ src/test/retrieval-demote.test.ts fixture
+- src/test/retrieval-demote.test.ts test(without demote, an oversized candidate is elided (unchanged packing)) —calls→ src/test/retrieval-demote.test.ts seedOf
 - src/test/scip-emit.test.ts fixture —references→ src/protocol/extractor.ts ExtractionResult
 - src/test/scip-emit.test.ts fixture —calls→ src/test/scip-emit.test.ts sym
 - src/test/scip-emit.test.ts sym —references→ src/protocol/extractor.ts ExtractionResult
@@ -2023,7 +2137,11 @@
 - src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/protocol/scip.ts formatLocal
 - src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/protocol/scip.ts formatMoniker
 - src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/protocol/scip.ts isLocalSymbol
+- web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts BUDGET
 - web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts MODEL
+- web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts NO_SEEDS_NOTE
+- web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts OVERSIZED_FRACTION
+- web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts signatureCard
 - web/components/AskPanel.tsx AskPanel —references→ web/components/AskPanel.tsx Cited
 - web/components/AskPanel.tsx AskPanel —calls→ web/components/AskPanel.tsx AskPanel.ask
 - web/components/AskPanel.tsx AskPanel.ask —calls→ web/components/AskPanel.tsx AskPanel
@@ -2090,88 +2208,88 @@
 
 ## Unresolved (aggregated)
 
-- 85× map (calls)
-- 73× equal (calls)
-- 63× node:path#join (calls)
-- 55× ok (calls)
-- 44× some (calls)
-- 39× deepEqual (calls)
+- 90× map (calls)
+- 78× equal (calls)
+- 70× node:path#join (calls)
+- 62× ok (calls)
+- 46× some (calls)
+- 40× deepEqual (calls)
 - 38× get (calls)
 - 37× prepare (calls)
-- 32× filter (calls)
-- 31× node:path (imports)
+- 35× filter (calls)
+- 34× stringify (calls)
+- 32× node:path (imports)
+- 31× find (calls)
+- 31× node:fs (imports)
+- 31× node:fs#mkdtempSync (calls)
+- 31× node:os#tmpdir (calls)
 - 30× Error (calls)
-- 30× node:fs (imports)
-- 29× stringify (calls)
-- 28× find (calls)
-- 27× node:fs#mkdtempSync (calls)
-- 27× node:fs#writeFileSync (calls)
-- 27× node:os#tmpdir (calls)
+- 30× node:fs#writeFileSync (calls)
+- 28× join (calls)
+- 27× node:path#join (imports)
+- 27× push (calls)
 - 26× Map (calls)
 - 26× Set (calls)
-- 26× join (calls)
 - 26× node:fs#rmSync (calls)
-- 26× node:path#join (imports)
-- 26× push (calls)
 - 25× has (calls)
-- 22× split (calls)
 - 21× all (calls)
-- 21× slice (calls)
+- 21× split (calls)
+- 20× includes (calls)
+- 20× slice (calls)
+- 19× node:assert/strict (imports)
+- 19× node:test (imports)
+- 19× node:test#test (calls)
+- 19× node:test#test (imports)
 - 19× set (calls)
-- 17× node:assert/strict (imports)
-- 17× node:test (imports)
-- 17× node:test#test (calls)
-- 17× node:test#test (imports)
-- 16× node:fs#writeFileSync (imports)
-- 16× node:path#resolve (calls)
+- 18× node:child_process#spawnSync (calls)
+- 18× node:fs#mkdirSync (calls)
+- 18× node:fs#writeFileSync (imports)
+- 17× node:fs#mkdtempSync (imports)
+- 17× node:os (imports)
+- 17× node:os#tmpdir (imports)
+- 17× node:path#resolve (calls)
 - 16× parse (calls)
 - 15× node:fs#existsSync (calls)
-- 15× node:fs#mkdirSync (calls)
-- 15× node:fs#mkdtempSync (imports)
-- 15× node:os (imports)
-- 15× node:os#tmpdir (imports)
-- 14× node:child_process#spawnSync (calls)
-- 14× node:path#dirname (calls)
-- 14× node:path#resolve (imports)
+- 15× node:path#dirname (calls)
+- 15× node:path#resolve (imports)
+- 14× node:fs#mkdirSync (imports)
+- 14× node:path#dirname (imports)
 - 14× sort (calls)
-- 13× includes (calls)
-- 13× node:path#dirname (imports)
 - 12× json (calls)
-- 12× node:fs#mkdirSync (imports)
-- 11× node:fs#readFileSync (calls)
 - 11× node:fs#rmSync (imports)
+- 11× node:url (imports)
+- 11× node:url#fileURLToPath (calls)
+- 11× node:url#fileURLToPath (imports)
 - 11× run (calls)
-- 10× node:fs#readFileSync (imports)
-- 10× node:url (imports)
-- 10× node:url#fileURLToPath (calls)
-- 10× node:url#fileURLToPath (imports)
+- 10× node:fs#readFileSync (calls)
 - 10× throws (calls)
 - 9× @scip-code/scip (imports)
 - 9× add (calls)
 - 9× isArray (calls)
 - 9× max (calls)
+- 9× node:fs#readFileSync (imports)
+- 9× startsWith (calls)
 - 8× endsWith (calls)
 - 8× exec (calls)
 - 8× keys (calls)
 - 8× node:fs#existsSync (imports)
 - 8× now (calls)
-- 8× startsWith (calls)
 - 8× test (calls)
 - 7× @/lib/librarian (imports)
 - 7× @/lib/librarian#openLibrarian (calls)
 - 7× @/lib/librarian#openLibrarian (imports)
 - 7× @scip-code/scip#SymbolRole (imports)
+- 7× Number (calls)
 - 7× entries (calls)
 - 7× match (calls)
+- 7× node:child_process (imports)
+- 7× node:child_process#spawnSync (imports)
 - 7× trim (calls)
 - 6× fetch (calls)
 - 6× next/server (imports)
 - 6× next/server#NextResponse (imports)
-- 6× node:child_process (imports)
-- 6× node:child_process#spawnSync (imports)
 - 6× values (calls)
 - 5× @scip-code/scip#SymbolInformation_Kind (imports)
-- 5× Number (calls)
 - 5× digest (calls)
 - 5× error (calls)
 - 5× localeCompare (calls)
@@ -2243,7 +2361,6 @@
 - 2× lastIndexOf (calls)
 - 2× listRepos (calls)
 - 2× log (calls)
-- 2× neighborhood (calls)
 - 2× node:path#basename (calls)
 - 2× node:path#extname (calls)
 - 2× node:path#extname (imports)
@@ -2273,7 +2390,10 @@
 - 1× @/lib/graph#buildForest (imports)
 - 1× @/lib/graph#collapseByFile (calls)
 - 1× @/lib/graph#collapseByFile (imports)
+- 1× @/lib/librarian#Seed (imports)
 - 1× @/lib/librarian#SymbolRow (imports)
+- 1× @/lib/librarian#expandContext (calls)
+- 1× @/lib/librarian#expandContext (imports)
 - 1× @bufbuild/protobuf#JsonValue (imports)
 - 1× @bufbuild/protobuf#create (calls)
 - 1× @bufbuild/protobuf#create (imports)
@@ -2307,6 +2427,7 @@
 - 1× finally (calls)
 - 1× floor (calls)
 - 1× forEachChild (calls)
+- 1× from (calls)
 - 1× getAliasedSymbol (calls)
 - 1× getEnd (calls)
 - 1× getJSDocCommentsAndTags (calls)
@@ -2335,6 +2456,7 @@
 - 1× isVariableStatement (calls)
 - 1× listPatterns (calls)
 - 1× listRetrievals (calls)
+- 1× neighborhood (calls)
 - 1× next (imports)
 - 1× next#Metadata (imports)
 - 1× next/link (imports)
