@@ -63,6 +63,21 @@ export interface ContextItem {
   via: string;
   chars: number;
   text?: string;
+  /** packed as a reduced signature+doc card, not full source (#41 demotion) */
+  reduced?: boolean;
+}
+
+/**
+ * Opt-in packing demotion (#41). When set, a candidate that does not fit — or
+ * that alone would eat more than `fraction` of the *remaining* budget — is
+ * packed as a reduced `reducedText(symbol)` card instead of being elided, so
+ * every reachable symbol reaches the consumer as full source or a signature
+ * card, never nothing. Off by default, so `librarian review`/eval pack exactly
+ * as before (their golden output is unchanged).
+ */
+export interface Demote {
+  fraction: number;
+  reducedText: (sym: SymbolRow) => string;
 }
 
 export interface ContextPack {
@@ -150,7 +165,7 @@ export function expandContext(
   store: Store,
   roots: RootResolver,
   seeds: Seed[],
-  opts: { strategy?: Strategy; hops?: number; budget?: number; withSource?: boolean } = {}
+  opts: { strategy?: Strategy; hops?: number; budget?: number; withSource?: boolean; demote?: Demote } = {}
 ): ContextPack {
   const strategy = opts.strategy ?? DEFAULT_STRATEGY;
   const hops = opts.hops ?? strategy.hops;
@@ -231,6 +246,7 @@ export function expandContext(
   const items: ContextItem[] = [];
   const elided: ContextPack['elided'] = [];
   const perFile = new Map<string, number>();
+  const demote = opts.demote;
   while (pool.length > 0) {
     let bestIdx = -1;
     let bestEff = -1;
@@ -251,10 +267,32 @@ export function expandContext(
     }
     const [{ c, cost }] = pool.splice(bestIdx, 1);
     const item = toItem(c, withSource);
-    if (used + cost <= budget) {
+    const pack = (chars: number, text?: string) => {
+      if (text !== undefined) {
+        item.reduced = true;
+        item.chars = chars;
+        if (withSource) item.text = text;
+      }
       items.push(item);
-      used += cost;
+      used += chars;
       perFile.set(c.symbol.file, (perFile.get(c.symbol.file) ?? 0) + 1);
+    };
+    const remaining = budget - used;
+    const oversized = demote !== undefined && cost > demote.fraction * remaining;
+    if (cost <= remaining && !oversized) {
+      pack(cost);
+    } else if (demote) {
+      // Full source is missing or too costly: pack the reduced card if it both
+      // fits and actually saves space; otherwise take the full text if it still
+      // fits at all; only truly elide when nothing fits (#41).
+      const card = demote.reducedText(c.symbol);
+      if (card.length > 0 && card.length < cost && card.length <= remaining) {
+        pack(card.length, card);
+      } else if (cost <= remaining) {
+        pack(cost);
+      } else {
+        elided.push({ id: item.id, name: item.name, file: item.file, score: item.score });
+      }
     } else {
       elided.push({ id: item.id, name: item.name, file: item.file, score: item.score });
     }

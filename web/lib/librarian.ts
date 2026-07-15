@@ -41,3 +41,8 @@ export function openLibrarian(): Librarian {
 }
 
 export type { SymbolRow, NeighborRow, RepoRow } from '../../dist/store/store.js';
+
+// The deterministic retrieval pipeline (ADR-3): the web app shares the CLI's
+// single budget-allocation path instead of reimplementing it (#41).
+export { expandContext } from '../../dist/core/retrieval.js';
+export type { Seed, ContextItem, ContextPack, Demote } from '../../dist/core/retrieval.js';
