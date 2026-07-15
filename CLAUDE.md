@@ -40,6 +40,7 @@ librarian map [--json]           # 決定的コードベースマップ(markdown
 librarian graph <symbol>         # k-hop 近傍探索
 librarian eval <golden.json>     # retrieval match 率の計測(ADR-4)
 librarian link [--map f] [--clear]   # repo 間 import 解決(明示宣言、ADR-8)
+librarian resolve-dispatches [--clear]   # フレームワーク規約ディスパッチ解決(命名規約、ADR-9)
 librarian pack <diff>            # 区画付き Context Pack(markdown)
 librarian review <diff> --markdown   # Claude API でレビュー生成(要 ANTHROPIC_API_KEY)
 librarian learn <golden.json> --holdout  # 戦略掃引 → PatternCache 昇格(§4-⑤)
@@ -148,6 +149,15 @@ dlog の「変更前に `dlog why`」と対になるルール:
   エコシステム毎(`/`・`.`・`\`)。冪等・可逆(`--clear`)。宣言が無い db では cross-repo エッジは
   0 本で #27 以前と同一。数値は `docs/cross-repo-baseline.md`(TS link なし 0.429 → あり 1.000、
   Python 0.462 → 1.000)。
+- `src/app/resolve-dispatches.ts` — フレームワーク規約の動的ディスパッチ解決(issue #43 / ADR-9)。
+  抽出器が `resolved=0` で残した `dispatches` エッジ(`dispatch <controller>#<action>`)を、CakePHP の
+  命名規約(`<name>Controller` + 同名 public メソッド)で束縛する後段ステップ(`librarian
+  resolve-dispatches`)。**推測ではなく規約** — 対象が無ければ unresolved のまま、同名 controller が
+  複数なら繋がず拒否。冪等・可逆(`--clear`)・dry-run 可。検出は `php-extractor/extract.php`
+  (redirect/setAction、リテラル文字列のみ)。数値は `docs/dispatch-baseline.md`(resolve なし 0.273 →
+  あり 1.000)。エッジ種別 `dispatches` と契約は `docs/plugin-protocol.md` §8.2。
+- `eval/fixtures/cake-taskflow/` — CakePHP 形の fixture(issue #43)。redirect/setAction で画面遷移する
+  controllers。golden は `eval/golden/cake-taskflow.json`(4 ケース、resolve なし 3/11 → あり 11/11)。
 - `eval/fixtures/cross-repo/` — 相互参照する fixture ペア(`acme-core` = package `@acme/core`
   と、それを package 名で import する `acme-app`)。golden は `eval/golden/cross-repo.json`。
 - `eval/fixtures/cross-repo-py/` — 非 TS の cross-repo ペア(#35。`pycore` = package `taskcore`

@@ -1,0 +1,47 @@
+{
+  "cases": [
+    {
+      "id": "ctf-001",
+      "title": "TasksController::add の後続 — view 画面への redirect ディスパッチ",
+      "note": "add は TaskStore::create を呼んだ後 redirect(['action'=>'view']) で詳細画面へ遷移する。view とその先の TaskStore::get は dispatches エッジを解決しない限りグラフ上に現れない(通常の calls では create しか届かない)。",
+      "target": { "file": "src/Controller/TasksController.php", "symbol": "add" },
+      "expected": [
+        { "file": "src/Model/TaskStore.php", "symbol": "create" },
+        { "file": "src/Controller/TasksController.php", "symbol": "view" },
+        { "file": "src/Model/TaskStore.php", "symbol": "get" }
+      ]
+    },
+    {
+      "id": "ctf-002",
+      "title": "TasksController::complete の後続 — index 画面への redirect ディスパッチ",
+      "note": "complete は TaskStore::markDone を呼んだ後 redirect(['controller'=>'Tasks','action'=>'index']) で一覧画面へ戻る。index とその先の TaskStore::all はディスパッチ経由でのみ到達する。",
+      "target": { "file": "src/Controller/TasksController.php", "symbol": "complete" },
+      "expected": [
+        { "file": "src/Model/TaskStore.php", "symbol": "markDone" },
+        { "file": "src/Controller/TasksController.php", "symbol": "index" },
+        { "file": "src/Model/TaskStore.php", "symbol": "all" }
+      ]
+    },
+    {
+      "id": "ctf-003",
+      "title": "TasksController::archive の後続 — 別コントローラへの cross-controller ディスパッチ",
+      "note": "archive は redirect(['controller'=>'Reports','action'=>'summary']) で ReportsController に遷移する。ReportsController::summary と ReportService::build は cross-controller ディスパッチ経由でのみ到達する(link なしでは 0 件)。",
+      "target": { "file": "src/Controller/TasksController.php", "symbol": "archive" },
+      "expected": [
+        { "file": "src/Controller/ReportsController.php", "symbol": "summary" },
+        { "file": "src/Model/ReportService.php", "symbol": "build" }
+      ]
+    },
+    {
+      "id": "ctf-004",
+      "title": "TasksController::edit の後続 — setAction による view 画面への再描画ディスパッチ",
+      "note": "edit は TaskStore::update を呼んだ後 setAction('view') で同一コントローラの view アクションを再実行する。view とその先の TaskStore::get はディスパッチ経由でのみ到達する。",
+      "target": { "file": "src/Controller/TasksController.php", "symbol": "edit" },
+      "expected": [
+        { "file": "src/Model/TaskStore.php", "symbol": "update" },
+        { "file": "src/Controller/TasksController.php", "symbol": "view" },
+        { "file": "src/Model/TaskStore.php", "symbol": "get" }
+      ]
+    }
+  ]
+}

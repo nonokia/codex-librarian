@@ -34,7 +34,7 @@ export const CANDIDATE_STRATEGIES: NamedStrategy[] = [
   { name: 'wide', strategy: { ...DEFAULT_STRATEGY, hops: 3, decay: 0.75, weights: { ...W, references: 0.85 } } },
   { name: 'damp-low', strategy: { ...DEFAULT_STRATEGY, fileDamp: 0.35 } },
   { name: 'damp-high', strategy: { ...DEFAULT_STRATEGY, fileDamp: 0.7 } },
-  { name: 'calls-focus', strategy: { ...DEFAULT_STRATEGY, decay: 0.7, weights: { calls: 1.0, extends: 0.7, references: 0.5, imports: 0.3 } } },
+  { name: 'calls-focus', strategy: { ...DEFAULT_STRATEGY, decay: 0.7, weights: { calls: 1.0, dispatches: 0.85, extends: 0.7, references: 0.5, imports: 0.3 } } },
 ];
 
 export interface LearnReport {

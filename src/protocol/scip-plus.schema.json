@@ -120,7 +120,7 @@
       ]
     },
     "edgeKind": {
-      "enum": ["calls", "imports", "extends", "references"]
+      "enum": ["calls", "imports", "extends", "references", "dispatches"]
     }
   }
 }

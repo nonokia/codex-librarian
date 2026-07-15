@@ -131,6 +131,10 @@ const EDGE_KIND_FLAGS: Record<EdgeKind, true> = {
   imports: true,
   extends: true,
   references: true,
+  // Framework-convention dynamic dispatch (#43 / ADR-9): a runtime transition
+  // the language grammar cannot see (CakePHP redirect/setAction). Emitted
+  // resolved=false by the plugin, bound later by `resolve-dispatches`.
+  dispatches: true,
 };
 const SYMBOL_KINDS = new Set(Object.keys(SYMBOL_KIND_FLAGS));
 const EDGE_KINDS = new Set(Object.keys(EDGE_KIND_FLAGS));

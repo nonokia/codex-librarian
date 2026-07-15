@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 61
-- symbols: 590
-- edges: 3377 (unresolved: 1965)
-- symbols by kind: class=8, function=186, interface=67, method=47, module=61, testblock=120, typealias=14, variable=87
+- files: 63
+- symbols: 618
+- edges: 3552 (unresolved: 2057)
+- symbols by kind: class=8, function=192, interface=68, method=50, module=63, testblock=129, typealias=14, variable=94
 
 ## Files
 
@@ -77,6 +77,17 @@
 - function loadRegistry L136-146 `(root: string): RegistryEntry[]`
 - function resolveExtractors L154-172 `(root: string): Extractor[]`
 
+### src/app/resolve-dispatches.ts
+
+- variable CONTROLLER_SUFFIX L37-37
+- variable DEFAULT_ACTION L39-39
+- variable DISPATCH_PREFIX L41-41
+- interface DispatchReport L43-54
+- function parseDispatchName L62-71 `(toName: string): { controller: string; action: string } | null`
+- function controllerClass L74-77 `(controller: string): string`
+- function resolveDispatches L79-126 `(store: Store, opts: { dryRun?: boolean; repo?: string } = {}): DispatchReport`
+- function clearDispatches L129-132 `(store: Store): { cleared: number; resolvedDispatches: number }`
+
 ### src/app/review.ts
 
 - variable DEFAULT_MODEL L12-12
@@ -90,16 +101,16 @@
 
 ### src/cli.ts
 
-- interface Flags L20-51
-- function parseArgs L53-103 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
-- function defaultDb L105-108 `(repoRoot?: string): string`
-- function emit L110-112 `(value: unknown, pretty: boolean): void`
-- function fail L114-117 `(message: string): never`
-- variable HELP L119-170
-- function openStore L172-176 `(flags: Flags): Store`
-- function compactSymbol L178-188 `(s: SymbolRow)`
-- function rootResolver L194-202 `(store: Store, flags: Flags): (repo: string) => string | null`
-- function main L204-504 `(): void`
+- interface Flags L21-52
+- function parseArgs L54-104 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
+- function defaultDb L106-109 `(repoRoot?: string): string`
+- function emit L111-113 `(value: unknown, pretty: boolean): void`
+- function fail L115-118 `(message: string): never`
+- variable HELP L120-177
+- function openStore L179-183 `(flags: Flags): Store`
+- function compactSymbol L185-195 `(s: SymbolRow)`
+- function rootResolver L201-209 `(store: Store, flags: Flags): (repo: string) => string | null`
+- function main L211-524 `(): void`
 
 ### src/core/contextpack.ts
 
@@ -257,50 +268,50 @@
 - interface ExtSymbol L89-98
 - interface ExtEdge L100-108
 - variable SYMBOL_KIND_FLAGS L112-128
-- variable EDGE_KIND_FLAGS L129-134
-- variable SYMBOL_KINDS L135-135
-- variable EDGE_KINDS L136-136
-- function parseScipPlus L143-152 `(envelope: unknown): { index: Index; ext: Ext }`
-- function parseCapabilities L160-185 `(raw: unknown): Capabilities`
-- function parseExt L188-198 `(raw: unknown): Ext`
-- function parseExtDocument L200-215 `(raw: unknown, i: number): ExtDocument`
-- function parseExtSymbol L217-239 `(raw: unknown, at: string): ExtSymbol`
-- function parseExtEdge L241-258 `(raw: unknown, at: string): ExtEdge`
-- function encodeScip L264-266 `(index: Index): Uint8Array`
-- function decodeScip L268-270 `(bytes: Uint8Array): Index`
-- function scipFromJson L272-274 `(json: JsonValue): Index`
-- function scipToJson L276-278 `(index: Index): JsonValue`
-- function createScipIndex L281-283 `(init: MessageInitShape<typeof IndexSchema>): Index`
-- variable KIND_TO_SCIP L291-310
-- variable SCIP_TO_KIND L312-314
-- function kindFromScip L316-318 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- variable DEGRADE_KIND_FROM_SCIP L329-358
-- function degradeKindFromScip L360-362 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- typealias LibrarianScheme L378-383
-- interface MonikerParts L385-397
-- typealias DescriptorSuffix L399-407
-- interface ParsedDescriptor L409-413
-- interface ParsedMoniker L415-421
-- interface LibrarianSymbolKey L424-428
-- variable IDENT_CHAR L430-430
-- variable SIMPLE_IDENT L431-431
-- variable TYPE_KINDS L432-432
-- function escapeIdent L434-437 `(name: string): string`
-- function descriptorFor L439-444 `(name: string, kind: SymbolKind): string`
-- function formatLocal L446-449 `(n: number): string`
-- function isLocalSymbol L451-453 `(symbol: string): boolean`
-- function formatMoniker L455-474 `(scheme: LibrarianScheme, parts: MonikerParts): string`
-- function readHeaderField L477-491 `(s: string, i: number, what: string): [string, number]`
-- function readIdent L493-514 `(s: string, i: number): [string, number]`
-- function parseMoniker L516-589 `(moniker: string): ParsedMoniker`
-- function monikerToParts L597-608 `(moniker: string): LibrarianSymbolKey`
-- function monikerToId L610-613 `(moniker: string, kind: SymbolKind): string`
-- typealias ExternalMonikerKey L628-632
-- function externalMonikerKey L634-657 `(moniker: string): ExternalMonikerKey`
-- interface ScipMultiLineRange L664-669
-- interface ScipSingleLineRange L671-675
-- function spanToScipRange L678-683 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
-- function scipRangeToSpan L685-696 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
+- variable EDGE_KIND_FLAGS L129-138
+- variable SYMBOL_KINDS L139-139
+- variable EDGE_KINDS L140-140
+- function parseScipPlus L147-156 `(envelope: unknown): { index: Index; ext: Ext }`
+- function parseCapabilities L164-189 `(raw: unknown): Capabilities`
+- function parseExt L192-202 `(raw: unknown): Ext`
+- function parseExtDocument L204-219 `(raw: unknown, i: number): ExtDocument`
+- function parseExtSymbol L221-243 `(raw: unknown, at: string): ExtSymbol`
+- function parseExtEdge L245-262 `(raw: unknown, at: string): ExtEdge`
+- function encodeScip L268-270 `(index: Index): Uint8Array`
+- function decodeScip L272-274 `(bytes: Uint8Array): Index`
+- function scipFromJson L276-278 `(json: JsonValue): Index`
+- function scipToJson L280-282 `(index: Index): JsonValue`
+- function createScipIndex L285-287 `(init: MessageInitShape<typeof IndexSchema>): Index`
+- variable KIND_TO_SCIP L295-314
+- variable SCIP_TO_KIND L316-318
+- function kindFromScip L320-322 `(kind: SymbolInformation_Kind): SymbolKind | null`
+- variable DEGRADE_KIND_FROM_SCIP L333-362
+- function degradeKindFromScip L364-366 `(kind: SymbolInformation_Kind): SymbolKind | null`
+- typealias LibrarianScheme L382-387
+- interface MonikerParts L389-401
+- typealias DescriptorSuffix L403-411
+- interface ParsedDescriptor L413-417
+- interface ParsedMoniker L419-425
+- interface LibrarianSymbolKey L428-432
+- variable IDENT_CHAR L434-434
+- variable SIMPLE_IDENT L435-435
+- variable TYPE_KINDS L436-436
+- function escapeIdent L438-441 `(name: string): string`
+- function descriptorFor L443-448 `(name: string, kind: SymbolKind): string`
+- function formatLocal L450-453 `(n: number): string`
+- function isLocalSymbol L455-457 `(symbol: string): boolean`
+- function formatMoniker L459-478 `(scheme: LibrarianScheme, parts: MonikerParts): string`
+- function readHeaderField L481-495 `(s: string, i: number, what: string): [string, number]`
+- function readIdent L497-518 `(s: string, i: number): [string, number]`
+- function parseMoniker L520-593 `(moniker: string): ParsedMoniker`
+- function monikerToParts L601-612 `(moniker: string): LibrarianSymbolKey`
+- function monikerToId L614-617 `(moniker: string, kind: SymbolKind): string`
+- typealias ExternalMonikerKey L632-636
+- function externalMonikerKey L638-661 `(moniker: string): ExternalMonikerKey`
+- interface ScipMultiLineRange L668-673
+- interface ScipSingleLineRange L675-679
+- function spanToScipRange L682-687 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
+- function scipRangeToSpan L689-700 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
 
 ### src/store/store.ts
 
@@ -317,7 +328,7 @@
 - interface CollapsedEdge L102-110
 - variable SCHEMA_VERSION L113-113
 - variable SCHEMA L115-196
-- class Store L198-859
+- class Store L198-918
 - method Store.constructor L201-220 `(path: string)`
 - method Store.close L222-224 `(): void`
 - method Store.getMeta L226-231 `(key: string): string | null`
@@ -379,12 +390,15 @@
 - method Store.symbolById L730-735 `(id: string): SymbolRow | null`
 - method Store.unresolvedEdges L742-759 `(repo?: string): UnresolvedEdge[]`
 - method Store.topLevelSymbolsNamed L767-777 `(repo: string, name: string): SymbolRow[]`
-- method Store.moduleSymbol L779-784 `(repo: string, file: string): SymbolRow | null`
-- method Store.linkEdges L792-813 `(links: { fromId: string; toName: string; kind: EdgeKind; toId: string }[]): number`
-- method Store.crossRepoEdges L816-818 `(): JoinedEdge[]`
-- method Store.countCrossRepoEdges L820-829 `(): number`
-- method Store.unlinkCrossRepo L832-858 `(): number`
-- function rowToSymbol L861-875 `(r: unknown): SymbolRow`
+- method Store.dispatchTargets L788-798 `(repo: string, controllerClass: string, action: string): SymbolRow[]`
+- method Store.moduleSymbol L800-805 `(repo: string, file: string): SymbolRow | null`
+- method Store.linkEdges L813-834 `(links: { fromId: string; toName: string; kind: EdgeKind; toId: string }[]): number`
+- method Store.crossRepoEdges L837-839 `(): JoinedEdge[]`
+- method Store.countCrossRepoEdges L841-850 `(): number`
+- method Store.countResolvedDispatches L853-858 `(): number`
+- method Store.unlinkDispatches L866-888 `(): number`
+- method Store.unlinkCrossRepo L891-917 `(): number`
+- function rowToSymbol L920-934 `(r: unknown): SymbolRow`
 
 ### src/test/collapsed-graph.test.ts
 
@@ -429,6 +443,24 @@
 - testblock test(files route to their extractor and results merge into one store) L84-109
 - testblock test(an extractor only runs when one of its files changed) L111-127
 - testblock test(diff hunks in files no extractor claims fall into unknownFiles) L129-141
+
+### src/test/dispatches.test.ts
+
+- variable repoRoot L25-25
+- variable fixture L26-26
+- variable golden L27-27
+- variable hasPhp L29-29
+- function indexedFixture L31-35 `(): Store`
+- function hasDispatch L38-44 `(store: Store, fromName: string, toName: string): boolean`
+- testblock test(parseDispatchName splits the structured binding name) L46-54
+- testblock test(extractor emits redirect/setAction as unresolved dispatches edges) L56-71
+- testblock test(controller-only redirect defaults the action to index) L73-89
+- testblock test(only literal-string routing is recorded (dynamic dispatch is out of scope)) L91-118
+- testblock test(resolve-dispatches binds by convention; missing target is reported, not guessed) L120-141
+- testblock test(missing convention target stays unresolved) L143-164
+- testblock test(ambiguous controller class is refused, not tiebroken) L166-193
+- testblock test(resolve-dispatches is idempotent, reversible, and dry-run writes nothing) L195-215
+- testblock test(eval A/B: resolving dispatches lifts recall from partial to perfect) L217-231
 
 ### src/test/eval.test.ts
 
@@ -811,11 +843,13 @@
 - src/app/registry.ts → src/extractors/terraform.ts
 - src/app/registry.ts → src/extractors/ts.ts
 - src/app/registry.ts → src/protocol/extractor.ts
+- src/app/resolve-dispatches.ts → src/store/store.ts
 - src/app/review.ts → src/core/contextpack.ts
 - src/cli.ts → src/app/eval.ts
 - src/cli.ts → src/app/index.ts
 - src/cli.ts → src/app/link.ts
 - src/cli.ts → src/app/loop.ts
+- src/cli.ts → src/app/resolve-dispatches.ts
 - src/cli.ts → src/app/review.ts
 - src/cli.ts → src/core/contextpack.ts
 - src/cli.ts → src/core/diff.ts
@@ -869,6 +903,10 @@
 - src/test/dispatch.test.ts → src/extractors/ts.ts
 - src/test/dispatch.test.ts → src/protocol/extractor.ts
 - src/test/dispatch.test.ts → src/store/store.ts
+- src/test/dispatches.test.ts → src/app/eval.ts
+- src/test/dispatches.test.ts → src/app/index.ts
+- src/test/dispatches.test.ts → src/app/resolve-dispatches.ts
+- src/test/dispatches.test.ts → src/store/store.ts
 - src/test/eval.test.ts → src/app/eval.ts
 - src/test/eval.test.ts → src/app/index.ts
 - src/test/eval.test.ts → src/core/diff.ts
@@ -1091,6 +1129,21 @@
 - src/app/registry.ts resolveExtractors —calls→ src/app/registry.ts entryToExtractor
 - src/app/registry.ts resolveExtractors —calls→ src/app/registry.ts loadRegistry
 - src/app/registry.ts resolveExtractors —references→ src/protocol/extractor.ts Extractor
+- src/app/resolve-dispatches.ts clearDispatches —references→ src/store/store.ts Store
+- src/app/resolve-dispatches.ts clearDispatches —calls→ src/store/store.ts Store.countResolvedDispatches
+- src/app/resolve-dispatches.ts clearDispatches —calls→ src/store/store.ts Store.unlinkDispatches
+- src/app/resolve-dispatches.ts controllerClass —references→ src/app/resolve-dispatches.ts CONTROLLER_SUFFIX
+- src/app/resolve-dispatches.ts parseDispatchName —references→ src/app/resolve-dispatches.ts DISPATCH_PREFIX
+- src/app/resolve-dispatches.ts resolveDispatches —references→ src/app/resolve-dispatches.ts DispatchReport
+- src/app/resolve-dispatches.ts resolveDispatches —calls→ src/app/resolve-dispatches.ts controllerClass
+- src/app/resolve-dispatches.ts resolveDispatches —calls→ src/app/resolve-dispatches.ts parseDispatchName
+- src/app/resolve-dispatches.ts resolveDispatches —references→ src/store/store.ts EdgeKind
+- src/app/resolve-dispatches.ts resolveDispatches —references→ src/store/store.ts Store
+- src/app/resolve-dispatches.ts resolveDispatches —references→ src/store/store.ts SymbolRow
+- src/app/resolve-dispatches.ts resolveDispatches —calls→ src/store/store.ts Store.countResolvedDispatches
+- src/app/resolve-dispatches.ts resolveDispatches —calls→ src/store/store.ts Store.dispatchTargets
+- src/app/resolve-dispatches.ts resolveDispatches —calls→ src/store/store.ts Store.linkEdges
+- src/app/resolve-dispatches.ts resolveDispatches —calls→ src/store/store.ts Store.unresolvedEdges
 - src/app/review.ts ReviewResult —references→ src/app/review.ts ReviewFinding
 - src/app/review.ts buildReviewRequest —references→ src/app/review.ts OUTPUT_SCHEMA
 - src/app/review.ts buildReviewRequest —references→ src/app/review.ts SYSTEM_PROMPT
@@ -1112,6 +1165,8 @@
 - src/cli.ts main —calls→ src/app/link.ts unlink
 - src/cli.ts main —calls→ src/app/loop.ts learn
 - src/cli.ts main —calls→ src/app/loop.ts recordReviewOutcome
+- src/cli.ts main —calls→ src/app/resolve-dispatches.ts clearDispatches
+- src/cli.ts main —calls→ src/app/resolve-dispatches.ts resolveDispatches
 - src/cli.ts main —calls→ src/app/review.ts buildReviewRequest
 - src/cli.ts main —calls→ src/app/review.ts generateReview
 - src/cli.ts main —calls→ src/app/review.ts renderReviewMarkdown
@@ -1456,6 +1511,8 @@
 - src/store/store.ts Store.constructor —calls→ src/store/store.ts Store.setMeta
 - src/store/store.ts Store.crossRepoEdges —references→ src/store/store.ts JoinedEdge
 - src/store/store.ts Store.crossRepoEdges —calls→ src/store/store.ts Store.resolvedEdgesJoined
+- src/store/store.ts Store.dispatchTargets —references→ src/store/store.ts SymbolRow
+- src/store/store.ts Store.dispatchTargets —references→ src/store/store.ts rowToSymbol
 - src/store/store.ts Store.edgesFromFile —references→ src/store/store.ts EdgeKind
 - src/store/store.ts Store.edgesFromFile —references→ src/store/store.ts EdgeRow
 - src/store/store.ts Store.edgesOf —references→ src/store/store.ts EdgeKind
@@ -1594,6 +1651,64 @@
 - src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/test/dispatch.test.ts FooExtractor
 - src/test/dispatch.test.ts test(files route to their extractor and results merge into one store) —calls→ src/test/dispatch.test.ts polyglotRepo
 - src/test/dispatch.test.ts FooExtractor.extract —references→ src/protocol/extractor.ts ExtractionResult
+- src/test/dispatches.test.ts fixture —references→ src/test/dispatches.test.ts repoRoot
+- src/test/dispatches.test.ts golden —references→ src/test/dispatches.test.ts repoRoot
+- src/test/dispatches.test.ts hasDispatch —references→ src/store/store.ts Store
+- src/test/dispatches.test.ts hasDispatch —calls→ src/store/store.ts Store.edgesOf
+- src/test/dispatches.test.ts hasDispatch —calls→ src/store/store.ts Store.findSymbols
+- src/test/dispatches.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
+- src/test/dispatches.test.ts indexedFixture —calls→ src/store/store.ts Store
+- src/test/dispatches.test.ts indexedFixture —references→ src/store/store.ts Store
+- src/test/dispatches.test.ts indexedFixture —references→ src/test/dispatches.test.ts fixture
+- src/test/dispatches.test.ts test(ambiguous controller class is refused, not tiebroken) —calls→ src/app/index.ts indexRepo
+- src/test/dispatches.test.ts test(ambiguous controller class is refused, not tiebroken) —calls→ src/app/resolve-dispatches.ts resolveDispatches
+- src/test/dispatches.test.ts test(ambiguous controller class is refused, not tiebroken) —calls→ src/store/store.ts Store
+- src/test/dispatches.test.ts test(ambiguous controller class is refused, not tiebroken) —calls→ src/store/store.ts Store.close
+- src/test/dispatches.test.ts test(ambiguous controller class is refused, not tiebroken) —references→ src/test/dispatches.test.ts hasPhp
+- src/test/dispatches.test.ts test(controller-only redirect defaults the action to index) —calls→ src/app/index.ts indexRepo
+- src/test/dispatches.test.ts test(controller-only redirect defaults the action to index) —calls→ src/store/store.ts Store
+- src/test/dispatches.test.ts test(controller-only redirect defaults the action to index) —calls→ src/store/store.ts Store.close
+- src/test/dispatches.test.ts test(controller-only redirect defaults the action to index) —calls→ src/test/dispatches.test.ts hasDispatch
+- src/test/dispatches.test.ts test(controller-only redirect defaults the action to index) —references→ src/test/dispatches.test.ts hasPhp
+- src/test/dispatches.test.ts test(eval A/B: resolving dispatches lifts recall from partial to perfect) —calls→ src/app/eval.ts loadGoldenFile
+- src/test/dispatches.test.ts test(eval A/B: resolving dispatches lifts recall from partial to perfect) —calls→ src/app/eval.ts runEval
+- src/test/dispatches.test.ts test(eval A/B: resolving dispatches lifts recall from partial to perfect) —calls→ src/app/resolve-dispatches.ts resolveDispatches
+- src/test/dispatches.test.ts test(eval A/B: resolving dispatches lifts recall from partial to perfect) —calls→ src/store/store.ts Store.close
+- src/test/dispatches.test.ts test(eval A/B: resolving dispatches lifts recall from partial to perfect) —references→ src/test/dispatches.test.ts fixture
+- src/test/dispatches.test.ts test(eval A/B: resolving dispatches lifts recall from partial to perfect) —references→ src/test/dispatches.test.ts golden
+- src/test/dispatches.test.ts test(eval A/B: resolving dispatches lifts recall from partial to perfect) —references→ src/test/dispatches.test.ts hasPhp
+- src/test/dispatches.test.ts test(eval A/B: resolving dispatches lifts recall from partial to perfect) —calls→ src/test/dispatches.test.ts indexedFixture
+- src/test/dispatches.test.ts test(extractor emits redirect/setAction as unresolved dispatches edges) —calls→ src/store/store.ts Store.close
+- src/test/dispatches.test.ts test(extractor emits redirect/setAction as unresolved dispatches edges) —calls→ src/store/store.ts Store.countResolvedDispatches
+- src/test/dispatches.test.ts test(extractor emits redirect/setAction as unresolved dispatches edges) —calls→ src/test/dispatches.test.ts hasDispatch
+- src/test/dispatches.test.ts test(extractor emits redirect/setAction as unresolved dispatches edges) —references→ src/test/dispatches.test.ts hasPhp
+- src/test/dispatches.test.ts test(extractor emits redirect/setAction as unresolved dispatches edges) —calls→ src/test/dispatches.test.ts indexedFixture
+- src/test/dispatches.test.ts test(missing convention target stays unresolved) —calls→ src/app/index.ts indexRepo
+- src/test/dispatches.test.ts test(missing convention target stays unresolved) —calls→ src/app/resolve-dispatches.ts resolveDispatches
+- src/test/dispatches.test.ts test(missing convention target stays unresolved) —calls→ src/store/store.ts Store
+- src/test/dispatches.test.ts test(missing convention target stays unresolved) —calls→ src/store/store.ts Store.close
+- src/test/dispatches.test.ts test(missing convention target stays unresolved) —references→ src/test/dispatches.test.ts hasPhp
+- src/test/dispatches.test.ts test(only literal-string routing is recorded (dynamic dispatch is out of scope)) —calls→ src/app/index.ts indexRepo
+- src/test/dispatches.test.ts test(only literal-string routing is recorded (dynamic dispatch is out of scope)) —calls→ src/store/store.ts Store
+- src/test/dispatches.test.ts test(only literal-string routing is recorded (dynamic dispatch is out of scope)) —calls→ src/store/store.ts Store.close
+- src/test/dispatches.test.ts test(only literal-string routing is recorded (dynamic dispatch is out of scope)) —calls→ src/store/store.ts Store.edgesOf
+- src/test/dispatches.test.ts test(only literal-string routing is recorded (dynamic dispatch is out of scope)) —calls→ src/store/store.ts Store.findSymbols
+- src/test/dispatches.test.ts test(only literal-string routing is recorded (dynamic dispatch is out of scope)) —references→ src/test/dispatches.test.ts hasPhp
+- src/test/dispatches.test.ts test(parseDispatchName splits the structured binding name) —calls→ src/app/resolve-dispatches.ts parseDispatchName
+- src/test/dispatches.test.ts test(resolve-dispatches binds by convention; missing target is reported, not guessed) —calls→ src/app/resolve-dispatches.ts resolveDispatches
+- src/test/dispatches.test.ts test(resolve-dispatches binds by convention; missing target is reported, not guessed) —calls→ src/store/store.ts Store.close
+- src/test/dispatches.test.ts test(resolve-dispatches binds by convention; missing target is reported, not guessed) —calls→ src/store/store.ts Store.edgesOf
+- src/test/dispatches.test.ts test(resolve-dispatches binds by convention; missing target is reported, not guessed) —calls→ src/store/store.ts Store.findSymbols
+- src/test/dispatches.test.ts test(resolve-dispatches binds by convention; missing target is reported, not guessed) —calls→ src/store/store.ts Store.neighborhood
+- src/test/dispatches.test.ts test(resolve-dispatches binds by convention; missing target is reported, not guessed) —references→ src/test/dispatches.test.ts hasPhp
+- src/test/dispatches.test.ts test(resolve-dispatches binds by convention; missing target is reported, not guessed) —calls→ src/test/dispatches.test.ts indexedFixture
+- src/test/dispatches.test.ts test(resolve-dispatches is idempotent, reversible, and dry-run writes nothing) —calls→ src/app/resolve-dispatches.ts clearDispatches
+- src/test/dispatches.test.ts test(resolve-dispatches is idempotent, reversible, and dry-run writes nothing) —calls→ src/app/resolve-dispatches.ts resolveDispatches
+- src/test/dispatches.test.ts test(resolve-dispatches is idempotent, reversible, and dry-run writes nothing) —calls→ src/store/store.ts Store.close
+- src/test/dispatches.test.ts test(resolve-dispatches is idempotent, reversible, and dry-run writes nothing) —calls→ src/store/store.ts Store.countResolvedDispatches
+- src/test/dispatches.test.ts test(resolve-dispatches is idempotent, reversible, and dry-run writes nothing) —calls→ src/test/dispatches.test.ts hasDispatch
+- src/test/dispatches.test.ts test(resolve-dispatches is idempotent, reversible, and dry-run writes nothing) —references→ src/test/dispatches.test.ts hasPhp
+- src/test/dispatches.test.ts test(resolve-dispatches is idempotent, reversible, and dry-run writes nothing) —calls→ src/test/dispatches.test.ts indexedFixture
 - src/test/eval.test.ts test(parseUnifiedDiff extracts new-side ranges per file) —calls→ src/core/diff.ts parseUnifiedDiff
 - src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/app/index.ts indexRepo
 - src/test/eval.test.ts test(retrieveForDiff finds callers of a changed function; budget elides) —calls→ src/core/retrieval.ts retrieveForDiff
@@ -2208,70 +2323,72 @@
 
 ## Unresolved (aggregated)
 
-- 90× map (calls)
-- 78× equal (calls)
-- 70× node:path#join (calls)
-- 62× ok (calls)
-- 46× some (calls)
-- 40× deepEqual (calls)
-- 38× get (calls)
-- 37× prepare (calls)
-- 35× filter (calls)
+- 93× map (calls)
+- 86× equal (calls)
+- 76× node:path#join (calls)
+- 68× ok (calls)
+- 48× some (calls)
+- 43× deepEqual (calls)
+- 40× prepare (calls)
+- 39× get (calls)
+- 36× filter (calls)
+- 35× node:fs#mkdtempSync (calls)
+- 35× node:os#tmpdir (calls)
+- 34× node:fs#writeFileSync (calls)
 - 34× stringify (calls)
-- 32× node:path (imports)
+- 33× node:path (imports)
+- 32× node:fs (imports)
 - 31× find (calls)
-- 31× node:fs (imports)
-- 31× node:fs#mkdtempSync (calls)
-- 31× node:os#tmpdir (calls)
 - 30× Error (calls)
-- 30× node:fs#writeFileSync (calls)
+- 30× node:fs#rmSync (calls)
 - 28× join (calls)
-- 27× node:path#join (imports)
-- 27× push (calls)
-- 26× Map (calls)
+- 28× node:path#join (imports)
+- 28× push (calls)
+- 27× Map (calls)
 - 26× Set (calls)
-- 26× node:fs#rmSync (calls)
 - 25× has (calls)
-- 21× all (calls)
-- 21× split (calls)
-- 20× includes (calls)
-- 20× slice (calls)
-- 19× node:assert/strict (imports)
-- 19× node:test (imports)
-- 19× node:test#test (calls)
-- 19× node:test#test (imports)
-- 19× set (calls)
-- 18× node:child_process#spawnSync (calls)
-- 18× node:fs#mkdirSync (calls)
-- 18× node:fs#writeFileSync (imports)
-- 17× node:fs#mkdtempSync (imports)
-- 17× node:os (imports)
-- 17× node:os#tmpdir (imports)
-- 17× node:path#resolve (calls)
+- 23× all (calls)
+- 22× node:fs#mkdirSync (calls)
+- 22× split (calls)
+- 21× includes (calls)
+- 21× slice (calls)
+- 20× node:assert/strict (imports)
+- 20× node:test (imports)
+- 20× node:test#test (calls)
+- 20× node:test#test (imports)
+- 20× set (calls)
+- 19× node:child_process#spawnSync (calls)
+- 19× node:fs#writeFileSync (imports)
+- 18× node:fs#mkdtempSync (imports)
+- 18× node:os (imports)
+- 18× node:os#tmpdir (imports)
+- 18× node:path#resolve (calls)
+- 16× node:path#dirname (calls)
+- 16× node:path#resolve (imports)
 - 16× parse (calls)
 - 15× node:fs#existsSync (calls)
-- 15× node:path#dirname (calls)
-- 15× node:path#resolve (imports)
-- 14× node:fs#mkdirSync (imports)
-- 14× node:path#dirname (imports)
-- 14× sort (calls)
+- 15× node:fs#mkdirSync (imports)
+- 15× node:path#dirname (imports)
+- 15× sort (calls)
 - 12× json (calls)
-- 11× node:fs#rmSync (imports)
-- 11× node:url (imports)
-- 11× node:url#fileURLToPath (calls)
-- 11× node:url#fileURLToPath (imports)
-- 11× run (calls)
+- 12× node:fs#rmSync (imports)
+- 12× node:url (imports)
+- 12× node:url#fileURLToPath (calls)
+- 12× node:url#fileURLToPath (imports)
+- 12× run (calls)
 - 10× node:fs#readFileSync (calls)
+- 10× startsWith (calls)
 - 10× throws (calls)
 - 9× @scip-code/scip (imports)
 - 9× add (calls)
+- 9× exec (calls)
 - 9× isArray (calls)
 - 9× max (calls)
 - 9× node:fs#readFileSync (imports)
-- 9× startsWith (calls)
 - 8× endsWith (calls)
-- 8× exec (calls)
 - 8× keys (calls)
+- 8× node:child_process (imports)
+- 8× node:child_process#spawnSync (imports)
 - 8× node:fs#existsSync (imports)
 - 8× now (calls)
 - 8× test (calls)
@@ -2282,17 +2399,15 @@
 - 7× Number (calls)
 - 7× entries (calls)
 - 7× match (calls)
-- 7× node:child_process (imports)
-- 7× node:child_process#spawnSync (imports)
 - 7× trim (calls)
+- 7× values (calls)
 - 6× fetch (calls)
+- 6× localeCompare (calls)
 - 6× next/server (imports)
 - 6× next/server#NextResponse (imports)
-- 6× values (calls)
 - 5× @scip-code/scip#SymbolInformation_Kind (imports)
 - 5× digest (calls)
 - 5× error (calls)
-- 5× localeCompare (calls)
 - 5× next/server#NextRequest (imports)
 - 5× node:crypto#createHash (calls)
 - 5× node:path#delimiter (imports)
@@ -2326,6 +2441,7 @@
 - 3× isMethodDeclaration (calls)
 - 3× isPropertyAccessExpression (calls)
 - 3× isVariableDeclaration (calls)
+- 3× lastIndexOf (calls)
 - 3× node:sqlite (imports)
 - 3× node:sqlite#DatabaseSync (calls)
 - 3× node:sqlite#DatabaseSync (imports)
@@ -2358,13 +2474,13 @@
 - 2× isJsxSelfClosingElement (calls)
 - 2× isNewExpression (calls)
 - 2× isTypeAliasDeclaration (calls)
-- 2× lastIndexOf (calls)
 - 2× listRepos (calls)
 - 2× log (calls)
 - 2× node:path#basename (calls)
 - 2× node:path#extname (calls)
 - 2× node:path#extname (imports)
 - 2× notEqual (calls)
+- 2× pop (calls)
 - 2× reduce (calls)
 - 2× replace (calls)
 - 2× symbolById (calls)
@@ -2465,7 +2581,6 @@
 - 1× node:path#basename (imports)
 - 1× node:path#isAbsolute (calls)
 - 1× node:path#isAbsolute (imports)
-- 1× pop (calls)
 - 1× react#useCallback (calls)
 - 1× react#useCallback (imports)
 - 1× replaceAll (calls)
