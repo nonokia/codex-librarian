@@ -5,7 +5,9 @@
 ```
 protocol/  →  extractors/  →  app/  →  cli.ts
    ↓                            ↑
-store/  ←──── core/ ───────────┘
+store/  ←──── core/ ───────────┤
+                                │
+              llm/  ───────────┘   (web/ も親 dist/ 経由で llm/ を参照)
 ```
 
 - **protocol/** — 抽出器⇄store の交換契約(公開面 = プラグイン ABI、issue #22 / ADR-7)。
@@ -19,11 +21,18 @@ store/  ←──── core/ ───────────┘
   リファレンスプラグイン、`go-extractor/` / `php-extractor/` を起動)。
 - **core/** — 決定的ロジック。LLM にも子プロセスにも触らない。`diff.ts` /
   `retrieval.ts` / `contextpack.ts` / `map.ts`。
+- **llm/** — LLM プロバイダ抽象(issue #42 / ADR-10)。`provider.ts`(`LlmRequest` /
+  `LlmResponse` / `LlmProvider` と型付きエラー)、`registry.ts`(`LLM_PROVIDER` env に
+  よる明示選択 — 既定 anthropic、暗黙フォールバックなし)、`providers/`(anthropic /
+  openai-compatible の 2 ビルトイン)。他の src レイヤに依存しない葉。プロバイダ名を
+  知るのはこのディレクトリだけで、消費者(`app/review.ts`、web の ask route)は
+  抽象と registry のみ import する。
 - **store/** — `store.ts`(SQLite、`node:sqlite`)。
 - **app/** — ディスパッチと外側のオーケストレーション。`index.ts`(ファイル発見・
   拡張子ルーティング・`indexRepo`/`importScip`)、`registry.ts`(ビルトイン +
   `.librarian/extractors.json` の合成・上書き)、`link.ts`(repo 間 import 解決 —
-  明示宣言を入力に unresolved エッジを再解決、ADR-8)、`review.ts`(Claude API)、
+  明示宣言を入力に unresolved エッジを再解決、ADR-8)、`review.ts`(LLM レビュー生成 —
+  プロバイダは `llm/` の registry が解決、ADR-10)、
   `eval.ts`(ADR-4 評価ハーネス)、`loop.ts`(自己改善ループ)。
 - **cli.ts** — エントリポイント(`dist/cli.js` は不変)。
 

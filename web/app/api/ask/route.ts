@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
 import { openLibrarian, expandContext } from '@/lib/librarian';
 import type { SymbolRow, Seed } from '@/lib/librarian';
+import { resolveProvider, LlmAuthError } from '@/lib/llm';
 
-const MODEL = process.env.LIBRARIAN_MODEL ?? 'claude-opus-4-8';
 // Budget + oversized threshold are env-overridable (#41). The budget governs
 // *retrieved* context (seeds are free); a candidate over `fraction` of the
 // remaining budget demotes to a signature card instead of crowding everyone out.
@@ -32,8 +31,9 @@ function signatureCard(sym: SymbolRow): string {
  * delegated to the shared deterministic pipeline `expandContext()` (ADR-3),
  * the same one `librarian review` uses — so the two no longer maintain rival
  * budget logic, and the seed-starves-retrieval trap review already fixed does
- * not reappear here (#41). Requires ANTHROPIC_API_KEY; degrades to a clear 503
- * without it.
+ * not reappear here (#41). The LLM call goes through the provider registry
+ * (#42 / ADR-10) — default provider needs ANTHROPIC_API_KEY; missing
+ * credentials degrade to a clear 503.
  */
 export async function POST(req: NextRequest) {
   const { question } = (await req.json()) as { question?: string };
@@ -83,11 +83,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const client = new Anthropic();
-    const response = await client.messages.create({
-      model: MODEL,
-      max_tokens: 4096,
-      thinking: { type: 'adaptive' },
+    const provider = resolveProvider();
+    const response = await provider.complete({
+      maxTokens: 4096,
       system:
         'あなたはコードベースの司書である。与えられたコード文脈だけを根拠に、簡潔な日本語で質問に答える。' +
         '文脈に無いことは推測せず「文脈に無い」と言う。根拠にしたシンボル名を文中で挙げる。' +
@@ -96,21 +94,14 @@ export async function POST(req: NextRequest) {
         { role: 'user', content: `質問: ${question}\n\n## コード文脈(グラフ近傍)\n\n${sections.join('\n\n')}` },
       ],
     });
-    if (response.stop_reason === 'refusal') {
+    if (response.refused) {
       return NextResponse.json({ error: 'the model declined this question' }, { status: 502 });
     }
-    const answer = response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-      .map((b) => b.text)
-      .join('');
-    return NextResponse.json({ answer, cited });
+    return NextResponse.json({ answer: response.text, cited });
   } catch (err) {
-    const noCreds =
-      err instanceof Anthropic.AuthenticationError ||
-      (err instanceof Error && /authentication method/i.test(err.message));
-    if (noCreds) {
+    if (err instanceof LlmAuthError) {
       return NextResponse.json(
-        { error: 'ANTHROPIC_API_KEY が未設定です。サーバ起動時に環境変数で渡してください(文脈の選定までは動いています — 下の「参照した蔵書」参照)。', cited },
+        { error: `${err.message}(文脈の選定までは動いています — 下の「参照した蔵書」参照)`, cited },
         { status: 503 }
       );
     }
