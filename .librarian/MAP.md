@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 76
-- symbols: 749
-- edges: 4246 (unresolved: 2409)
-- symbols by kind: class=15, function=215, interface=75, method=60, module=76, testblock=172, typealias=14, variable=122
+- files: 78
+- symbols: 775
+- edges: 4384 (unresolved: 2484)
+- symbols by kind: class=16, function=221, interface=75, method=62, module=78, testblock=180, typealias=14, variable=129
 
 ## Files
 
@@ -67,15 +67,15 @@
 
 ### src/app/registry.ts
 
-- function builtinExtractors L36-47 `(): Extractor[]`
-- interface RegistryEntry L50-61
-- function onPath L63-68 `(name: string): string | null`
-- function registryCommandResolver L75-85 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
-- function entryToExtractor L87-96 `(entry: RegistryEntry, root: string): SubprocessExtractor`
-- function parseRegistry L99-111 `(raw: unknown): RegistryEntry[]`
-- function parseEntry L113-139 `(raw: unknown, i: number): RegistryEntry`
-- function loadRegistry L142-152 `(root: string): RegistryEntry[]`
-- function resolveExtractors L160-178 `(root: string): Extractor[]`
+- function builtinExtractors L37-49 `(): Extractor[]`
+- interface RegistryEntry L52-63
+- function onPath L65-70 `(name: string): string | null`
+- function registryCommandResolver L77-87 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
+- function entryToExtractor L89-98 `(entry: RegistryEntry, root: string): SubprocessExtractor`
+- function parseRegistry L101-113 `(raw: unknown): RegistryEntry[]`
+- function parseEntry L115-141 `(raw: unknown, i: number): RegistryEntry`
+- function loadRegistry L144-154 `(root: string): RegistryEntry[]`
+- function resolveExtractors L162-180 `(root: string): Extractor[]`
 
 ### src/app/resolve-dispatches.ts
 
@@ -172,6 +172,16 @@
 - variable UNAVAILABLE_WARNING L52-55
 - class GoExtractor L57-66
 - method GoExtractor.constructor L58-65 `()`
+
+### src/extractors/gradle.ts
+
+- function gradleExtractorSourceDir L31-33 `(): string`
+- function onPath L35-40 `(name: string): string | null`
+- function resolveGradleExtractorCommand L42-52 `(): SubprocessCommand | null`
+- variable UNAVAILABLE_WARNING L54-57
+- class GradleExtractor L59-72
+- method GradleExtractor.constructor L60-67 `()`
+- method GradleExtractor.claims L69-71 `(relPath: string): boolean`
 
 ### src/extractors/k8s.ts
 
@@ -288,17 +298,18 @@
 
 ### src/protocol/scip-emit.ts
 
-- variable LANGUAGE L37-46
-- function parentOf L49-58 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
-- function extractionResultsToScipPlus L60-190 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
+- variable LANGUAGE L37-47
+- function parentOf L50-59 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
+- function extractionResultsToScipPlus L61-191 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
 
 ### src/protocol/scip-export.ts
 
 - variable SCHEME_BY_EXTENSION L22-40
 - function isDockerfilePath L48-51 `(relPath: string): boolean`
-- function schemeForPath L54-56 `(path: string): LibrarianScheme | undefined`
-- interface ScipExportResult L58-70
-- function storeToScipPlus L72-130 `(store: Store, repo: string): ScipExportResult`
+- function isGradleSchemePath L54-58 `(relPath: string): boolean`
+- function schemeForPath L61-65 `(path: string): LibrarianScheme | undefined`
+- interface ScipExportResult L67-79
+- function storeToScipPlus L81-139 `(store: Store, repo: string): ScipExportResult`
 
 ### src/protocol/scip-ingest.ts
 
@@ -349,31 +360,31 @@
 - function kindFromScip L338-340 `(kind: SymbolInformation_Kind): SymbolKind | null`
 - variable DEGRADE_KIND_FROM_SCIP L351-380
 - function degradeKindFromScip L382-384 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- typealias LibrarianScheme L400-408
-- interface MonikerParts L410-422
-- typealias DescriptorSuffix L424-432
-- interface ParsedDescriptor L434-438
-- interface ParsedMoniker L440-446
-- interface LibrarianSymbolKey L449-453
-- variable IDENT_CHAR L455-455
-- variable SIMPLE_IDENT L456-456
-- variable TYPE_KINDS L457-457
-- function escapeIdent L459-462 `(name: string): string`
-- function descriptorFor L464-469 `(name: string, kind: SymbolKind): string`
-- function formatLocal L471-474 `(n: number): string`
-- function isLocalSymbol L476-478 `(symbol: string): boolean`
-- function formatMoniker L480-499 `(scheme: LibrarianScheme, parts: MonikerParts): string`
-- function readHeaderField L502-516 `(s: string, i: number, what: string): [string, number]`
-- function readIdent L518-539 `(s: string, i: number): [string, number]`
-- function parseMoniker L541-614 `(moniker: string): ParsedMoniker`
-- function monikerToParts L622-633 `(moniker: string): LibrarianSymbolKey`
-- function monikerToId L635-638 `(moniker: string, kind: SymbolKind): string`
-- typealias ExternalMonikerKey L653-657
-- function externalMonikerKey L659-682 `(moniker: string): ExternalMonikerKey`
-- interface ScipMultiLineRange L689-694
-- interface ScipSingleLineRange L696-700
-- function spanToScipRange L703-708 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
-- function scipRangeToSpan L710-721 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
+- typealias LibrarianScheme L400-409
+- interface MonikerParts L411-423
+- typealias DescriptorSuffix L425-433
+- interface ParsedDescriptor L435-439
+- interface ParsedMoniker L441-447
+- interface LibrarianSymbolKey L450-454
+- variable IDENT_CHAR L456-456
+- variable SIMPLE_IDENT L457-457
+- variable TYPE_KINDS L458-458
+- function escapeIdent L460-463 `(name: string): string`
+- function descriptorFor L465-470 `(name: string, kind: SymbolKind): string`
+- function formatLocal L472-475 `(n: number): string`
+- function isLocalSymbol L477-479 `(symbol: string): boolean`
+- function formatMoniker L481-500 `(scheme: LibrarianScheme, parts: MonikerParts): string`
+- function readHeaderField L503-517 `(s: string, i: number, what: string): [string, number]`
+- function readIdent L519-540 `(s: string, i: number): [string, number]`
+- function parseMoniker L542-615 `(moniker: string): ParsedMoniker`
+- function monikerToParts L623-634 `(moniker: string): LibrarianSymbolKey`
+- function monikerToId L636-639 `(moniker: string, kind: SymbolKind): string`
+- typealias ExternalMonikerKey L654-658
+- function externalMonikerKey L660-683 `(moniker: string): ExternalMonikerKey`
+- interface ScipMultiLineRange L690-695
+- interface ScipSingleLineRange L697-701
+- function spanToScipRange L704-709 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
+- function scipRangeToSpan L711-722 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
 
 ### src/store/store.ts
 
@@ -585,6 +596,25 @@
 - testblock test(a diff against a Go method seeds retrieval and packs its callers) L122-135
 - testblock test(without a Go toolchain the claimed files degrade to file-level modules) L137-157
 - testblock test(--capabilities answers the plugin-protocol handshake, reads no stdin) L159-167
+
+### src/test/extractor-gradle.test.ts
+
+- variable repoRoot L15-15
+- variable extractorDir L16-16
+- variable fixture L17-17
+- variable golden L18-18
+- variable hasGo L20-20
+- variable binary L22-22
+- function builtBinary L23-30 `(): string`
+- function indexedFixture L32-37 `(): Store`
+- testblock test(claims routes build files and exactly the version catalog, not all .toml) L39-47
+- testblock test(gradle fixture indexes projects, settings, tasks and catalog entries) L49-58
+- testblock test(the build graph resolves across both DSLs) L60-78
+- testblock test(version catalog entries link usage to coordinates) L80-100
+- testblock test(external coordinates and plugin ids stay unresolved specifiers) L102-120
+- testblock test(eval baseline: the build graph recovers the golden blast radius) L122-128
+- testblock test(without a Go toolchain the claimed files degrade to file-level modules) L130-145
+- testblock test(--capabilities answers the handshake and announces basename patterns) L147-157
 
 ### src/test/extractor-k8s.test.ts
 
@@ -996,6 +1026,7 @@
 - src/app/loop.ts → src/store/store.ts
 - src/app/registry.ts → src/extractors/dockerfile.ts
 - src/app/registry.ts → src/extractors/go.ts
+- src/app/registry.ts → src/extractors/gradle.ts
 - src/app/registry.ts → src/extractors/k8s.ts
 - src/app/registry.ts → src/extractors/php.ts
 - src/app/registry.ts → src/extractors/python.ts
@@ -1029,6 +1060,8 @@
 - src/extractors/dockerfile.ts → src/extractors/subprocess.ts
 - src/extractors/dockerfile.ts → src/protocol/scip-export.ts
 - src/extractors/go.ts → src/extractors/subprocess.ts
+- src/extractors/gradle.ts → src/extractors/subprocess.ts
+- src/extractors/gradle.ts → src/protocol/scip-export.ts
 - src/extractors/k8s.ts → src/extractors/subprocess.ts
 - src/extractors/php.ts → src/extractors/subprocess.ts
 - src/extractors/python.ts → src/extractors/subprocess.ts
@@ -1105,6 +1138,12 @@
 - src/test/extractor-go.test.ts → src/extractors/go.ts
 - src/test/extractor-go.test.ts → src/protocol/scip.ts
 - src/test/extractor-go.test.ts → src/store/store.ts
+- src/test/extractor-gradle.test.ts → src/app/eval.ts
+- src/test/extractor-gradle.test.ts → src/app/index.ts
+- src/test/extractor-gradle.test.ts → src/extractors/gradle.ts
+- src/test/extractor-gradle.test.ts → src/protocol/scip-export.ts
+- src/test/extractor-gradle.test.ts → src/protocol/scip.ts
+- src/test/extractor-gradle.test.ts → src/store/store.ts
 - src/test/extractor-k8s.test.ts → src/app/eval.ts
 - src/test/extractor-k8s.test.ts → src/app/index.ts
 - src/test/extractor-k8s.test.ts → src/core/contextpack.ts
@@ -1316,6 +1355,7 @@
 - src/app/loop.ts recordReviewOutcome —calls→ src/store/store.ts Store.updateRetrievalOutcome
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/dockerfile.ts DockerfileExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/go.ts GoExtractor
+- src/app/registry.ts builtinExtractors —calls→ src/extractors/gradle.ts GradleExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/k8s.ts K8sExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/php.ts PhpExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/python.ts PythonExtractor
@@ -1511,6 +1551,14 @@
 - src/extractors/go.ts resolveGoExtractorCommand —calls→ src/extractors/go.ts onPath
 - src/extractors/go.ts GoExtractor.constructor —references→ src/extractors/go.ts UNAVAILABLE_WARNING
 - src/extractors/go.ts GoExtractor.constructor —references→ src/extractors/go.ts resolveGoExtractorCommand
+- src/extractors/gradle.ts GradleExtractor —extends→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/gradle.ts GradleExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/gradle.ts resolveGradleExtractorCommand —calls→ src/extractors/gradle.ts gradleExtractorSourceDir
+- src/extractors/gradle.ts resolveGradleExtractorCommand —calls→ src/extractors/gradle.ts onPath
+- src/extractors/gradle.ts resolveGradleExtractorCommand —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/extractors/gradle.ts GradleExtractor.claims —calls→ src/protocol/scip-export.ts isGradleSchemePath
+- src/extractors/gradle.ts GradleExtractor.constructor —references→ src/extractors/gradle.ts UNAVAILABLE_WARNING
+- src/extractors/gradle.ts GradleExtractor.constructor —references→ src/extractors/gradle.ts resolveGradleExtractorCommand
 - src/extractors/k8s.ts K8sExtractor —extends→ src/extractors/subprocess.ts SubprocessExtractor
 - src/extractors/k8s.ts K8sExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
 - src/extractors/k8s.ts resolveK8sExtractorCommand —calls→ src/extractors/k8s.ts k8sExtractorSourceDir
@@ -1633,6 +1681,7 @@
 - src/protocol/scip-export.ts ScipExportResult —references→ src/protocol/scip.ts Ext
 - src/protocol/scip-export.ts schemeForPath —references→ src/protocol/scip-export.ts SCHEME_BY_EXTENSION
 - src/protocol/scip-export.ts schemeForPath —calls→ src/protocol/scip-export.ts isDockerfilePath
+- src/protocol/scip-export.ts schemeForPath —calls→ src/protocol/scip-export.ts isGradleSchemePath
 - src/protocol/scip-export.ts schemeForPath —references→ src/protocol/scip.ts LibrarianScheme
 - src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/extractor.ts ExtractionResult
 - src/protocol/scip-export.ts storeToScipPlus —calls→ src/protocol/scip-emit.ts extractionResultsToScipPlus
@@ -2129,6 +2178,50 @@
 - src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —calls→ src/test/extractor-go.test.ts indexedFixture
 - src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/go.ts GoExtractor
 - src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
+- src/test/extractor-gradle.test.ts builtBinary —references→ src/test/extractor-gradle.test.ts binary
+- src/test/extractor-gradle.test.ts builtBinary —references→ src/test/extractor-gradle.test.ts extractorDir
+- src/test/extractor-gradle.test.ts extractorDir —references→ src/test/extractor-gradle.test.ts repoRoot
+- src/test/extractor-gradle.test.ts fixture —references→ src/test/extractor-gradle.test.ts repoRoot
+- src/test/extractor-gradle.test.ts golden —references→ src/test/extractor-gradle.test.ts repoRoot
+- src/test/extractor-gradle.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
+- src/test/extractor-gradle.test.ts indexedFixture —calls→ src/store/store.ts Store
+- src/test/extractor-gradle.test.ts indexedFixture —references→ src/store/store.ts Store
+- src/test/extractor-gradle.test.ts indexedFixture —calls→ src/test/extractor-gradle.test.ts builtBinary
+- src/test/extractor-gradle.test.ts indexedFixture —references→ src/test/extractor-gradle.test.ts fixture
+- src/test/extractor-gradle.test.ts test(--capabilities answers the handshake and announces basename patterns) —references→ src/protocol/scip.ts PROTOCOL_NAME
+- src/test/extractor-gradle.test.ts test(--capabilities answers the handshake and announces basename patterns) —references→ src/protocol/scip.ts PROTOCOL_VERSION
+- src/test/extractor-gradle.test.ts test(--capabilities answers the handshake and announces basename patterns) —calls→ src/protocol/scip.ts parseCapabilities
+- src/test/extractor-gradle.test.ts test(--capabilities answers the handshake and announces basename patterns) —calls→ src/test/extractor-gradle.test.ts builtBinary
+- src/test/extractor-gradle.test.ts test(--capabilities answers the handshake and announces basename patterns) —references→ src/test/extractor-gradle.test.ts hasGo
+- src/test/extractor-gradle.test.ts test(claims routes build files and exactly the version catalog, not all .toml) —calls→ src/protocol/scip-export.ts isGradleSchemePath
+- src/test/extractor-gradle.test.ts test(eval baseline: the build graph recovers the golden blast radius) —calls→ src/app/eval.ts loadGoldenFile
+- src/test/extractor-gradle.test.ts test(eval baseline: the build graph recovers the golden blast radius) —calls→ src/app/eval.ts runEval
+- src/test/extractor-gradle.test.ts test(eval baseline: the build graph recovers the golden blast radius) —calls→ src/store/store.ts Store.close
+- src/test/extractor-gradle.test.ts test(eval baseline: the build graph recovers the golden blast radius) —references→ src/test/extractor-gradle.test.ts fixture
+- src/test/extractor-gradle.test.ts test(eval baseline: the build graph recovers the golden blast radius) —references→ src/test/extractor-gradle.test.ts golden
+- src/test/extractor-gradle.test.ts test(eval baseline: the build graph recovers the golden blast radius) —references→ src/test/extractor-gradle.test.ts hasGo
+- src/test/extractor-gradle.test.ts test(eval baseline: the build graph recovers the golden blast radius) —calls→ src/test/extractor-gradle.test.ts indexedFixture
+- src/test/extractor-gradle.test.ts test(external coordinates and plugin ids stay unresolved specifiers) —calls→ src/store/store.ts Store.close
+- src/test/extractor-gradle.test.ts test(external coordinates and plugin ids stay unresolved specifiers) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-gradle.test.ts test(external coordinates and plugin ids stay unresolved specifiers) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-gradle.test.ts test(external coordinates and plugin ids stay unresolved specifiers) —references→ src/test/extractor-gradle.test.ts hasGo
+- src/test/extractor-gradle.test.ts test(external coordinates and plugin ids stay unresolved specifiers) —calls→ src/test/extractor-gradle.test.ts indexedFixture
+- src/test/extractor-gradle.test.ts test(gradle fixture indexes projects, settings, tasks and catalog entries) —calls→ src/store/store.ts Store.close
+- src/test/extractor-gradle.test.ts test(gradle fixture indexes projects, settings, tasks and catalog entries) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-gradle.test.ts test(gradle fixture indexes projects, settings, tasks and catalog entries) —references→ src/test/extractor-gradle.test.ts hasGo
+- src/test/extractor-gradle.test.ts test(gradle fixture indexes projects, settings, tasks and catalog entries) —calls→ src/test/extractor-gradle.test.ts indexedFixture
+- src/test/extractor-gradle.test.ts test(the build graph resolves across both DSLs) —calls→ src/store/store.ts Store.close
+- src/test/extractor-gradle.test.ts test(the build graph resolves across both DSLs) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-gradle.test.ts test(the build graph resolves across both DSLs) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-gradle.test.ts test(the build graph resolves across both DSLs) —references→ src/test/extractor-gradle.test.ts hasGo
+- src/test/extractor-gradle.test.ts test(the build graph resolves across both DSLs) —calls→ src/test/extractor-gradle.test.ts indexedFixture
+- src/test/extractor-gradle.test.ts test(version catalog entries link usage to coordinates) —calls→ src/store/store.ts Store.close
+- src/test/extractor-gradle.test.ts test(version catalog entries link usage to coordinates) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-gradle.test.ts test(version catalog entries link usage to coordinates) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-gradle.test.ts test(version catalog entries link usage to coordinates) —references→ src/test/extractor-gradle.test.ts hasGo
+- src/test/extractor-gradle.test.ts test(version catalog entries link usage to coordinates) —calls→ src/test/extractor-gradle.test.ts indexedFixture
+- src/test/extractor-gradle.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/gradle.ts GradleExtractor
+- src/test/extractor-gradle.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
 - src/test/extractor-k8s.test.ts builtBinary —references→ src/test/extractor-k8s.test.ts binary
 - src/test/extractor-k8s.test.ts builtBinary —references→ src/test/extractor-k8s.test.ts extractorDir
 - src/test/extractor-k8s.test.ts extractorDir —references→ src/test/extractor-k8s.test.ts repoRoot
@@ -2823,75 +2916,75 @@
 
 ## Unresolved (aggregated)
 
-- 115× equal (calls)
-- 104× node:path#join (calls)
-- 102× map (calls)
-- 85× ok (calls)
-- 60× some (calls)
-- 56× deepEqual (calls)
-- 45× node:fs#mkdtempSync (calls)
-- 45× node:os#tmpdir (calls)
+- 121× equal (calls)
+- 111× node:path#join (calls)
+- 103× map (calls)
+- 90× ok (calls)
+- 63× some (calls)
+- 58× deepEqual (calls)
+- 47× node:fs#mkdtempSync (calls)
+- 47× node:os#tmpdir (calls)
+- 42× node:fs#writeFileSync (calls)
+- 42× node:path (imports)
 - 41× get (calls)
-- 41× node:fs#writeFileSync (calls)
-- 40× node:path (imports)
+- 41× node:fs (imports)
+- 40× filter (calls)
 - 40× prepare (calls)
-- 39× filter (calls)
-- 39× node:fs (imports)
+- 38× node:fs#rmSync (calls)
 - 38× stringify (calls)
 - 37× find (calls)
-- 37× node:fs#rmSync (calls)
-- 35× node:path#join (imports)
+- 37× node:path#join (imports)
+- 34× node:child_process#spawnSync (calls)
 - 32× Error (calls)
-- 31× node:child_process#spawnSync (calls)
 - 30× join (calls)
 - 30× push (calls)
 - 29× Map (calls)
+- 27× node:path#resolve (calls)
 - 26× Set (calls)
+- 26× node:assert/strict (imports)
+- 26× node:path#dirname (calls)
+- 26× node:test (imports)
+- 26× split (calls)
 - 25× has (calls)
-- 25× node:assert/strict (imports)
-- 25× node:path#resolve (calls)
-- 25× node:test (imports)
-- 25× split (calls)
+- 25× node:path#dirname (imports)
+- 25× node:path#resolve (imports)
+- 25× node:test#test (calls)
+- 25× node:test#test (imports)
+- 25× parse (calls)
 - 24× includes (calls)
-- 24× node:test#test (calls)
-- 24× node:test#test (imports)
-- 24× parse (calls)
+- 24× node:fs#writeFileSync (imports)
 - 24× slice (calls)
 - 23× all (calls)
-- 23× node:fs#writeFileSync (imports)
-- 23× node:path#dirname (calls)
-- 23× node:path#resolve (imports)
+- 23× node:fs#existsSync (calls)
+- 23× node:fs#mkdtempSync (imports)
+- 23× node:os (imports)
+- 23× node:os#tmpdir (imports)
 - 22× node:fs#mkdirSync (calls)
-- 22× node:fs#mkdtempSync (imports)
-- 22× node:os (imports)
-- 22× node:os#tmpdir (imports)
-- 22× node:path#dirname (imports)
-- 21× node:fs#existsSync (calls)
+- 21× node:url (imports)
+- 21× node:url#fileURLToPath (calls)
+- 21× node:url#fileURLToPath (imports)
 - 20× set (calls)
-- 19× node:url (imports)
-- 19× node:url#fileURLToPath (calls)
-- 19× node:url#fileURLToPath (imports)
+- 17× node:fs#rmSync (imports)
 - 17× sort (calls)
-- 16× node:fs#rmSync (imports)
 - 15× node:fs#mkdirSync (imports)
 - 13× json (calls)
+- 13× node:child_process (imports)
+- 13× node:child_process#spawnSync (imports)
 - 13× startsWith (calls)
 - 13× throws (calls)
-- 12× node:child_process (imports)
-- 12× node:child_process#spawnSync (imports)
+- 12× node:fs#existsSync (imports)
 - 12× run (calls)
-- 11× node:fs#existsSync (imports)
+- 10× endsWith (calls)
 - 10× node:fs#readFileSync (calls)
 - 9× @scip-code/scip (imports)
 - 9× add (calls)
-- 9× endsWith (calls)
 - 9× exec (calls)
 - 9× isArray (calls)
 - 9× max (calls)
 - 9× node:fs#readFileSync (imports)
+- 9× node:path#delimiter (imports)
 - 9× test (calls)
 - 8× keys (calls)
-- 8× node:path#delimiter (imports)
 - 8× now (calls)
 - 7× @/lib/librarian (imports)
 - 7× @/lib/librarian#openLibrarian (calls)
@@ -2926,6 +3019,7 @@
 - 4× min (calls)
 - 4× node:crypto (imports)
 - 4× node:crypto#createHash (imports)
+- 4× node:path#basename (calls)
 - 4× node:path#relative (calls)
 - 4× node:path#relative (imports)
 - 4× node:path#sep (imports)
@@ -2944,7 +3038,6 @@
 - 3× isMethodDeclaration (calls)
 - 3× isPropertyAccessExpression (calls)
 - 3× isVariableDeclaration (calls)
-- 3× node:path#basename (calls)
 - 3× node:sqlite (imports)
 - 3× node:sqlite#DatabaseSync (calls)
 - 3× node:sqlite#DatabaseSync (imports)
