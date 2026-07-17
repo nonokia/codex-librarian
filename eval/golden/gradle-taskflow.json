@@ -1,0 +1,56 @@
+{
+  "cases": [
+    {
+      "id": "gr-001",
+      "title": ":core モジュールのビルド変更(共有ライブラリ)",
+      "note": "expected はコードリーディングで作成: project(\":core\") で依存する :app(Kotlin DSL)と :worker(Groovy DSL)、include する settings。",
+      "target": { "file": "core/build.gradle.kts", "symbol": "project.:core" },
+      "expected": [
+        { "file": "app/build.gradle.kts", "symbol": "project.:app" },
+        { "file": "worker/build.gradle", "symbol": "project.:worker" },
+        { "file": "settings.gradle.kts" }
+      ]
+    },
+    {
+      "id": "gr-002",
+      "title": "version catalog の commons-text 変更",
+      "note": "libs.commons.text を implementation する :app のみ(:worker は座標直書きなので catalog 変更の影響外 — その差が見えることが catalog をシンボル化する価値)。",
+      "target": { "file": "gradle/libs.versions.toml", "symbol": "libs.commons.text" },
+      "expected": [
+        { "file": "app/build.gradle.kts", "symbol": "project.:app" }
+      ]
+    },
+    {
+      "id": "gr-003",
+      "title": ":app モジュールのビルド変更(アプリ本体)",
+      "note": "依存する :core、参照する catalog エントリ 2 つ、include する settings。",
+      "target": { "file": "app/build.gradle.kts", "symbol": "project.:app" },
+      "expected": [
+        { "file": "core/build.gradle.kts", "symbol": "project.:core" },
+        { "file": "gradle/libs.versions.toml", "symbol": "libs.commons.text" },
+        { "file": "gradle/libs.versions.toml", "symbol": "libs.plugins.shadow" },
+        { "file": "settings.gradle.kts" }
+      ]
+    },
+    {
+      "id": "gr-004",
+      "title": "settings の変更(モジュール構成)",
+      "note": "include する 3 プロジェクト(out 方向 1-hop)。",
+      "target": { "file": "settings.gradle.kts", "symbol": "settings" },
+      "expected": [
+        { "file": "app/build.gradle.kts" },
+        { "file": "core/build.gradle.kts" },
+        { "file": "worker/build.gradle" }
+      ]
+    },
+    {
+      "id": "gr-005",
+      "title": "shadow プラグイン(catalog [plugins])の変更",
+      "note": "alias(libs.plugins.shadow) で使う :app。",
+      "target": { "file": "gradle/libs.versions.toml", "symbol": "libs.plugins.shadow" },
+      "expected": [
+        { "file": "app/build.gradle.kts", "symbol": "project.:app" }
+      ]
+    }
+  ]
+}

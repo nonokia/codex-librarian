@@ -11,7 +11,7 @@
  * back; ToolInfo names `librarian` (the store is the producer, not one of the
  * language extractors — schemes stay per-document in the monikers).
  */
-import { basename, extname } from 'node:path';
+import { basename, dirname, extname } from 'node:path';
 import { TextEncoding } from '@scip-code/scip';
 import type { Index } from '@scip-code/scip';
 import type { Store } from '../store/store.js';
@@ -50,9 +50,18 @@ export function isDockerfilePath(relPath: string): boolean {
   return name === 'Dockerfile' || name.startsWith('Dockerfile.') || name.endsWith('.dockerfile');
 }
 
-/** Extension → scheme, plus the Dockerfile patterns — the export-side mirror of `claims`. */
+/** The Gradle claim set of issue #38 (see extractors/gradle.ts, same layering note). */
+export function isGradleSchemePath(relPath: string): boolean {
+  const name = basename(relPath);
+  if (name.endsWith('.gradle') || name.endsWith('.gradle.kts')) return true;
+  return name === 'libs.versions.toml' && basename(dirname(relPath)) === 'gradle';
+}
+
+/** Extension → scheme, plus the claims-based patterns — the export-side mirror of `claims`. */
 function schemeForPath(path: string): LibrarianScheme | undefined {
-  return SCHEME_BY_EXTENSION[extname(path)] ?? (isDockerfilePath(path) ? 'librarian-dockerfile' : undefined);
+  if (isDockerfilePath(path)) return 'librarian-dockerfile';
+  if (isGradleSchemePath(path)) return 'librarian-gradle';
+  return SCHEME_BY_EXTENSION[extname(path)];
 }
 
 export interface ScipExportResult {
