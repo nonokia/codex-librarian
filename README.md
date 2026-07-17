@@ -143,6 +143,30 @@ module シンボル(`module` ブロックと同じ kind だが moniker で区別
 どれも無い場合、`.tf` ファイルはファイルレベルの module シンボルのみに degrade する
 (インデックス全体は失敗しない。警告が stderr に出る)。
 
+## SQL リポジトリのインデックス
+
+`.sql` ファイルは Go 製の抽出バイナリ(`sql-extractor/`、libpg_query =
+PostgreSQL 本体のパーサのライブラリ版)で symbols/edges 化される。Terraform と同じく
+**call graph ではなくリレーション/ルーチン参照グラフ**を作る(SQL は宣言と参照が
+字句的に明示され型解決が要らないため構文レベルで十分 — ADR-2 の解釈は dlog /
+[`docs/sql-baseline.md`](docs/sql-baseline.md))。**方言は Postgres のみ**で
+`--capabilities` の `dialect` に申告される。他方言のファイルはパース失敗として
+ファイルレベルに degrade する(偽エッジより欠落)。librarian は以下の順でバイナリを探す:
+
+1. `LIBRARIAN_SQL_EXTRACTOR` 環境変数(ビルド済みバイナリへのパス)
+2. `librarian-sql-extractor` が `$PATH` 上にある(`go build -o <PATHの通った場所>/librarian-sql-extractor ./sql-extractor`)
+3. Go toolchain があれば `go run ./sql-extractor` に自動フォールバック(初回はビルドの分だけ遅い)
+
+シンボルは参照アドレスで命名される(`table.users` / `view.active_tasks` /
+`matview.project_task_stats` / `function.complete_task` / `procedure.archive_done_tasks` /
+`trigger.tasks_audit` / `index.idx_tasks_status`)。ファイル自体は module シンボル。
+FOREIGN KEY / FROM / JOIN / EXECUTE FUNCTION が references エッジになり、function /
+procedure の本体は LANGUAGE sql・`BEGIN ATOMIC`・plpgsql(埋め込みクエリの best-effort
+再パース)の 3 段階で辿る。migration は畳み込まずファイル単位で参照を吐く。
+
+どれも無い場合、`.sql` ファイルはファイルレベルの module シンボルのみに degrade する
+(インデックス全体は失敗しない。警告が stderr に出る)。
+
 ## SCIP での export / import(issue #16)
 
 抽出器⇄store の交換フォーマットは **SCIP ベース層 + ext サイドカーの二層(SCIP+)**

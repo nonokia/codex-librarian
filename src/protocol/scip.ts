@@ -125,6 +125,12 @@ const SYMBOL_KIND_FLAGS: Record<SymbolKind, true> = {
   data: true,
   output: true,
   locals: true,
+  table: true,
+  view: true,
+  matview: true,
+  procedure: true,
+  trigger: true,
+  index: true,
 };
 const EDGE_KIND_FLAGS: Record<EdgeKind, true> = {
   calls: true,
@@ -311,6 +317,14 @@ export const KIND_TO_SCIP: Record<Exclude<SymbolKind, 'testblock'>, SymbolInform
   data: SymbolInformation_Kind.Value,
   output: SymbolInformation_Kind.Property,
   locals: SymbolInformation_Kind.Constant,
+  // SQL (#36): six more otherwise-unused SCIP kinds, same bijection rule.
+  // `module` (file) and `function` are reused from the existing rows.
+  table: SymbolInformation_Kind.Type,
+  view: SymbolInformation_Kind.Delegate,
+  matview: SymbolInformation_Kind.Instance,
+  procedure: SymbolInformation_Kind.Macro,
+  trigger: SymbolInformation_Kind.Event,
+  index: SymbolInformation_Kind.Key,
 };
 
 const SCIP_TO_KIND = new Map<SymbolInformation_Kind, SymbolKind>(
