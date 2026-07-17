@@ -1,0 +1,8 @@
+---
+- name: Deploy taskflow api
+  hosts: web
+  become: true
+  roles:
+    - taskflow_api
+
+- import_playbook: deploy-db.yml

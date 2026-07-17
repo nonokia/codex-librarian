@@ -205,6 +205,25 @@ librarian は以下の順でバイナリを探す:
 patches・一意に決まる Service selector が references/imports エッジになり、`image:` は
 tag を落としたイメージ名で `resolved=0`(dockerfile 抽出器と同じ #35 の入口)。
 
+## Ansible リポジトリのインデックス(opt-in)
+
+Ansible の YAML には k8s のような自己申告が無いため、`ansible-extractor/`
+(PyYAML のみに依存する Python スクリプト)は**ビルトインではなく
+`.librarian/extractors.json` での opt-in**。宣言した repo では `.yml`/`.yaml` が
+k8s ビルトインからこの抽出器に切り替わる:
+
+```json
+{ "version": 1, "extractors": [
+  { "name": "librarian-ansible", "extensions": [".yml", ".yaml"],
+    "command": "librarian-ansible-extractor", "args": [] } ] }
+```
+
+`command` は PATH 上の名前(`extract.py` への symlink で可 — shebang +実行ビット付き)
+でも repo 相対パスでもよい。play / named task / handler / 変数定義 / role がシンボルに
+なり、`roles:`・`notify`・`include_tasks`・`{{ var }}` が参照エッジになる。Galaxy role・
+未定義変数・template パスは `resolved=0` で残る(設計は
+[`docs/ansible-baseline.md`](docs/ansible-baseline.md))。
+
 ## SCIP での export / import(issue #16)
 
 抽出器⇄store の交換フォーマットは **SCIP ベース層 + ext サイドカーの二層(SCIP+)**

@@ -1,0 +1,49 @@
+{
+  "cases": [
+    {
+      "id": "ans-001",
+      "title": "api_port の変更(defaults の待受ポート)",
+      "note": "expected はコードリーディングで作成: {{ api_port }} を使う task はテンプレート配備のみ。",
+      "target": { "file": "roles/taskflow_api/defaults/main.yml", "symbol": "var.api_port" },
+      "expected": [
+        { "file": "roles/taskflow_api/tasks/main.yml", "symbol": "task.Deploy app config" }
+      ]
+    },
+    {
+      "id": "ans-002",
+      "title": "Restart api ハンドラの変更",
+      "note": "notify で参照する task(in 方向 1-hop)。",
+      "target": { "file": "roles/taskflow_api/handlers/main.yml", "symbol": "handler.Restart api" },
+      "expected": [
+        { "file": "roles/taskflow_api/tasks/main.yml", "symbol": "task.Deploy app config" }
+      ]
+    },
+    {
+      "id": "ans-003",
+      "title": "Deploy taskflow api プレイの変更(site.yml)",
+      "note": "プレイが実行する role(roles: の out 方向)。",
+      "target": { "file": "site.yml", "symbol": "play.Deploy taskflow api" },
+      "expected": [
+        { "file": "roles/taskflow_api/tasks/main.yml", "symbol": "role.taskflow_api" }
+      ]
+    },
+    {
+      "id": "ans-004",
+      "title": "db_host の変更(group_vars のインベントリ変数)",
+      "note": "{{ db_host }} をテンプレート変数として使う task。",
+      "target": { "file": "group_vars/all.yml", "symbol": "var.db_host" },
+      "expected": [
+        { "file": "roles/taskflow_api/tasks/main.yml", "symbol": "task.Deploy app config" }
+      ]
+    },
+    {
+      "id": "ans-005",
+      "title": "Restart postgres ハンドラの変更",
+      "note": "notify で参照する DB task。",
+      "target": { "file": "roles/taskflow_db/handlers/main.yml", "symbol": "handler.Restart postgres" },
+      "expected": [
+        { "file": "roles/taskflow_db/tasks/main.yml", "symbol": "task.Create taskflow database" }
+      ]
+    }
+  ]
+}

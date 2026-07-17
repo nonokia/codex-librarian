@@ -1,0 +1,17 @@
+---
+- name: Install packages
+  ansible.builtin.apt:
+    name: [nodejs, npm]
+    state: present
+
+- include_tasks: setup-user.yml
+
+- name: Deploy app config
+  ansible.builtin.template:
+    src: api.env.j2
+    dest: "/etc/taskflow/api.env"
+    owner: "{{ api_user }}"
+  vars:
+    listen_port: "{{ api_port }}"
+    database_host: "{{ db_host }}"
+  notify: Restart api

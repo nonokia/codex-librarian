@@ -1,0 +1,6 @@
+---
+- name: Create service user
+  ansible.builtin.user:
+    name: "{{ api_user }}"
+    system: true
+    shell: /usr/sbin/nologin
