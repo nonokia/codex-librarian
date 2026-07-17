@@ -37,6 +37,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   モデルは不変)。外部イメージは tag/digest を落とした `imports`/resolved=0(#35 の
   入口)、COPY ソースは repo 相対パスで resolved=0(抽出器単位の id 名前空間化により
   extract 時クロス抽出器バインド不可 — 後段バインダの測定対象、dlog 記録)。
+  Kubernetes マニフェストも同じ多言語パス・参照グラフ: `k8s-extractor/`(yaml.v3、
+  Go 製バイナリ)を子プロセスとして呼ぶ(issue #39、`docs/k8s-baseline.md`)。素の
+  マニフェスト + Kustomize が v1、Helm template は degrade。ビルトインが `.yaml`/`.yml`
+  を claim し k8s 判定(apiVersion+kind+metadata.name の自己申告)はプラグイン内 —
+  非 k8s YAML は module のみ・エッジ 0。Ansible(#37)は自己申告が無いため
+  extractors.json opt-in でこのビルトインを上書きする(#37/#39 共有の設計、dlog 記録)。
+  Service selector は一意マッチのみ解決(曖昧なら resolved=0)。
 - **全機能はまず CLI**(`librarian`)として存在する。
 
 ## Commands
@@ -118,7 +125,7 @@ dlog の「変更前に `dlog why`」と対になるルール:
   Go/PHP/Python/Terraform/SQL は汎用ランナー
   `src/extractors/subprocess.ts` に resolver を渡すリファレンスプラグイン。
 - `src/protocol/scip-plus.schema.json` — 封筒(`{scip, ext}`)の JSON Schema(プラグイン公開物)。
-- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP/Python/Terraform/SQL/Dockerfile)
+- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP/Python/Terraform/SQL/Dockerfile/k8s)
   + `.librarian/extractors.json` の合成・拡張子上書き(`resolveExtractors`)。信頼モデル:
   明示登録のみ・自動 DL/PATH 規約発見なし。
 - `go-extractor/` — Go 抽出バイナリ(`golang.org/x/tools/go/packages`)。stdin/stdout
@@ -131,6 +138,10 @@ dlog の「変更前に `dlog why`」と対になるルール:
   参照グラフ(`stage.build` / `arg.NODE_VERSION`)。外部イメージは `imports`/resolved=0、
   COPY ソースはパスで resolved=0。ルーティングは `claims` 述語(`Dockerfile` /
   `Dockerfile.*` / `*.dockerfile`)。ベースラインは `docs/dockerfile-baseline.md`。
+- `k8s-extractor/` — k8s マニフェスト抽出バイナリ(yaml.v3)。素のマニフェスト +
+  Kustomize の参照グラフ(`Deployment/api` / `Kustomization/<dir>`)。configMap/secret
+  参照・Ingress backend・Kustomize resources/patches・一意 selector が edges、`image:` は
+  #35 specifier で resolved=0。ベースラインは `docs/k8s-baseline.md`。
 - `sql-extractor/` — SQL 抽出バイナリ(libpg_query / pg_query_go、Postgres 方言のみ)。
   参照グラフ。SCIP+ 封筒 + `--capabilities`(`dialect: postgresql` を申告)。symbol は
   参照アドレスで命名(`table.users` / `view.v` / `matview.m` / `function.f` /
@@ -171,6 +182,9 @@ dlog の「変更前に `dlog why`」と対になるルール:
 - `eval/fixtures/dockerfile-taskflow/` — Dockerfile 用正解セット(コミットされた fixture。
   3 命名形式 + COPY される TS ソース)。ベースラインは `docs/dockerfile-baseline.md`
   (`eval/golden/dockerfile-taskflow.json`、COPY ソースの 1 ミスは設計上の測定対象)。
+- `eval/fixtures/k8s-taskflow/` — k8s 用正解セット(コミットされた fixture。base +
+  Kustomize overlay、multi-doc ファイル含む)。ベースラインは `docs/k8s-baseline.md`
+  (`eval/golden/k8s-taskflow.json`)。
 - `src/app/link.ts` — リポジトリ間 import 解決(issue #27 / ADR-8)。`.librarian/links.json`
   の **明示宣言(package → repo)** を入力に、抽出器が残した unresolved エッジを再解決する
   後段ステップ(`librarian link`)。**推測で名前一致させない** — 抽出器が吐く import

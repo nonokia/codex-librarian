@@ -1,0 +1,63 @@
+{
+  "cases": [
+    {
+      "id": "k8s-001",
+      "title": "ConfigMap api-config の変更(アプリ設定)",
+      "note": "expected はコードリーディングで作成: envFrom で読む Deployment/api、volume で読む Deployment/worker。同ファイル変更は base/kustomization.yaml の resources にも波及(module の in-edge)。",
+      "target": { "file": "base/config.yaml", "symbol": "ConfigMap/api-config" },
+      "expected": [
+        { "file": "base/deployment.yaml", "symbol": "Deployment/api" },
+        { "file": "base/worker.yaml", "symbol": "Deployment/worker" },
+        { "file": "base/kustomization.yaml" }
+      ]
+    },
+    {
+      "id": "k8s-002",
+      "title": "Deployment api の変更(API 本体)",
+      "note": "読み込む ConfigMap/Secret(out)、selector で束ねる Service(in)、その Service を公開する Ingress(2-hop)。",
+      "target": { "file": "base/deployment.yaml", "symbol": "Deployment/api" },
+      "expected": [
+        { "file": "base/config.yaml", "symbol": "ConfigMap/api-config" },
+        { "file": "base/config.yaml", "symbol": "Secret/api-secrets" },
+        { "file": "base/service.yaml", "symbol": "Service/api" },
+        { "file": "base/ingress.yaml", "symbol": "Ingress/api" },
+        { "file": "base/kustomization.yaml" }
+      ]
+    },
+    {
+      "id": "k8s-003",
+      "title": "Service api の変更(公開エンドポイント)",
+      "note": "selector が一意に束ねる Deployment/api(out)と、backend.service.name で参照する Ingress/api(in)。",
+      "target": { "file": "base/service.yaml", "symbol": "Service/api" },
+      "expected": [
+        { "file": "base/deployment.yaml", "symbol": "Deployment/api" },
+        { "file": "base/ingress.yaml", "symbol": "Ingress/api" }
+      ]
+    },
+    {
+      "id": "k8s-004",
+      "title": "Secret api-secrets の変更(DB 認証情報)",
+      "note": "envFrom secretRef で読む Deployment/api。",
+      "target": { "file": "base/config.yaml", "symbol": "Secret/api-secrets" },
+      "expected": [
+        { "file": "base/deployment.yaml", "symbol": "Deployment/api" },
+        { "file": "base/kustomization.yaml" }
+      ]
+    },
+    {
+      "id": "k8s-005",
+      "title": "prod overlay の変更(Kustomize 合成)",
+      "note": "resources: ../../base はディレクトリ参照 → base の全ファイルの document シンボルに解決。patches の対象ファイルも同様(kustomize は resource を合成する — file module ではなく document へ張る)。",
+      "target": { "file": "overlays/prod/kustomization.yaml", "symbol": "Kustomization/overlays/prod" },
+      "expected": [
+        { "file": "base/deployment.yaml" },
+        { "file": "base/worker.yaml" },
+        { "file": "base/service.yaml" },
+        { "file": "base/config.yaml" },
+        { "file": "base/ingress.yaml" },
+        { "file": "base/kustomization.yaml" },
+        { "file": "overlays/prod/patch-replicas.yaml" }
+      ]
+    }
+  ]
+}
