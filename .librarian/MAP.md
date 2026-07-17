@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 75
-- symbols: 734
-- edges: 4150 (unresolved: 2360)
-- symbols by kind: class=15, function=214, interface=75, method=60, module=75, testblock=165, typealias=14, variable=116
+- files: 76
+- symbols: 749
+- edges: 4246 (unresolved: 2409)
+- symbols by kind: class=15, function=215, interface=75, method=60, module=76, testblock=172, typealias=14, variable=122
 
 ## Files
 
@@ -531,6 +531,23 @@
 - testblock test(seedsFromDiff: span overlap, module fallback, unknown file) L54-72
 - testblock test(retrieveForDiff finds callers of a changed function; budget elides) L74-89
 - testblock test(runEval scores golden cases (diff and target styles)) L91-123
+
+### src/test/extractor-ansible.test.ts
+
+- variable repoRoot L13-13
+- variable script L14-14
+- variable fixture L15-15
+- variable golden L16-16
+- variable hasPython L18-18
+- variable hasGo L19-19
+- function indexedFixture L23-27 `(): Store`
+- testblock test(opt-in registry routes .yml to the ansible extractor (not the k8s built-in)) L29-38
+- testblock test(cross-file references resolve: notify → handler, play → role, jinja → var) L40-56
+- testblock test(dynamic and external references stay honestly unresolved) L58-78
+- testblock test(include_tasks is an imports edge to the target file module) L80-87
+- testblock test(eval baseline: the reference graph recovers the golden blast radius) L89-95
+- testblock test(without the opt-in, the same YAML falls to the k8s built-in as modules only) L97-112
+- testblock test(--capabilities answers the handshake and announces the parser) L114-123
 
 ### src/test/extractor-dockerfile.test.ts
 
@@ -1068,6 +1085,10 @@
 - src/test/eval.test.ts → src/core/diff.ts
 - src/test/eval.test.ts → src/core/retrieval.ts
 - src/test/eval.test.ts → src/store/store.ts
+- src/test/extractor-ansible.test.ts → src/app/eval.ts
+- src/test/extractor-ansible.test.ts → src/app/index.ts
+- src/test/extractor-ansible.test.ts → src/protocol/scip.ts
+- src/test/extractor-ansible.test.ts → src/store/store.ts
 - src/test/extractor-dockerfile.test.ts → src/app/eval.ts
 - src/test/extractor-dockerfile.test.ts → src/app/index.ts
 - src/test/extractor-dockerfile.test.ts → src/core/contextpack.ts
@@ -1967,6 +1988,49 @@
 - src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/store/store.ts Store
 - src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/store/store.ts Store.close
 - src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/test/eval.test.ts fixtureRepo
+- src/test/extractor-ansible.test.ts fixture —references→ src/test/extractor-ansible.test.ts repoRoot
+- src/test/extractor-ansible.test.ts golden —references→ src/test/extractor-ansible.test.ts repoRoot
+- src/test/extractor-ansible.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
+- src/test/extractor-ansible.test.ts indexedFixture —calls→ src/store/store.ts Store
+- src/test/extractor-ansible.test.ts indexedFixture —references→ src/store/store.ts Store
+- src/test/extractor-ansible.test.ts indexedFixture —references→ src/test/extractor-ansible.test.ts fixture
+- src/test/extractor-ansible.test.ts script —references→ src/test/extractor-ansible.test.ts repoRoot
+- src/test/extractor-ansible.test.ts test(--capabilities answers the handshake and announces the parser) —references→ src/protocol/scip.ts PROTOCOL_NAME
+- src/test/extractor-ansible.test.ts test(--capabilities answers the handshake and announces the parser) —references→ src/protocol/scip.ts PROTOCOL_VERSION
+- src/test/extractor-ansible.test.ts test(--capabilities answers the handshake and announces the parser) —calls→ src/protocol/scip.ts parseCapabilities
+- src/test/extractor-ansible.test.ts test(--capabilities answers the handshake and announces the parser) —references→ src/test/extractor-ansible.test.ts hasPython
+- src/test/extractor-ansible.test.ts test(--capabilities answers the handshake and announces the parser) —references→ src/test/extractor-ansible.test.ts script
+- src/test/extractor-ansible.test.ts test(cross-file references resolve: notify → handler, play → role, jinja → var) —calls→ src/store/store.ts Store.close
+- src/test/extractor-ansible.test.ts test(cross-file references resolve: notify → handler, play → role, jinja → var) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-ansible.test.ts test(cross-file references resolve: notify → handler, play → role, jinja → var) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-ansible.test.ts test(cross-file references resolve: notify → handler, play → role, jinja → var) —references→ src/test/extractor-ansible.test.ts hasPython
+- src/test/extractor-ansible.test.ts test(cross-file references resolve: notify → handler, play → role, jinja → var) —calls→ src/test/extractor-ansible.test.ts indexedFixture
+- src/test/extractor-ansible.test.ts test(dynamic and external references stay honestly unresolved) —calls→ src/store/store.ts Store.close
+- src/test/extractor-ansible.test.ts test(dynamic and external references stay honestly unresolved) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-ansible.test.ts test(dynamic and external references stay honestly unresolved) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-ansible.test.ts test(dynamic and external references stay honestly unresolved) —references→ src/test/extractor-ansible.test.ts hasPython
+- src/test/extractor-ansible.test.ts test(dynamic and external references stay honestly unresolved) —calls→ src/test/extractor-ansible.test.ts indexedFixture
+- src/test/extractor-ansible.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/app/eval.ts loadGoldenFile
+- src/test/extractor-ansible.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/app/eval.ts runEval
+- src/test/extractor-ansible.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/store/store.ts Store.close
+- src/test/extractor-ansible.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —references→ src/test/extractor-ansible.test.ts fixture
+- src/test/extractor-ansible.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —references→ src/test/extractor-ansible.test.ts golden
+- src/test/extractor-ansible.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —references→ src/test/extractor-ansible.test.ts hasPython
+- src/test/extractor-ansible.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/test/extractor-ansible.test.ts indexedFixture
+- src/test/extractor-ansible.test.ts test(include_tasks is an imports edge to the target file module) —calls→ src/store/store.ts Store.close
+- src/test/extractor-ansible.test.ts test(include_tasks is an imports edge to the target file module) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-ansible.test.ts test(include_tasks is an imports edge to the target file module) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-ansible.test.ts test(include_tasks is an imports edge to the target file module) —references→ src/test/extractor-ansible.test.ts hasPython
+- src/test/extractor-ansible.test.ts test(include_tasks is an imports edge to the target file module) —calls→ src/test/extractor-ansible.test.ts indexedFixture
+- src/test/extractor-ansible.test.ts test(opt-in registry routes .yml to the ansible extractor (not the k8s built-in)) —calls→ src/store/store.ts Store.close
+- src/test/extractor-ansible.test.ts test(opt-in registry routes .yml to the ansible extractor (not the k8s built-in)) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-ansible.test.ts test(opt-in registry routes .yml to the ansible extractor (not the k8s built-in)) —references→ src/test/extractor-ansible.test.ts hasPython
+- src/test/extractor-ansible.test.ts test(opt-in registry routes .yml to the ansible extractor (not the k8s built-in)) —calls→ src/test/extractor-ansible.test.ts indexedFixture
+- src/test/extractor-ansible.test.ts test(without the opt-in, the same YAML falls to the k8s built-in as modules only) —calls→ src/app/index.ts indexRepo
+- src/test/extractor-ansible.test.ts test(without the opt-in, the same YAML falls to the k8s built-in as modules only) —calls→ src/store/store.ts Store
+- src/test/extractor-ansible.test.ts test(without the opt-in, the same YAML falls to the k8s built-in as modules only) —calls→ src/store/store.ts Store.close
+- src/test/extractor-ansible.test.ts test(without the opt-in, the same YAML falls to the k8s built-in as modules only) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-ansible.test.ts test(without the opt-in, the same YAML falls to the k8s built-in as modules only) —references→ src/test/extractor-ansible.test.ts hasGo
 - src/test/extractor-dockerfile.test.ts builtBinary —references→ src/test/extractor-dockerfile.test.ts binary
 - src/test/extractor-dockerfile.test.ts builtBinary —references→ src/test/extractor-dockerfile.test.ts extractorDir
 - src/test/extractor-dockerfile.test.ts extractorDir —references→ src/test/extractor-dockerfile.test.ts repoRoot
@@ -2759,63 +2823,63 @@
 
 ## Unresolved (aggregated)
 
-- 111× equal (calls)
-- 100× map (calls)
-- 100× node:path#join (calls)
-- 83× ok (calls)
-- 58× some (calls)
-- 54× deepEqual (calls)
-- 44× node:fs#mkdtempSync (calls)
-- 44× node:os#tmpdir (calls)
-- 40× get (calls)
-- 40× node:fs#writeFileSync (calls)
+- 115× equal (calls)
+- 104× node:path#join (calls)
+- 102× map (calls)
+- 85× ok (calls)
+- 60× some (calls)
+- 56× deepEqual (calls)
+- 45× node:fs#mkdtempSync (calls)
+- 45× node:os#tmpdir (calls)
+- 41× get (calls)
+- 41× node:fs#writeFileSync (calls)
+- 40× node:path (imports)
 - 40× prepare (calls)
-- 39× node:path (imports)
-- 38× filter (calls)
-- 38× node:fs (imports)
+- 39× filter (calls)
+- 39× node:fs (imports)
 - 38× stringify (calls)
-- 36× find (calls)
-- 36× node:fs#rmSync (calls)
-- 34× node:path#join (imports)
+- 37× find (calls)
+- 37× node:fs#rmSync (calls)
+- 35× node:path#join (imports)
 - 32× Error (calls)
+- 31× node:child_process#spawnSync (calls)
 - 30× join (calls)
 - 30× push (calls)
-- 28× Map (calls)
-- 28× node:child_process#spawnSync (calls)
+- 29× Map (calls)
 - 26× Set (calls)
 - 25× has (calls)
+- 25× node:assert/strict (imports)
+- 25× node:path#resolve (calls)
+- 25× node:test (imports)
 - 25× split (calls)
 - 24× includes (calls)
-- 24× node:assert/strict (imports)
-- 24× node:path#resolve (calls)
-- 24× node:test (imports)
+- 24× node:test#test (calls)
+- 24× node:test#test (imports)
+- 24× parse (calls)
 - 24× slice (calls)
 - 23× all (calls)
-- 23× node:test#test (calls)
-- 23× node:test#test (imports)
-- 23× parse (calls)
+- 23× node:fs#writeFileSync (imports)
+- 23× node:path#dirname (calls)
+- 23× node:path#resolve (imports)
 - 22× node:fs#mkdirSync (calls)
-- 22× node:fs#writeFileSync (imports)
-- 22× node:path#dirname (calls)
-- 22× node:path#resolve (imports)
+- 22× node:fs#mkdtempSync (imports)
+- 22× node:os (imports)
+- 22× node:os#tmpdir (imports)
+- 22× node:path#dirname (imports)
 - 21× node:fs#existsSync (calls)
-- 21× node:fs#mkdtempSync (imports)
-- 21× node:os (imports)
-- 21× node:os#tmpdir (imports)
-- 21× node:path#dirname (imports)
 - 20× set (calls)
-- 18× node:url (imports)
-- 18× node:url#fileURLToPath (calls)
-- 18× node:url#fileURLToPath (imports)
+- 19× node:url (imports)
+- 19× node:url#fileURLToPath (calls)
+- 19× node:url#fileURLToPath (imports)
 - 17× sort (calls)
+- 16× node:fs#rmSync (imports)
 - 15× node:fs#mkdirSync (imports)
-- 15× node:fs#rmSync (imports)
 - 13× json (calls)
 - 13× startsWith (calls)
 - 13× throws (calls)
+- 12× node:child_process (imports)
+- 12× node:child_process#spawnSync (imports)
 - 12× run (calls)
-- 11× node:child_process (imports)
-- 11× node:child_process#spawnSync (imports)
 - 11× node:fs#existsSync (imports)
 - 10× node:fs#readFileSync (calls)
 - 9× @scip-code/scip (imports)
