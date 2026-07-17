@@ -200,7 +200,7 @@ librarian-go . . . `store/memstore.go`/MemStore#Complete().
 | 3 | php-extractor(手組み JSON)、TS(in-process、プロセス境界なしで同じ封筒型を渡す)を横展開 | PHP: 88.1% / 37/42、TS: 87.0% と完全一致 ※ |
 
 ※ Step 3 実施時の注記: weather-you-travel は committed fixture が無くローカルで再計測
-できないため、TS のゲートは **self-index(code-on-board 自身、symbols 343 + edges 1690)の
+できないため、TS のゲートは **self-index(codex-librarian 自身、symbols 343 + edges 1690)の
 store 行ダンプ完全一致**で代替した(fixture より大きい実コーパスでの同一性)。PHP・Go は
 store 行 + eval 出力の両方でバイト単位一致を確認済み。
 | 4 | `librarian export --scip` + 外部 `.scip` import + **scip-python PoC**(degrade 経路) | `graph`/`pack` が動く + golden 作成 + `docs/scip-baseline.md` に実測 |

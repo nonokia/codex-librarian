@@ -1,4 +1,4 @@
-module github.com/nonokia/code-on-board/go-extractor
+module github.com/nonokia/codex-librarian/go-extractor
 
 go 1.25.0
 

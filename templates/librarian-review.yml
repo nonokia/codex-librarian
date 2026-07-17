@@ -30,7 +30,7 @@ jobs:
 
       - name: Install codex-librarian
         run: |
-          git clone --depth 1 https://github.com/nonokia/code-on-board /tmp/librarian
+          git clone --depth 1 https://github.com/nonokia/codex-librarian /tmp/librarian
           cd /tmp/librarian && npm ci && npm run build
 
       - name: Index repository

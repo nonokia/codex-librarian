@@ -1,4 +1,4 @@
-module github.com/nonokia/code-on-board/tf-extractor
+module github.com/nonokia/codex-librarian/tf-extractor
 
 go 1.25.0
 
