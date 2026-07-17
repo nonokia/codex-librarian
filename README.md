@@ -1,4 +1,4 @@
-# code-on-board — Codex Librarian
+# codex-librarian — Codex Librarian
 
 Personal experiment to reverse-engineer the concept of Nexon's CodeOnBoard (NDC26),
 re-designed for individual-developer scale. コードベースの「理解負債」を返済する

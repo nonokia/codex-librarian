@@ -206,7 +206,7 @@ Two complementary aids:
 - Check `resolution` before trusting a decision; `drifted` means verify.
 - Subagents seal at task end. Everyone seals after committing.
 
-## Repo-specific: self-index first (code-on-board, issue #15)
+## Repo-specific: self-index first (codex-librarian, issue #15)
 
 This repo also commits its own code graph — the committed self-index
 (`.librarian/MAP.md` + `.librarian/self.db`). The pairing rule to "run

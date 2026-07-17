@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/nonokia/code-on-board/src/protocol/scip-plus.schema.json",
+  "$id": "https://github.com/nonokia/codex-librarian/src/protocol/scip-plus.schema.json",
   "title": "SCIP+ envelope",
   "description": "The extractor-plugin wire contract (issue #16 / #22, ADR-6 / ADR-7). A subprocess plugin reads {root, files} JSON on stdin and prints exactly this envelope on stdout. `scip` is a scip.Index in proto3 canonical JSON (standards-compliant base layer); `ext` is the librarian-specific sidecar and is the source of truth for retrieval signals (edge kinds, unresolved refs, testblocks). See docs/plugin-protocol.md and docs/scip-design.md §4.",
   "type": "object",
