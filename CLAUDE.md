@@ -48,6 +48,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   規約知識(play / task / handler / defaults / group_vars / role アンカー)を持つ専用
   抽出器(issue #37、`docs/ansible-baseline.md`)。Galaxy role・未定義変数・template
   パスは resolved=0、ランタイム組み込み変数は emit しない(dlog 記録)。
+  Gradle も同じ多言語パス: `gradle-extractor/`(Go 製バイナリ)でビルドグラフを
+  **構文レベル**抽出(issue #38、`docs/gradle-baseline.md`)。Tooling API はビルドを
+  実評価し非決定的なため不採用(決定性 > 公式実装 — dlog 記録)。project/settings/
+  task/catalog エントリがシンボル、include・project(":x")・dependsOn・catalog 参照が
+  エッジ。`gradle/libs.versions.toml` は TOML として正確にパース、Maven 座標は
+  version を落とした specifier で resolved=0(#35 の入口)。動的な宣言は解かない。
 - **全機能はまず CLI**(`librarian`)として存在する。
 
 ## Commands
@@ -129,7 +135,7 @@ dlog の「変更前に `dlog why`」と対になるルール:
   Go/PHP/Python/Terraform/SQL は汎用ランナー
   `src/extractors/subprocess.ts` に resolver を渡すリファレンスプラグイン。
 - `src/protocol/scip-plus.schema.json` — 封筒(`{scip, ext}`)の JSON Schema(プラグイン公開物)。
-- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP/Python/Terraform/SQL/Dockerfile/k8s)
+- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP/Python/Terraform/SQL/Dockerfile/k8s/Gradle)
   + `.librarian/extractors.json` の合成・拡張子上書き(`resolveExtractors`)。信頼モデル:
   明示登録のみ・自動 DL/PATH 規約発見なし。
 - `go-extractor/` — Go 抽出バイナリ(`golang.org/x/tools/go/packages`)。stdin/stdout
@@ -142,6 +148,11 @@ dlog の「変更前に `dlog why`」と対になるルール:
   参照グラフ(`stage.build` / `arg.NODE_VERSION`)。外部イメージは `imports`/resolved=0、
   COPY ソースはパスで resolved=0。ルーティングは `claims` 述語(`Dockerfile` /
   `Dockerfile.*` / `*.dockerfile`)。ベースラインは `docs/dockerfile-baseline.md`。
+- `gradle-extractor/` — Gradle 抽出バイナリ(構文レベルスキャナ + TOML パーサ)。
+  ビルドグラフ(`project.:app` / `settings` / `task.deploy` / `libs.commons.text`)。
+  include・project 依存・dependsOn・catalog 参照が edges、プラグイン id / Maven 座標は
+  version 落とし specifier で resolved=0。ルーティングは `claims`(*.gradle /
+  *.gradle.kts / gradle/libs.versions.toml のみ)。ベースラインは `docs/gradle-baseline.md`。
 - `ansible-extractor/` — Ansible 抽出スクリプト(PyYAML のみ、ビルド不要)。opt-in
   (`.librarian/extractors.json`)で `.yml`/`.yaml` を claim。play/task/handler/var/role が
   シンボル、roles:/notify/include_tasks/`{{ var }}` が参照エッジ。ベースラインは
@@ -196,6 +207,9 @@ dlog の「変更前に `dlog why`」と対になるルール:
 - `eval/fixtures/ansible-taskflow/` — Ansible 用正解セット(コミットされた fixture。
   playbook 2 + role 2 + group_vars、opt-in の extractors.json 込み = 宣言の参照例)。
   ベースラインは `docs/ansible-baseline.md`(`eval/golden/ansible-taskflow.json`)。
+- `eval/fixtures/gradle-taskflow/` — Gradle 用正解セット(コミットされた fixture。
+  マルチプロジェクト、Kotlin DSL + Groovy DSL 混在 + version catalog)。ベースラインは
+  `docs/gradle-baseline.md`(`eval/golden/gradle-taskflow.json`)。
 - `src/app/link.ts` — リポジトリ間 import 解決(issue #27 / ADR-8)。`.librarian/links.json`
   の **明示宣言(package → repo)** を入力に、抽出器が残した unresolved エッジを再解決する
   後段ステップ(`librarian link`)。**推測で名前一致させない** — 抽出器が吐く import

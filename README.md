@@ -205,6 +205,24 @@ librarian は以下の順でバイナリを探す:
 patches・一意に決まる Service selector が references/imports エッジになり、`image:` は
 tag を落としたイメージ名で `resolved=0`(dockerfile 抽出器と同じ #35 の入口)。
 
+## Gradle リポジトリのインデックス
+
+`*.gradle` / `*.gradle.kts` / `gradle/libs.versions.toml` は Go 製の抽出バイナリ
+(`gradle-extractor/`)で symbols/edges 化される。**ビルドグラフの構文レベル抽出**で、
+Tooling API のようにビルドを評価しない(決定的・JVM 不要 — 判断は
+[`docs/gradle-baseline.md`](docs/gradle-baseline.md))。project(`project.:app`)/
+settings / task / version catalog エントリ(`libs.commons.text`)がシンボルになり、
+`include`・`project(":x")` 依存・`dependsOn`・catalog 参照がエッジになる。プラグイン
+id と Maven 座標は version を落とした specifier で `resolved=0`(`links.json` で
+社内ライブラリを束ねる #35 の入口)。librarian は以下の順でバイナリを探す:
+
+1. `LIBRARIAN_GRADLE_EXTRACTOR` 環境変数(ビルド済みバイナリへのパス)
+2. `librarian-gradle-extractor` が `$PATH` 上にある(`go build -o <PATHの通った場所>/librarian-gradle-extractor ./gradle-extractor`)
+3. Go toolchain があれば `go run ./gradle-extractor` に自動フォールバック
+
+どれも無い場合、Gradle ビルドファイルはファイルレベルの module シンボルのみに
+degrade する(インデックス全体は失敗しない。警告が stderr に出る)。
+
 ## Ansible リポジトリのインデックス(opt-in)
 
 Ansible の YAML には k8s のような自己申告が無いため、`ansible-extractor/`

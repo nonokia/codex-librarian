@@ -405,7 +405,8 @@ export type LibrarianScheme =
   | 'librarian-terraform'
   | 'librarian-sql'
   | 'librarian-dockerfile'
-  | 'librarian-k8s';
+  | 'librarian-k8s'
+  | 'librarian-gradle';
 
 export interface MonikerParts {
   file: string;
