@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 63
-- symbols: 618
-- edges: 3552 (unresolved: 2057)
-- symbols by kind: class=8, function=192, interface=68, method=50, module=63, testblock=129, typealias=14, variable=94
+- files: 69
+- symbols: 657
+- edges: 3672 (unresolved: 2109)
+- symbols by kind: class=12, function=197, interface=75, method=56, module=69, testblock=139, typealias=14, variable=95
 
 ## Files
 
@@ -90,27 +90,26 @@
 
 ### src/app/review.ts
 
-- variable DEFAULT_MODEL L12-12
-- interface ReviewFinding L14-22
-- interface ReviewResult L24-28
-- variable SYSTEM_PROMPT L30-38
-- variable OUTPUT_SCHEMA L40-64
-- function buildReviewRequest L66-80 `(pack: ReviewPack, model: string)`
-- function generateReview L82-98 `(pack: ReviewPack, opts: { model?: string; client?: Anthropic } = {}): Promise<ReviewResult>`
-- function renderReviewMarkdown L101-125 `(r: ReviewResult): string`
+- interface ReviewFinding L17-25
+- interface ReviewResult L27-31
+- variable SYSTEM_PROMPT L33-41
+- variable OUTPUT_SCHEMA L43-67
+- function buildReviewRequest L69-81 `(pack: ReviewPack): LlmRequest`
+- function generateReview L83-93 `(pack: ReviewPack, opts: { model?: string; provider?: LlmProvider } = {}): Promise<ReviewResult>`
+- function renderReviewMarkdown L96-120 `(r: ReviewResult): string`
 
 ### src/cli.ts
 
-- interface Flags L21-52
-- function parseArgs L54-104 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
-- function defaultDb L106-109 `(repoRoot?: string): string`
-- function emit L111-113 `(value: unknown, pretty: boolean): void`
-- function fail L115-118 `(message: string): never`
-- variable HELP L120-177
-- function openStore L179-183 `(flags: Flags): Store`
-- function compactSymbol L185-195 `(s: SymbolRow)`
-- function rootResolver L201-209 `(store: Store, flags: Flags): (repo: string) => string | null`
-- function main L211-524 `(): void`
+- interface Flags L22-54
+- function parseArgs L56-105 `(argv: string[]): { command: string; positional: string[]; flags: Flags }`
+- function defaultDb L107-110 `(repoRoot?: string): string`
+- function emit L112-114 `(value: unknown, pretty: boolean): void`
+- function fail L116-119 `(message: string): never`
+- variable HELP L121-181
+- function openStore L183-187 `(flags: Flags): Store`
+- function compactSymbol L189-199 `(s: SymbolRow)`
+- function rootResolver L205-213 `(store: Store, flags: Flags): (repo: string) => string | null`
+- function main L215-535 `(): void`
 
 ### src/core/contextpack.ts
 
@@ -218,6 +217,39 @@
 - function signatureOf L364-379 `(node: ts.Node, sf: ts.SourceFile): string | null`
 - function docOf L381-389 `(node: ts.Node): string | null`
 - function dedupeEdges L391-399 `(edges: EdgeRow[]): EdgeRow[]`
+
+### src/llm/provider.ts
+
+- interface LlmMessage L11-14
+- interface LlmRequest L16-27
+- interface LlmResponse L29-35
+- interface LlmProvider L37-43
+- class LlmAuthError L49-54
+- method LlmAuthError.constructor L50-53 `(message: string)`
+- class LlmParseError L61-68
+- method LlmParseError.constructor L63-67 `(message: string, raw: string)`
+
+### src/llm/providers/anthropic.ts
+
+- variable DEFAULT_ANTHROPIC_MODEL L9-9
+- class AnthropicProvider L11-61
+- method AnthropicProvider.constructor L16-19 `(opts: { model?: string; client?: Anthropic } = {})`
+- method AnthropicProvider.complete L21-60 `(req: LlmRequest): Promise<LlmResponse>`
+
+### src/llm/providers/openai-compatible.ts
+
+- interface OpenAiCompatibleOptions L24-30
+- function schemaInstruction L33-44 `(outputSchema: { name: string; schema: Record<string, unknown> }): string`
+- function parseStructuredReply L47-64 `(text: string): unknown`
+- class OpenAiCompatibleProvider L66-117
+- method OpenAiCompatibleProvider.constructor L73-78 `(opts: OpenAiCompatibleOptions)`
+- method OpenAiCompatibleProvider.complete L80-116 `(req: LlmRequest): Promise<LlmResponse>`
+
+### src/llm/registry.ts
+
+- variable PROVIDER_NAMES L19-19
+- interface ResolveProviderOptions L21-26
+- function resolveProvider L28-59 `(opts: ResolveProviderOptions = {}): LlmProvider`
 
 ### src/protocol/extractor.ts
 
@@ -412,8 +444,8 @@
 - function fixtureRepo L13-37 `(): string`
 - variable DIFF L39-44
 - testblock test(assembleReviewPack sections items by direction and test-ness) L46-75
-- testblock test(buildReviewRequest embeds the pack and demands structured output) L77-93
-- testblock test(renderReviewMarkdown counts graph-grounded findings) L95-122
+- testblock test(buildReviewRequest embeds the pack and demands structured output) L77-94
+- testblock test(renderReviewMarkdown counts graph-grounded findings) L96-123
 
 ### src/test/cross-repo-multilang.test.ts
 
@@ -568,6 +600,23 @@
 - testblock test(a declaration pointing at an unindexed repo fails loudly) L251-258
 - testblock test(the link map is validated, and the fixture map parses) L260-269
 
+### src/test/llm.test.ts
+
+- variable REQ L15-19
+- testblock test(registry defaults to anthropic with the provider default model) L23-27
+- testblock test(registry model precedence: explicit > LLM_MODEL > LIBRARIAN_MODEL) L29-36
+- testblock test(registry rejects an unknown provider — no implicit fallback) L38-40
+- testblock test(registry: openai-compatible requires base URL and model explicitly) L42-63
+- function fakeFetch L67-78 `(reply: string, opts: { status?: number } = {})`
+- testblock test(openai-compatible posts a chat-completions request with bearer auth) L80-101
+- testblock test(openai-compatible embeds the schema in the system prompt and parses the reply) L103-117
+- testblock test(openai-compatible maps 401/403 to LlmAuthError) L119-123
+- testblock test(parseStructuredReply tolerates fences and prose, then fails typed) L125-130
+- interface FakeCreateArgs L134-141
+- function fakeAnthropic L143-150 `(response: object)`
+- testblock test(anthropic provider maps the request onto the official SDK shape) L152-169
+- testblock test(anthropic provider reports a refusal instead of throwing) L171-176
+
 ### src/test/loop.test.ts
 
 - function chainRepo L20-33 `(): string`
@@ -673,12 +722,11 @@
 
 ### web/app/api/ask/route.ts
 
-- variable MODEL L6-6
-- variable BUDGET L10-10
-- variable OVERSIZED_FRACTION L11-11
-- variable NO_SEEDS_NOTE L13-14
-- function signatureCard L21-27 `(sym: SymbolRow): string`
-- function POST L38-119 `(req: NextRequest)`
+- variable BUDGET L9-9
+- variable OVERSIZED_FRACTION L10-10
+- variable NO_SEEDS_NOTE L12-13
+- function signatureCard L20-26 `(sym: SymbolRow): string`
+- function POST L38-110 `(req: NextRequest)`
 
 ### web/app/api/file/route.ts
 
@@ -816,6 +864,10 @@
 - variable cached L21-21
 - function openLibrarian L23-41 `(): Librarian`
 
+### web/lib/llm.ts
+
+- (no symbols)
+
 ### web/next.config.mjs
 
 - variable nextConfig L2-5
@@ -845,6 +897,8 @@
 - src/app/registry.ts → src/protocol/extractor.ts
 - src/app/resolve-dispatches.ts → src/store/store.ts
 - src/app/review.ts → src/core/contextpack.ts
+- src/app/review.ts → src/llm/provider.ts
+- src/app/review.ts → src/llm/registry.ts
 - src/cli.ts → src/app/eval.ts
 - src/cli.ts → src/app/index.ts
 - src/cli.ts → src/app/link.ts
@@ -855,6 +909,7 @@
 - src/cli.ts → src/core/diff.ts
 - src/cli.ts → src/core/map.ts
 - src/cli.ts → src/core/retrieval.ts
+- src/cli.ts → src/llm/registry.ts
 - src/cli.ts → src/protocol/scip-export.ts
 - src/cli.ts → src/protocol/scip.ts
 - src/cli.ts → src/store/store.ts
@@ -873,6 +928,11 @@
 - src/extractors/ts.ts → src/protocol/scip-emit.ts
 - src/extractors/ts.ts → src/protocol/scip-ingest.ts
 - src/extractors/ts.ts → src/store/store.ts
+- src/llm/providers/anthropic.ts → src/llm/provider.ts
+- src/llm/providers/openai-compatible.ts → src/llm/provider.ts
+- src/llm/registry.ts → src/llm/provider.ts
+- src/llm/registry.ts → src/llm/providers/anthropic.ts
+- src/llm/registry.ts → src/llm/providers/openai-compatible.ts
 - src/protocol/extractor.ts → src/store/store.ts
 - src/protocol/scip-emit.ts → src/protocol/extractor.ts
 - src/protocol/scip-emit.ts → src/protocol/scip.ts
@@ -951,6 +1011,10 @@
 - src/test/link.test.ts → src/core/diff.ts
 - src/test/link.test.ts → src/core/retrieval.ts
 - src/test/link.test.ts → src/store/store.ts
+- src/test/llm.test.ts → src/llm/provider.ts
+- src/test/llm.test.ts → src/llm/providers/anthropic.ts
+- src/test/llm.test.ts → src/llm/providers/openai-compatible.ts
+- src/test/llm.test.ts → src/llm/registry.ts
 - src/test/loop.test.ts → src/app/eval.ts
 - src/test/loop.test.ts → src/app/index.ts
 - src/test/loop.test.ts → src/app/loop.ts
@@ -1149,10 +1213,13 @@
 - src/app/review.ts buildReviewRequest —references→ src/app/review.ts SYSTEM_PROMPT
 - src/app/review.ts buildReviewRequest —references→ src/core/contextpack.ts ReviewPack
 - src/app/review.ts buildReviewRequest —calls→ src/core/contextpack.ts renderReviewPack
-- src/app/review.ts generateReview —references→ src/app/review.ts DEFAULT_MODEL
+- src/app/review.ts buildReviewRequest —references→ src/llm/provider.ts LlmRequest
 - src/app/review.ts generateReview —references→ src/app/review.ts ReviewResult
 - src/app/review.ts generateReview —calls→ src/app/review.ts buildReviewRequest
 - src/app/review.ts generateReview —references→ src/core/contextpack.ts ReviewPack
+- src/app/review.ts generateReview —calls→ src/llm/provider.ts LlmProvider
+- src/app/review.ts generateReview —references→ src/llm/provider.ts LlmProvider
+- src/app/review.ts generateReview —calls→ src/llm/registry.ts resolveProvider
 - src/app/review.ts renderReviewMarkdown —references→ src/app/review.ts ReviewResult
 - src/cli.ts compactSymbol —references→ src/store/store.ts SymbolRow
 - src/cli.ts main —calls→ src/app/eval.ts loadGoldenFile
@@ -1185,6 +1252,7 @@
 - src/cli.ts main —calls→ src/core/map.ts buildMap
 - src/cli.ts main —calls→ src/core/map.ts renderMapMarkdown
 - src/cli.ts main —calls→ src/core/retrieval.ts retrieveForDiff
+- src/cli.ts main —calls→ src/llm/registry.ts resolveProvider
 - src/cli.ts main —calls→ src/protocol/scip-export.ts storeToScipPlus
 - src/cli.ts main —calls→ src/protocol/scip.ts encodeScip
 - src/cli.ts main —references→ src/store/store.ts NeighborRow
@@ -1208,7 +1276,6 @@
 - src/cli.ts openStore —calls→ src/cli.ts fail
 - src/cli.ts openStore —calls→ src/store/store.ts Store
 - src/cli.ts openStore —references→ src/store/store.ts Store
-- src/cli.ts parseArgs —references→ src/app/review.ts DEFAULT_MODEL
 - src/cli.ts parseArgs —references→ src/cli.ts Flags
 - src/cli.ts parseArgs —references→ src/core/retrieval.ts DEFAULT_BUDGET
 - src/cli.ts rootResolver —references→ src/cli.ts Flags
@@ -1352,6 +1419,30 @@
 - src/extractors/ts.ts TypeScriptExtractor.extract —calls→ src/protocol/scip-ingest.ts scipPlusToExtractionResults
 - src/extractors/ts.ts TypeScriptExtractor.extract —references→ src/store/store.ts EdgeKind
 - src/extractors/ts.ts TypeScriptExtractor.extract —references→ src/store/store.ts EdgeRow
+- src/llm/provider.ts LlmProvider —references→ src/llm/provider.ts LlmRequest
+- src/llm/provider.ts LlmProvider —references→ src/llm/provider.ts LlmResponse
+- src/llm/provider.ts LlmRequest —references→ src/llm/provider.ts LlmMessage
+- src/llm/providers/anthropic.ts AnthropicProvider —extends→ src/llm/provider.ts LlmProvider
+- src/llm/providers/anthropic.ts AnthropicProvider —references→ src/llm/provider.ts LlmProvider
+- src/llm/providers/anthropic.ts AnthropicProvider.complete —calls→ src/llm/provider.ts LlmAuthError
+- src/llm/providers/anthropic.ts AnthropicProvider.complete —references→ src/llm/provider.ts LlmRequest
+- src/llm/providers/anthropic.ts AnthropicProvider.complete —references→ src/llm/provider.ts LlmResponse
+- src/llm/providers/anthropic.ts AnthropicProvider.constructor —references→ src/llm/providers/anthropic.ts DEFAULT_ANTHROPIC_MODEL
+- src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider —extends→ src/llm/provider.ts LlmProvider
+- src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider —references→ src/llm/provider.ts LlmProvider
+- src/llm/providers/openai-compatible.ts parseStructuredReply —calls→ src/llm/provider.ts LlmParseError
+- src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider.complete —calls→ src/llm/provider.ts LlmAuthError
+- src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider.complete —references→ src/llm/provider.ts LlmRequest
+- src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider.complete —references→ src/llm/provider.ts LlmResponse
+- src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider.complete —calls→ src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider
+- src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider.complete —calls→ src/llm/providers/openai-compatible.ts parseStructuredReply
+- src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider.complete —calls→ src/llm/providers/openai-compatible.ts schemaInstruction
+- src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider.constructor —references→ src/llm/providers/openai-compatible.ts OpenAiCompatibleOptions
+- src/llm/registry.ts resolveProvider —references→ src/llm/provider.ts LlmProvider
+- src/llm/registry.ts resolveProvider —calls→ src/llm/providers/anthropic.ts AnthropicProvider
+- src/llm/registry.ts resolveProvider —calls→ src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider
+- src/llm/registry.ts resolveProvider —references→ src/llm/registry.ts PROVIDER_NAMES
+- src/llm/registry.ts resolveProvider —references→ src/llm/registry.ts ResolveProviderOptions
 - src/protocol/extractor.ts ExtractedSymbol —references→ src/store/store.ts SymbolRow
 - src/protocol/extractor.ts ExtractionResult —references→ src/protocol/extractor.ts ExtractedSymbol
 - src/protocol/extractor.ts ExtractionResult —references→ src/store/store.ts EdgeRow
@@ -2014,6 +2105,36 @@
 - src/test/link.test.ts test(without a declaration nothing is linked (no false edges, no degrade)) —calls→ src/store/store.ts Store.countCrossRepoEdges
 - src/test/link.test.ts test(without a declaration nothing is linked (no false edges, no degrade)) —calls→ src/store/store.ts Store.stats
 - src/test/link.test.ts test(without a declaration nothing is linked (no false edges, no degrade)) —calls→ src/test/link.test.ts indexedPair
+- src/test/llm.test.ts REQ —references→ src/llm/provider.ts LlmRequest
+- src/test/llm.test.ts fakeAnthropic —references→ src/test/llm.test.ts FakeCreateArgs
+- src/test/llm.test.ts test(anthropic provider maps the request onto the official SDK shape) —calls→ src/llm/providers/anthropic.ts AnthropicProvider
+- src/test/llm.test.ts test(anthropic provider maps the request onto the official SDK shape) —calls→ src/llm/providers/anthropic.ts AnthropicProvider.complete
+- src/test/llm.test.ts test(anthropic provider maps the request onto the official SDK shape) —references→ src/test/llm.test.ts REQ
+- src/test/llm.test.ts test(anthropic provider maps the request onto the official SDK shape) —calls→ src/test/llm.test.ts fakeAnthropic
+- src/test/llm.test.ts test(anthropic provider reports a refusal instead of throwing) —calls→ src/llm/providers/anthropic.ts AnthropicProvider
+- src/test/llm.test.ts test(anthropic provider reports a refusal instead of throwing) —calls→ src/llm/providers/anthropic.ts AnthropicProvider.complete
+- src/test/llm.test.ts test(anthropic provider reports a refusal instead of throwing) —references→ src/test/llm.test.ts REQ
+- src/test/llm.test.ts test(anthropic provider reports a refusal instead of throwing) —calls→ src/test/llm.test.ts fakeAnthropic
+- src/test/llm.test.ts test(openai-compatible embeds the schema in the system prompt and parses the reply) —calls→ src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider
+- src/test/llm.test.ts test(openai-compatible embeds the schema in the system prompt and parses the reply) —calls→ src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider.complete
+- src/test/llm.test.ts test(openai-compatible embeds the schema in the system prompt and parses the reply) —references→ src/test/llm.test.ts REQ
+- src/test/llm.test.ts test(openai-compatible embeds the schema in the system prompt and parses the reply) —calls→ src/test/llm.test.ts fakeFetch
+- src/test/llm.test.ts test(openai-compatible maps 401/403 to LlmAuthError) —references→ src/llm/provider.ts LlmAuthError
+- src/test/llm.test.ts test(openai-compatible maps 401/403 to LlmAuthError) —calls→ src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider
+- src/test/llm.test.ts test(openai-compatible maps 401/403 to LlmAuthError) —calls→ src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider.complete
+- src/test/llm.test.ts test(openai-compatible maps 401/403 to LlmAuthError) —references→ src/test/llm.test.ts REQ
+- src/test/llm.test.ts test(openai-compatible maps 401/403 to LlmAuthError) —calls→ src/test/llm.test.ts fakeFetch
+- src/test/llm.test.ts test(openai-compatible posts a chat-completions request with bearer auth) —calls→ src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider
+- src/test/llm.test.ts test(openai-compatible posts a chat-completions request with bearer auth) —calls→ src/llm/providers/openai-compatible.ts OpenAiCompatibleProvider.complete
+- src/test/llm.test.ts test(openai-compatible posts a chat-completions request with bearer auth) —references→ src/test/llm.test.ts REQ
+- src/test/llm.test.ts test(openai-compatible posts a chat-completions request with bearer auth) —calls→ src/test/llm.test.ts fakeFetch
+- src/test/llm.test.ts test(parseStructuredReply tolerates fences and prose, then fails typed) —references→ src/llm/provider.ts LlmParseError
+- src/test/llm.test.ts test(parseStructuredReply tolerates fences and prose, then fails typed) —calls→ src/llm/providers/openai-compatible.ts parseStructuredReply
+- src/test/llm.test.ts test(registry defaults to anthropic with the provider default model) —references→ src/llm/providers/anthropic.ts DEFAULT_ANTHROPIC_MODEL
+- src/test/llm.test.ts test(registry defaults to anthropic with the provider default model) —calls→ src/llm/registry.ts resolveProvider
+- src/test/llm.test.ts test(registry model precedence: explicit > LLM_MODEL > LIBRARIAN_MODEL) —calls→ src/llm/registry.ts resolveProvider
+- src/test/llm.test.ts test(registry rejects an unknown provider — no implicit fallback) —calls→ src/llm/registry.ts resolveProvider
+- src/test/llm.test.ts test(registry: openai-compatible requires base URL and model explicitly) —calls→ src/llm/registry.ts resolveProvider
 - src/test/loop.test.ts CHAIN_CASES —references→ src/app/eval.ts GoldenCase
 - src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/app/index.ts indexRepo
 - src/test/loop.test.ts test(diff signature is deterministic and coarse) —calls→ src/core/diff.ts parseUnifiedDiff
@@ -2253,7 +2374,6 @@
 - src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/protocol/scip.ts formatMoniker
 - src/test/scip.test.ts test(testblocks are refused a moniker — they are local symbols) —calls→ src/protocol/scip.ts isLocalSymbol
 - web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts BUDGET
-- web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts MODEL
 - web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts NO_SEEDS_NOTE
 - web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts OVERSIZED_FRACTION
 - web/app/api/ask/route.ts POST —references→ web/app/api/ask/route.ts signatureCard
@@ -2323,39 +2443,40 @@
 
 ## Unresolved (aggregated)
 
+- 93× equal (calls)
 - 93× map (calls)
-- 86× equal (calls)
 - 76× node:path#join (calls)
-- 68× ok (calls)
+- 69× ok (calls)
 - 48× some (calls)
-- 43× deepEqual (calls)
+- 47× deepEqual (calls)
 - 40× prepare (calls)
 - 39× get (calls)
-- 36× filter (calls)
+- 38× stringify (calls)
+- 35× filter (calls)
 - 35× node:fs#mkdtempSync (calls)
 - 35× node:os#tmpdir (calls)
 - 34× node:fs#writeFileSync (calls)
-- 34× stringify (calls)
 - 33× node:path (imports)
+- 32× Error (calls)
 - 32× node:fs (imports)
 - 31× find (calls)
-- 30× Error (calls)
+- 30× join (calls)
 - 30× node:fs#rmSync (calls)
-- 28× join (calls)
+- 30× push (calls)
 - 28× node:path#join (imports)
-- 28× push (calls)
 - 27× Map (calls)
 - 26× Set (calls)
 - 25× has (calls)
+- 24× slice (calls)
 - 23× all (calls)
+- 22× includes (calls)
 - 22× node:fs#mkdirSync (calls)
 - 22× split (calls)
-- 21× includes (calls)
-- 21× slice (calls)
-- 20× node:assert/strict (imports)
-- 20× node:test (imports)
+- 21× node:assert/strict (imports)
+- 21× node:test (imports)
 - 20× node:test#test (calls)
 - 20× node:test#test (imports)
+- 20× parse (calls)
 - 20× set (calls)
 - 19× node:child_process#spawnSync (calls)
 - 19× node:fs#writeFileSync (imports)
@@ -2365,12 +2486,12 @@
 - 18× node:path#resolve (calls)
 - 16× node:path#dirname (calls)
 - 16× node:path#resolve (imports)
-- 16× parse (calls)
 - 15× node:fs#existsSync (calls)
 - 15× node:fs#mkdirSync (imports)
 - 15× node:path#dirname (imports)
 - 15× sort (calls)
-- 12× json (calls)
+- 13× json (calls)
+- 13× throws (calls)
 - 12× node:fs#rmSync (imports)
 - 12× node:url (imports)
 - 12× node:url#fileURLToPath (calls)
@@ -2378,20 +2499,19 @@
 - 12× run (calls)
 - 10× node:fs#readFileSync (calls)
 - 10× startsWith (calls)
-- 10× throws (calls)
 - 9× @scip-code/scip (imports)
 - 9× add (calls)
 - 9× exec (calls)
 - 9× isArray (calls)
 - 9× max (calls)
 - 9× node:fs#readFileSync (imports)
+- 9× test (calls)
 - 8× endsWith (calls)
 - 8× keys (calls)
 - 8× node:child_process (imports)
 - 8× node:child_process#spawnSync (imports)
 - 8× node:fs#existsSync (imports)
 - 8× now (calls)
-- 8× test (calls)
 - 7× @/lib/librarian (imports)
 - 7× @/lib/librarian#openLibrarian (calls)
 - 7× @/lib/librarian#openLibrarian (imports)
@@ -2406,6 +2526,7 @@
 - 6× next/server (imports)
 - 6× next/server#NextResponse (imports)
 - 5× @scip-code/scip#SymbolInformation_Kind (imports)
+- 5× String (calls)
 - 5× digest (calls)
 - 5× error (calls)
 - 5× next/server#NextRequest (imports)
@@ -2421,6 +2542,7 @@
 - 4× every (calls)
 - 4× isIdentifier (calls)
 - 4× isInteger (calls)
+- 4× lastIndexOf (calls)
 - 4× min (calls)
 - 4× node:crypto (imports)
 - 4× node:crypto#createHash (imports)
@@ -2428,6 +2550,7 @@
 - 4× node:path#relative (imports)
 - 4× node:path#sep (imports)
 - 4× react#useState (imports)
+- 4× replace (calls)
 - 4× round (calls)
 - 3× @/lib/graph#KIND_COLOR (imports)
 - 3× @/lib/graph#Sym (imports)
@@ -2441,7 +2564,6 @@
 - 3× isMethodDeclaration (calls)
 - 3× isPropertyAccessExpression (calls)
 - 3× isVariableDeclaration (calls)
-- 3× lastIndexOf (calls)
 - 3× node:sqlite (imports)
 - 3× node:sqlite#DatabaseSync (calls)
 - 3× node:sqlite#DatabaseSync (imports)
@@ -2459,11 +2581,11 @@
 - 2× @bufbuild/protobuf (imports)
 - 2× @bufbuild/protobuf#MessageInitShape (imports)
 - 2× @scip-code/scip#TextEncoding (imports)
-- 2× Anthropic (calls)
-- 2× String (calls)
-- 2× create (calls)
+- 2× Error (extends)
+- 2× catch (calls)
 - 2× findSymbols (calls)
 - 2× forEach (calls)
+- 2× indexOf (calls)
 - 2× isClassDeclaration (calls)
 - 2× isConstructorDeclaration (calls)
 - 2× isEnumDeclaration (calls)
@@ -2482,7 +2604,6 @@
 - 2× notEqual (calls)
 - 2× pop (calls)
 - 2× reduce (calls)
-- 2× replace (calls)
 - 2× symbolById (calls)
 - 2× toFixed (calls)
 - 1× ../../dist/store/store.js (imports)
@@ -2510,6 +2631,10 @@
 - 1× @/lib/librarian#SymbolRow (imports)
 - 1× @/lib/librarian#expandContext (calls)
 - 1× @/lib/librarian#expandContext (imports)
+- 1× @/lib/llm (imports)
+- 1× @/lib/llm#LlmAuthError (imports)
+- 1× @/lib/llm#resolveProvider (calls)
+- 1× @/lib/llm#resolveProvider (imports)
 - 1× @bufbuild/protobuf#JsonValue (imports)
 - 1× @bufbuild/protobuf#create (calls)
 - 1× @bufbuild/protobuf#create (imports)
@@ -2526,14 +2651,17 @@
 - 1× @scip-code/scip#OccurrenceSchema (imports)
 - 1× @scip-code/scip#PositionEncoding (imports)
 - 1× @scip-code/scip#SymbolInformationSchema (imports)
+- 1× Anthropic (calls)
 - 1× AskPanel (calls)
 - 1× EvalChart (calls)
 - 1× GraphExplorer (calls)
 - 1× Link (calls)
+- 1× Response (calls)
 - 1× URLSearchParams (calls)
-- 1× catch (calls)
 - 1× collapsedEdges (calls)
+- 1× complete (calls)
 - 1× cos (calls)
+- 1× create (calls)
 - 1× createProgram (calls)
 - 1× cwd (calls)
 - 1× doesNotMatch (calls)
@@ -2552,7 +2680,6 @@
 - 1× getStart (calls)
 - 1× getSymbolAtLocation (calls)
 - 1× getTypeChecker (calls)
-- 1× indexOf (calls)
 - 1× isBindingElement (calls)
 - 1× isClassLike (calls)
 - 1× isDirectory (calls)
@@ -2583,6 +2710,7 @@
 - 1× node:path#isAbsolute (imports)
 - 1× react#useCallback (calls)
 - 1× react#useCallback (imports)
+- 1× rejects (calls)
 - 1× replaceAll (calls)
 - 1× sin (calls)
 - 1× splice (calls)
@@ -2590,6 +2718,7 @@
 - 1× stats (calls)
 - 1× symbolCountsByFile (calls)
 - 1× symbolsInFile (calls)
+- 1× text (calls)
 - 1× trimEnd (calls)
 - 1× typescript (imports)
 - 1× write (calls)
