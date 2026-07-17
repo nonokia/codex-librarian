@@ -31,6 +31,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   の `dialect` に申告、他方言はパース失敗としてファイルレベルに degrade(偽エッジより
   欠落)。function/procedure 本体は sql_body / LANGUAGE sql / plpgsql の 3 段階で
   best-effort に辿る(dlog 記録)。
+  Dockerfile も同じ多言語パス・参照グラフ: `dockerfile-extractor/`(BuildKit 公式
+  パーサ、Go 製バイナリ)を子プロセスとして呼ぶ(issue #40、`docs/dockerfile-baseline.md`)。
+  拡張子が無いため Extractor に任意の `claims(relPath)` 述語を追加(ADR-7 の明示登録
+  モデルは不変)。外部イメージは tag/digest を落とした `imports`/resolved=0(#35 の
+  入口)、COPY ソースは repo 相対パスで resolved=0(抽出器単位の id 名前空間化により
+  extract 時クロス抽出器バインド不可 — 後段バインダの測定対象、dlog 記録)。
 - **全機能はまず CLI**(`librarian`)として存在する。
 
 ## Commands
@@ -112,7 +118,7 @@ dlog の「変更前に `dlog why`」と対になるルール:
   Go/PHP/Python/Terraform/SQL は汎用ランナー
   `src/extractors/subprocess.ts` に resolver を渡すリファレンスプラグイン。
 - `src/protocol/scip-plus.schema.json` — 封筒(`{scip, ext}`)の JSON Schema(プラグイン公開物)。
-- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP/Python/Terraform/SQL)
+- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP/Python/Terraform/SQL/Dockerfile)
   + `.librarian/extractors.json` の合成・拡張子上書き(`resolveExtractors`)。信頼モデル:
   明示登録のみ・自動 DL/PATH 規約発見なし。
 - `go-extractor/` — Go 抽出バイナリ(`golang.org/x/tools/go/packages`)。stdin/stdout
@@ -121,6 +127,10 @@ dlog の「変更前に `dlog why`」と対になるルール:
   ではない)。SCIP+ 封筒 + `--capabilities`。symbol は参照アドレスで命名(`aws_x.y` /
   `var.z` / `module.m` / `data.t.n` / `local.k` / `output.o`)。ビルド・配布は README の
   「Terraform リポジトリのインデックス」、ベースラインは `docs/terraform-baseline.md`。
+- `dockerfile-extractor/` — Dockerfile 抽出バイナリ(BuildKit 公式パーサ)。multi-stage
+  参照グラフ(`stage.build` / `arg.NODE_VERSION`)。外部イメージは `imports`/resolved=0、
+  COPY ソースはパスで resolved=0。ルーティングは `claims` 述語(`Dockerfile` /
+  `Dockerfile.*` / `*.dockerfile`)。ベースラインは `docs/dockerfile-baseline.md`。
 - `sql-extractor/` — SQL 抽出バイナリ(libpg_query / pg_query_go、Postgres 方言のみ)。
   参照グラフ。SCIP+ 封筒 + `--capabilities`(`dialect: postgresql` を申告)。symbol は
   参照アドレスで命名(`table.users` / `view.v` / `matview.m` / `function.f` /
@@ -158,6 +168,9 @@ dlog の「変更前に `dlog why`」と対になるルール:
 - `eval/fixtures/sql-taskflow/` — SQL 用正解セットの対象スキーマ(コミットされた fixture。
   schema/ + views + functions + migrations)。ベースラインは `docs/sql-baseline.md`
   (`eval/golden/sql-taskflow.json`)。
+- `eval/fixtures/dockerfile-taskflow/` — Dockerfile 用正解セット(コミットされた fixture。
+  3 命名形式 + COPY される TS ソース)。ベースラインは `docs/dockerfile-baseline.md`
+  (`eval/golden/dockerfile-taskflow.json`、COPY ソースの 1 ミスは設計上の測定対象)。
 - `src/app/link.ts` — リポジトリ間 import 解決(issue #27 / ADR-8)。`.librarian/links.json`
   の **明示宣言(package → repo)** を入力に、抽出器が残した unresolved エッジを再解決する
   後段ステップ(`librarian link`)。**推測で名前一致させない** — 抽出器が吐く import

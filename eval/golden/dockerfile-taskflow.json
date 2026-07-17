@@ -1,0 +1,55 @@
+{
+  "cases": [
+    {
+      "id": "df-001",
+      "title": "deps ステージの変更(依存インストール)",
+      "note": "expected はコードリーディングで作成: deps を FROM する build(直接)と、build を COPY --from する runtime(推移的、2-hop)。",
+      "target": { "file": "Dockerfile", "symbol": "stage.deps" },
+      "expected": [
+        { "file": "Dockerfile", "symbol": "stage.build" },
+        { "file": "Dockerfile", "symbol": "stage.runtime" }
+      ]
+    },
+    {
+      "id": "df-002",
+      "title": "ARG NODE_VERSION の変更(ベースイメージのバージョン)",
+      "note": "NODE_VERSION を FROM で使う deps / runtime(直接)と、deps に乗る build(2-hop)。",
+      "target": { "file": "Dockerfile", "symbol": "arg.NODE_VERSION" },
+      "expected": [
+        { "file": "Dockerfile", "symbol": "stage.deps" },
+        { "file": "Dockerfile", "symbol": "stage.runtime" },
+        { "file": "Dockerfile", "symbol": "stage.build" }
+      ]
+    },
+    {
+      "id": "df-003",
+      "title": "build ステージの変更(ビルド手順)",
+      "note": "土台の deps(out 方向)と、成果物を受け取る runtime(in 方向)。",
+      "target": { "file": "Dockerfile", "symbol": "stage.build" },
+      "expected": [
+        { "file": "Dockerfile", "symbol": "stage.deps" },
+        { "file": "Dockerfile", "symbol": "stage.runtime" }
+      ]
+    },
+    {
+      "id": "df-004",
+      "title": "runtime ステージの変更(実行イメージ)",
+      "note": "COPY --from の供給元 build(out 方向 1-hop)と、その土台 deps(2-hop)。",
+      "target": { "file": "Dockerfile", "symbol": "stage.runtime" },
+      "expected": [
+        { "file": "Dockerfile", "symbol": "stage.build" },
+        { "file": "Dockerfile", "symbol": "stage.deps" }
+      ]
+    },
+    {
+      "id": "df-005",
+      "title": "src/index.ts の変更(COPY されるソース)",
+      "note": "build ステージが COPY src/ で取り込むため Dockerfile が blast radius に入る — が、COPY ソースのエッジは resolved=0(抽出器単位の id 名前空間化により extract 時のクロス抽出器バインドが不可能)なので現行実装では辿れない。将来の link 型後段バインダの測定対象として残す(eval/README.md の規律: 取れない expected を削らない)。",
+      "target": { "file": "src/index.ts", "symbol": "src/index.ts" },
+      "expected": [
+        { "file": "src/worker.ts", "symbol": "runWorker" },
+        { "file": "Dockerfile" }
+      ]
+    }
+  ]
+}

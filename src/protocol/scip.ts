@@ -131,6 +131,7 @@ const SYMBOL_KIND_FLAGS: Record<SymbolKind, true> = {
   procedure: true,
   trigger: true,
   index: true,
+  stage: true,
 };
 const EDGE_KIND_FLAGS: Record<EdgeKind, true> = {
   calls: true,
@@ -325,6 +326,9 @@ export const KIND_TO_SCIP: Record<Exclude<SymbolKind, 'testblock'>, SymbolInform
   procedure: SymbolInformation_Kind.Macro,
   trigger: SymbolInformation_Kind.Event,
   index: SymbolInformation_Kind.Key,
+  // Dockerfile (#40): a build stage produces an artifact — Package, unused
+  // elsewhere, keeps the bijection. ARGs reuse `variable`.
+  stage: SymbolInformation_Kind.Package,
 };
 
 const SCIP_TO_KIND = new Map<SymbolInformation_Kind, SymbolKind>(
@@ -398,7 +402,9 @@ export type LibrarianScheme =
   | 'librarian-go'
   | 'librarian-php'
   | 'librarian-py'
-  | 'librarian-terraform';
+  | 'librarian-terraform'
+  | 'librarian-sql'
+  | 'librarian-dockerfile';
 
 export interface MonikerParts {
   file: string;

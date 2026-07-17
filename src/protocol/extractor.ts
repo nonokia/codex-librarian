@@ -45,6 +45,14 @@ export interface Extractor {
   /** file extensions this extractor claims, e.g. ['.ts', '.tsx'] */
   readonly extensions: string[];
   /**
+   * Optional claim predicate for files extension routing cannot express
+   * (issue #40 — `Dockerfile` has no extension). When present it REPLACES
+   * extension-suffix matching for this extractor in discovery and dispatch.
+   * Still a static declaration by an explicitly registered extractor — the
+   * ADR-7 trust model (no filesystem-convention discovery) is unchanged.
+   */
+  claims?(relPath: string): boolean;
+  /**
    * Extract symbols and edges for every claimed file under `rootDir`.
    * Whole-project extraction (not per-file) because reference resolution
    * needs cross-file knowledge.

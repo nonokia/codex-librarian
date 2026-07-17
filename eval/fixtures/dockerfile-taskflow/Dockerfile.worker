@@ -1,0 +1,10 @@
+# Worker image: same codebase, worker entrypoint only.
+
+ARG NODE_VERSION=22
+
+FROM node:${NODE_VERSION}-alpine AS worker
+WORKDIR /app
+COPY package.json ./
+COPY src/worker.ts ./src/worker.ts
+RUN npm install && npm run build
+CMD ["node", "dist/worker.js"]
