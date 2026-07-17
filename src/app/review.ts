@@ -2,14 +2,17 @@
  * Review generation — the LLM stage of Phase 2 (§4-③).
  *
  * The system's value is WHAT we hand the model (the Context Pack); review
- * prose is the model's job. Findings come back as structured JSON
- * (output_config.format) so the CLI/Actions layer can render or post them
+ * prose is the model's job. Findings come back as structured JSON (the
+ * request's outputSchema) so the CLI/Actions layer can render or post them
  * without parsing free text.
+ *
+ * Since #42 (ADR-10) this file is provider-agnostic: it builds an LlmRequest
+ * and completes it through the provider the registry resolves — which
+ * provider that is (Anthropic by default) is not this layer's business.
  */
-import Anthropic from '@anthropic-ai/sdk';
 import { renderReviewPack, type ReviewPack } from '../core/contextpack.js';
-
-export const DEFAULT_MODEL = 'claude-opus-4-8';
+import type { LlmProvider, LlmRequest } from '../llm/provider.js';
+import { resolveProvider } from '../llm/registry.js';
 
 export interface ReviewFinding {
   severity: 'critical' | 'major' | 'minor' | 'info';
@@ -63,13 +66,11 @@ const OUTPUT_SCHEMA = {
   additionalProperties: false,
 };
 
-export function buildReviewRequest(pack: ReviewPack, model: string) {
+export function buildReviewRequest(pack: ReviewPack): LlmRequest {
   return {
-    model,
-    max_tokens: 16000,
-    thinking: { type: 'adaptive' as const },
     system: SYSTEM_PROMPT,
-    output_config: { format: { type: 'json_schema' as const, schema: OUTPUT_SCHEMA } },
+    maxTokens: 16000,
+    outputSchema: { name: 'review', schema: OUTPUT_SCHEMA },
     messages: [
       {
         role: 'user' as const,
@@ -81,20 +82,14 @@ export function buildReviewRequest(pack: ReviewPack, model: string) {
 
 export async function generateReview(
   pack: ReviewPack,
-  opts: { model?: string; client?: Anthropic } = {}
+  opts: { model?: string; provider?: LlmProvider } = {}
 ): Promise<ReviewResult> {
-  const client = opts.client ?? new Anthropic();
-  const request = buildReviewRequest(pack, opts.model ?? DEFAULT_MODEL);
-  const response = await client.messages.create(request);
-
-  if (response.stop_reason === 'refusal') {
+  const provider = opts.provider ?? resolveProvider({ model: opts.model });
+  const response = await provider.complete(buildReviewRequest(pack));
+  if (response.refused) {
     throw new Error('review request was refused by the model safety layer');
   }
-  const text = response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-    .map((b) => b.text)
-    .join('');
-  return JSON.parse(text) as ReviewResult;
+  return (response.structured ?? JSON.parse(response.text)) as ReviewResult;
 }
 
 /** GitHub-comment-ready markdown for a review result. */

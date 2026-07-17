@@ -12,7 +12,8 @@ import { parseUnifiedDiff } from './core/diff.js';
 import { retrieveForDiff, DEFAULT_BUDGET } from './core/retrieval.js';
 import { loadGoldenFile, runEval } from './app/eval.js';
 import { assembleReviewPack, renderReviewPack } from './core/contextpack.js';
-import { generateReview, buildReviewRequest, renderReviewMarkdown, DEFAULT_MODEL } from './app/review.js';
+import { generateReview, buildReviewRequest, renderReviewMarkdown } from './app/review.js';
+import { resolveProvider } from './llm/registry.js';
 import { learn, recordReviewOutcome } from './app/loop.js';
 import { defaultLinkMapPath, link, loadLinkMap, unlink } from './app/link.js';
 import { clearDispatches, resolveDispatches } from './app/resolve-dispatches.js';
@@ -26,7 +27,8 @@ interface Flags {
   repoName?: string;
   /** source-root override for pack/review/eval when the recorded root moved */
   root?: string;
-  model: string;
+  /** review model override; unset = LLM_MODEL / LIBRARIAN_MODEL / provider default (ADR-10) */
+  model?: string;
   hops?: number;
   budget: number;
   pretty: boolean;
@@ -53,7 +55,6 @@ interface Flags {
 
 function parseArgs(argv: string[]): { command: string; positional: string[]; flags: Flags } {
   const flags: Flags = {
-    model: process.env.LIBRARIAN_MODEL ?? DEFAULT_MODEL,
     budget: DEFAULT_BUDGET,
     pretty: false,
     source: false,
@@ -158,7 +159,10 @@ Usage:
                                               --clear reverts to unresolved
   librarian pack <diff-file|->                Sectioned Context Pack (markdown)
   librarian review <diff-file|-> [--model M] [--dry-run] [--markdown]
-                                              LLM review grounded in the pack
+                                              LLM review grounded in the pack.
+                                              Provider: LLM_PROVIDER env
+                                              (default anthropic; ADR-10),
+                                              model: --model / LLM_MODEL
   librarian learn <golden.json> [--holdout]   Sweep strategies per diff signature,
                                               promote winners into PatternCache
   librarian patterns                          Show the PatternCache
@@ -484,11 +488,18 @@ function main(): void {
       }
       if (flags.dryRun) {
         store.close();
-        const request = buildReviewRequest(pack, flags.model);
+        let provider;
+        try {
+          provider = resolveProvider({ model: flags.model });
+        } catch (err) {
+          fail((err as Error).message);
+        }
+        const request = buildReviewRequest(pack);
         emit(
           {
             dry_run: true,
-            model: request.model,
+            provider: provider.name,
+            model: provider.model,
             retrieval_log_id: logId,
             strategy_from_cache: retrieved.strategyFromCache,
             system_chars: request.system.length,

@@ -172,8 +172,15 @@ dlog の「変更前に `dlog why`」と対になるルール:
   数値は `docs/phase4-report.md`(train=test と holdout の区別に注意)。
 - `src/core/contextpack.ts` — Context Pack 組み立て(§4-③ の区画: 変更/呼び出し元/呼び出し先/
   テスト)。
-- `src/app/review.ts` — Claude API でのレビュー生成(構造化出力)。モデル既定は
-  `claude-opus-4-8`。
+- `src/app/review.ts` — LLM でのレビュー生成(構造化出力)。プロバイダは `src/llm/` の
+  registry が解決(ADR-10)。モデル既定は `claude-opus-4-8`(anthropic プロバイダ)。
+- `src/llm/` — LLM プロバイダ抽象(issue #42 / ADR-10)。`provider.ts`(`LlmProvider` 抽象 +
+  型付きエラー)、`registry.ts`(`LLM_PROVIDER` env で `anthropic`(既定)/
+  `openai-compatible` を明示選択 — 暗黙フォールバックなし、ADR-7 と同じ信頼モデル)、
+  `providers/`(ビルトイン 2 実装)。プロバイダ名を知るのはここだけ —
+  `src/core`/`src/app`/`web/app` は抽象のみ扱う(不変条件)。モデルは `--model` >
+  `LLM_MODEL` > `LIBRARIAN_MODEL`(後方互換)> プロバイダ既定。env 契約は README
+  「LLM プロバイダの選択」。
 - `templates/librarian-review.yml` — 対象リポジトリに配る GitHub Actions テンプレート(§4-④)。
 - `web/` — Phase 3 の Web UI(Next.js、ADR-5)。蔵書目録(ダッシュボード)/ 書架を歩く
   (グラフ可視化)/ 司書に聞く(グラフ近傍 Q&A、要 ANTHROPIC_API_KEY)。store へは

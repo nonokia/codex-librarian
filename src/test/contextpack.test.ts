@@ -80,11 +80,12 @@ test('buildReviewRequest embeds the pack and demands structured output', () => {
   indexRepo(store, root);
   const retrieved = retrieveForDiff(store, root, parseUnifiedDiff(DIFF), { withSource: true });
   const pack = assembleReviewPack(DIFF, retrieved);
-  const req = buildReviewRequest(pack, 'claude-opus-4-8');
+  const req = buildReviewRequest(pack);
 
-  assert.equal(req.model, 'claude-opus-4-8');
-  assert.equal(req.thinking.type, 'adaptive');
-  assert.equal(req.output_config.format.type, 'json_schema');
+  // provider-agnostic since #42 (ADR-10): no model, no SDK-specific fields
+  assert.equal(req.maxTokens, 16000);
+  assert.equal(req.outputSchema?.name, 'review');
+  assert.ok(JSON.stringify(req.outputSchema?.schema).includes('"verdict"'));
   assert.ok(req.messages[0].content.includes('Context Pack'));
   assert.ok(req.system.includes('diff 単体では正しいが'));
 
