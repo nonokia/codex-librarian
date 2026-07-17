@@ -1,0 +1,10 @@
+---
+- name: Create taskflow database
+  community.postgresql.postgresql_db:
+    name: taskflow
+  notify: Restart postgres
+
+- name: Create app role
+  community.postgresql.postgresql_user:
+    name: taskflow
+    password: "{{ db_password }}"

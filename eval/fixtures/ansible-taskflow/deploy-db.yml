@@ -1,0 +1,7 @@
+---
+- name: Provision database
+  hosts: db
+  become: true
+  roles:
+    - role: taskflow_db
+    - role: geerlingguy.postgresql

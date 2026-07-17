@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "extractors": [
+    {
+      "name": "librarian-ansible",
+      "extensions": [".yml", ".yaml"],
+      "command": "../../../ansible-extractor/extract.py",
+      "args": []
+    }
+  ]
+}
