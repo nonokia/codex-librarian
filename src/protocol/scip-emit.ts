@@ -42,6 +42,7 @@ const LANGUAGE: Record<LibrarianScheme, string> = {
   'librarian-terraform': 'terraform',
   'librarian-sql': 'sql',
   'librarian-dockerfile': 'dockerfile',
+  'librarian-k8s': 'yaml',
 };
 
 /** innermost row strictly enclosing the testblock's span — its enclosing_symbol */

@@ -186,6 +186,25 @@ librarian は以下の順でバイナリを探す:
 どれも無い場合、Dockerfile はファイルレベルの module シンボルのみに degrade する
 (インデックス全体は失敗しない。警告が stderr に出る)。
 
+## Kubernetes マニフェストのインデックス
+
+`.yaml` / `.yml` は Go 製の抽出バイナリ(`k8s-extractor/`、yaml.v3)で symbols/edges
+化される。**素のマニフェスト + Kustomize が対象**(Helm template は valid YAML でない
+ためファイルレベルに degrade)。k8s の内容判定はプラグイン内(`apiVersion` + `kind` +
+`metadata.name` の自己申告)で行うため、**非 k8s YAML(CI 設定等)は module シンボル
+のみ・エッジ 0** で無害。Ansible 等の別 YAML 抽出器は `.librarian/extractors.json` で
+宣言すればこのビルトインを上書きできる(設計は
+[`docs/k8s-baseline.md`](docs/k8s-baseline.md))。librarian は以下の順でバイナリを探す:
+
+1. `LIBRARIAN_K8S_EXTRACTOR` 環境変数(ビルド済みバイナリへのパス)
+2. `librarian-k8s-extractor` が `$PATH` 上にある(`go build -o <PATHの通った場所>/librarian-k8s-extractor ./k8s-extractor`)
+3. Go toolchain があれば `go run ./k8s-extractor` に自動フォールバック
+
+シンボルは `Deployment/api` / `ConfigMap/api-config`(kind/name)、Kustomization は
+`Kustomization/<dir>`。configMap/secret 参照・Ingress backend・Kustomize resources/
+patches・一意に決まる Service selector が references/imports エッジになり、`image:` は
+tag を落としたイメージ名で `resolved=0`(dockerfile 抽出器と同じ #35 の入口)。
+
 ## SCIP での export / import(issue #16)
 
 抽出器⇄store の交換フォーマットは **SCIP ベース層 + ext サイドカーの二層(SCIP+)**

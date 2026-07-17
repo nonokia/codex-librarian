@@ -404,7 +404,8 @@ export type LibrarianScheme =
   | 'librarian-py'
   | 'librarian-terraform'
   | 'librarian-sql'
-  | 'librarian-dockerfile';
+  | 'librarian-dockerfile'
+  | 'librarian-k8s';
 
 export interface MonikerParts {
   file: string;

@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 73
-- symbols: 709
-- edges: 3978 (unresolved: 2266)
-- symbols by kind: class=14, function=209, interface=75, method=59, module=73, testblock=156, typealias=14, variable=109
+- files: 75
+- symbols: 734
+- edges: 4150 (unresolved: 2360)
+- symbols by kind: class=15, function=214, interface=75, method=60, module=75, testblock=165, typealias=14, variable=116
 
 ## Files
 
@@ -67,15 +67,15 @@
 
 ### src/app/registry.ts
 
-- function builtinExtractors L35-45 `(): Extractor[]`
-- interface RegistryEntry L48-59
-- function onPath L61-66 `(name: string): string | null`
-- function registryCommandResolver L73-83 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
-- function entryToExtractor L85-94 `(entry: RegistryEntry, root: string): SubprocessExtractor`
-- function parseRegistry L97-109 `(raw: unknown): RegistryEntry[]`
-- function parseEntry L111-137 `(raw: unknown, i: number): RegistryEntry`
-- function loadRegistry L140-150 `(root: string): RegistryEntry[]`
-- function resolveExtractors L158-176 `(root: string): Extractor[]`
+- function builtinExtractors L36-47 `(): Extractor[]`
+- interface RegistryEntry L50-61
+- function onPath L63-68 `(name: string): string | null`
+- function registryCommandResolver L75-85 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
+- function entryToExtractor L87-96 `(entry: RegistryEntry, root: string): SubprocessExtractor`
+- function parseRegistry L99-111 `(raw: unknown): RegistryEntry[]`
+- function parseEntry L113-139 `(raw: unknown, i: number): RegistryEntry`
+- function loadRegistry L142-152 `(root: string): RegistryEntry[]`
+- function resolveExtractors L160-178 `(root: string): Extractor[]`
 
 ### src/app/resolve-dispatches.ts
 
@@ -172,6 +172,15 @@
 - variable UNAVAILABLE_WARNING L52-55
 - class GoExtractor L57-66
 - method GoExtractor.constructor L58-65 `()`
+
+### src/extractors/k8s.ts
+
+- function k8sExtractorSourceDir L25-27 `(): string`
+- function onPath L29-34 `(name: string): string | null`
+- function resolveK8sExtractorCommand L36-46 `(): SubprocessCommand | null`
+- variable UNAVAILABLE_WARNING L48-51
+- class K8sExtractor L53-62
+- method K8sExtractor.constructor L54-61 `()`
 
 ### src/extractors/php.ts
 
@@ -279,17 +288,17 @@
 
 ### src/protocol/scip-emit.ts
 
-- variable LANGUAGE L37-45
-- function parentOf L48-57 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
-- function extractionResultsToScipPlus L59-189 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
+- variable LANGUAGE L37-46
+- function parentOf L49-58 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
+- function extractionResultsToScipPlus L60-190 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
 
 ### src/protocol/scip-export.ts
 
-- variable SCHEME_BY_EXTENSION L22-38
-- function isDockerfilePath L46-49 `(relPath: string): boolean`
-- function schemeForPath L52-54 `(path: string): LibrarianScheme | undefined`
-- interface ScipExportResult L56-68
-- function storeToScipPlus L70-128 `(store: Store, repo: string): ScipExportResult`
+- variable SCHEME_BY_EXTENSION L22-40
+- function isDockerfilePath L48-51 `(relPath: string): boolean`
+- function schemeForPath L54-56 `(path: string): LibrarianScheme | undefined`
+- interface ScipExportResult L58-70
+- function storeToScipPlus L72-130 `(store: Store, repo: string): ScipExportResult`
 
 ### src/protocol/scip-ingest.ts
 
@@ -340,31 +349,31 @@
 - function kindFromScip L338-340 `(kind: SymbolInformation_Kind): SymbolKind | null`
 - variable DEGRADE_KIND_FROM_SCIP L351-380
 - function degradeKindFromScip L382-384 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- typealias LibrarianScheme L400-407
-- interface MonikerParts L409-421
-- typealias DescriptorSuffix L423-431
-- interface ParsedDescriptor L433-437
-- interface ParsedMoniker L439-445
-- interface LibrarianSymbolKey L448-452
-- variable IDENT_CHAR L454-454
-- variable SIMPLE_IDENT L455-455
-- variable TYPE_KINDS L456-456
-- function escapeIdent L458-461 `(name: string): string`
-- function descriptorFor L463-468 `(name: string, kind: SymbolKind): string`
-- function formatLocal L470-473 `(n: number): string`
-- function isLocalSymbol L475-477 `(symbol: string): boolean`
-- function formatMoniker L479-498 `(scheme: LibrarianScheme, parts: MonikerParts): string`
-- function readHeaderField L501-515 `(s: string, i: number, what: string): [string, number]`
-- function readIdent L517-538 `(s: string, i: number): [string, number]`
-- function parseMoniker L540-613 `(moniker: string): ParsedMoniker`
-- function monikerToParts L621-632 `(moniker: string): LibrarianSymbolKey`
-- function monikerToId L634-637 `(moniker: string, kind: SymbolKind): string`
-- typealias ExternalMonikerKey L652-656
-- function externalMonikerKey L658-681 `(moniker: string): ExternalMonikerKey`
-- interface ScipMultiLineRange L688-693
-- interface ScipSingleLineRange L695-699
-- function spanToScipRange L702-707 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
-- function scipRangeToSpan L709-720 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
+- typealias LibrarianScheme L400-408
+- interface MonikerParts L410-422
+- typealias DescriptorSuffix L424-432
+- interface ParsedDescriptor L434-438
+- interface ParsedMoniker L440-446
+- interface LibrarianSymbolKey L449-453
+- variable IDENT_CHAR L455-455
+- variable SIMPLE_IDENT L456-456
+- variable TYPE_KINDS L457-457
+- function escapeIdent L459-462 `(name: string): string`
+- function descriptorFor L464-469 `(name: string, kind: SymbolKind): string`
+- function formatLocal L471-474 `(n: number): string`
+- function isLocalSymbol L476-478 `(symbol: string): boolean`
+- function formatMoniker L480-499 `(scheme: LibrarianScheme, parts: MonikerParts): string`
+- function readHeaderField L502-516 `(s: string, i: number, what: string): [string, number]`
+- function readIdent L518-539 `(s: string, i: number): [string, number]`
+- function parseMoniker L541-614 `(moniker: string): ParsedMoniker`
+- function monikerToParts L622-633 `(moniker: string): LibrarianSymbolKey`
+- function monikerToId L635-638 `(moniker: string, kind: SymbolKind): string`
+- typealias ExternalMonikerKey L653-657
+- function externalMonikerKey L659-682 `(moniker: string): ExternalMonikerKey`
+- interface ScipMultiLineRange L689-694
+- interface ScipSingleLineRange L696-700
+- function spanToScipRange L703-708 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
+- function scipRangeToSpan L710-721 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
 
 ### src/store/store.ts
 
@@ -559,6 +568,26 @@
 - testblock test(a diff against a Go method seeds retrieval and packs its callers) L122-135
 - testblock test(without a Go toolchain the claimed files degrade to file-level modules) L137-157
 - testblock test(--capabilities answers the plugin-protocol handshake, reads no stdin) L159-167
+
+### src/test/extractor-k8s.test.ts
+
+- variable repoRoot L17-17
+- variable extractorDir L18-18
+- variable fixture L19-19
+- variable golden L20-20
+- variable hasGo L22-22
+- variable binary L24-24
+- function builtBinary L25-32 `(): string`
+- function indexedFixture L34-39 `(): Store`
+- testblock test(k8s fixture indexes resources as kind/name documents) L41-57
+- testblock test(name references resolve: configMap/secret refs, ingress backend, selector) L59-80
+- testblock test(ambiguous selectors stay unresolved (never guess)) L82-116
+- testblock test(non-k8s YAML degrades to the file module with zero false edges) L118-137
+- testblock test(image references carry the tag-stripped specifier (#35/#40 lockstep)) L139-149
+- testblock test(a diff on a ConfigMap seeds retrieval and packs the consuming workloads) L151-161
+- testblock test(eval baseline: the reference graph recovers the golden blast radius) L163-169
+- testblock test(without a Go toolchain the claimed files degrade to file-level modules) L171-186
+- testblock test(--capabilities answers the plugin-protocol handshake) L188-196
 
 ### src/test/extractor-php.test.ts
 
@@ -950,6 +979,7 @@
 - src/app/loop.ts → src/store/store.ts
 - src/app/registry.ts → src/extractors/dockerfile.ts
 - src/app/registry.ts → src/extractors/go.ts
+- src/app/registry.ts → src/extractors/k8s.ts
 - src/app/registry.ts → src/extractors/php.ts
 - src/app/registry.ts → src/extractors/python.ts
 - src/app/registry.ts → src/extractors/sql.ts
@@ -982,6 +1012,7 @@
 - src/extractors/dockerfile.ts → src/extractors/subprocess.ts
 - src/extractors/dockerfile.ts → src/protocol/scip-export.ts
 - src/extractors/go.ts → src/extractors/subprocess.ts
+- src/extractors/k8s.ts → src/extractors/subprocess.ts
 - src/extractors/php.ts → src/extractors/subprocess.ts
 - src/extractors/python.ts → src/extractors/subprocess.ts
 - src/extractors/sql.ts → src/extractors/subprocess.ts
@@ -1053,6 +1084,14 @@
 - src/test/extractor-go.test.ts → src/extractors/go.ts
 - src/test/extractor-go.test.ts → src/protocol/scip.ts
 - src/test/extractor-go.test.ts → src/store/store.ts
+- src/test/extractor-k8s.test.ts → src/app/eval.ts
+- src/test/extractor-k8s.test.ts → src/app/index.ts
+- src/test/extractor-k8s.test.ts → src/core/contextpack.ts
+- src/test/extractor-k8s.test.ts → src/core/diff.ts
+- src/test/extractor-k8s.test.ts → src/core/retrieval.ts
+- src/test/extractor-k8s.test.ts → src/extractors/k8s.ts
+- src/test/extractor-k8s.test.ts → src/protocol/scip.ts
+- src/test/extractor-k8s.test.ts → src/store/store.ts
 - src/test/extractor-php.test.ts → src/app/index.ts
 - src/test/extractor-php.test.ts → src/core/contextpack.ts
 - src/test/extractor-php.test.ts → src/core/diff.ts
@@ -1256,6 +1295,7 @@
 - src/app/loop.ts recordReviewOutcome —calls→ src/store/store.ts Store.updateRetrievalOutcome
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/dockerfile.ts DockerfileExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/go.ts GoExtractor
+- src/app/registry.ts builtinExtractors —calls→ src/extractors/k8s.ts K8sExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/php.ts PhpExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/python.ts PythonExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/sql.ts SqlExtractor
@@ -1450,6 +1490,13 @@
 - src/extractors/go.ts resolveGoExtractorCommand —calls→ src/extractors/go.ts onPath
 - src/extractors/go.ts GoExtractor.constructor —references→ src/extractors/go.ts UNAVAILABLE_WARNING
 - src/extractors/go.ts GoExtractor.constructor —references→ src/extractors/go.ts resolveGoExtractorCommand
+- src/extractors/k8s.ts K8sExtractor —extends→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/k8s.ts K8sExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/k8s.ts resolveK8sExtractorCommand —calls→ src/extractors/k8s.ts k8sExtractorSourceDir
+- src/extractors/k8s.ts resolveK8sExtractorCommand —calls→ src/extractors/k8s.ts onPath
+- src/extractors/k8s.ts resolveK8sExtractorCommand —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/extractors/k8s.ts K8sExtractor.constructor —references→ src/extractors/k8s.ts UNAVAILABLE_WARNING
+- src/extractors/k8s.ts K8sExtractor.constructor —references→ src/extractors/k8s.ts resolveK8sExtractorCommand
 - src/extractors/php.ts PhpCommand —references→ src/extractors/subprocess.ts SubprocessCommand
 - src/extractors/php.ts PhpExtractor —extends→ src/extractors/subprocess.ts SubprocessExtractor
 - src/extractors/php.ts PhpExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
@@ -2018,6 +2065,66 @@
 - src/test/extractor-go.test.ts test(go fixture indexes with the full symbol taxonomy) —calls→ src/test/extractor-go.test.ts indexedFixture
 - src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/go.ts GoExtractor
 - src/test/extractor-go.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
+- src/test/extractor-k8s.test.ts builtBinary —references→ src/test/extractor-k8s.test.ts binary
+- src/test/extractor-k8s.test.ts builtBinary —references→ src/test/extractor-k8s.test.ts extractorDir
+- src/test/extractor-k8s.test.ts extractorDir —references→ src/test/extractor-k8s.test.ts repoRoot
+- src/test/extractor-k8s.test.ts fixture —references→ src/test/extractor-k8s.test.ts repoRoot
+- src/test/extractor-k8s.test.ts golden —references→ src/test/extractor-k8s.test.ts repoRoot
+- src/test/extractor-k8s.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
+- src/test/extractor-k8s.test.ts indexedFixture —calls→ src/store/store.ts Store
+- src/test/extractor-k8s.test.ts indexedFixture —references→ src/store/store.ts Store
+- src/test/extractor-k8s.test.ts indexedFixture —calls→ src/test/extractor-k8s.test.ts builtBinary
+- src/test/extractor-k8s.test.ts indexedFixture —references→ src/test/extractor-k8s.test.ts fixture
+- src/test/extractor-k8s.test.ts test(--capabilities answers the plugin-protocol handshake) —references→ src/protocol/scip.ts PROTOCOL_NAME
+- src/test/extractor-k8s.test.ts test(--capabilities answers the plugin-protocol handshake) —references→ src/protocol/scip.ts PROTOCOL_VERSION
+- src/test/extractor-k8s.test.ts test(--capabilities answers the plugin-protocol handshake) —calls→ src/protocol/scip.ts parseCapabilities
+- src/test/extractor-k8s.test.ts test(--capabilities answers the plugin-protocol handshake) —calls→ src/test/extractor-k8s.test.ts builtBinary
+- src/test/extractor-k8s.test.ts test(--capabilities answers the plugin-protocol handshake) —references→ src/test/extractor-k8s.test.ts hasGo
+- src/test/extractor-k8s.test.ts test(a diff on a ConfigMap seeds retrieval and packs the consuming workloads) —calls→ src/core/contextpack.ts assembleReviewPack
+- src/test/extractor-k8s.test.ts test(a diff on a ConfigMap seeds retrieval and packs the consuming workloads) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/extractor-k8s.test.ts test(a diff on a ConfigMap seeds retrieval and packs the consuming workloads) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/extractor-k8s.test.ts test(a diff on a ConfigMap seeds retrieval and packs the consuming workloads) —calls→ src/store/store.ts Store.close
+- src/test/extractor-k8s.test.ts test(a diff on a ConfigMap seeds retrieval and packs the consuming workloads) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-k8s.test.ts test(a diff on a ConfigMap seeds retrieval and packs the consuming workloads) —references→ src/test/extractor-k8s.test.ts fixture
+- src/test/extractor-k8s.test.ts test(a diff on a ConfigMap seeds retrieval and packs the consuming workloads) —references→ src/test/extractor-k8s.test.ts hasGo
+- src/test/extractor-k8s.test.ts test(a diff on a ConfigMap seeds retrieval and packs the consuming workloads) —calls→ src/test/extractor-k8s.test.ts indexedFixture
+- src/test/extractor-k8s.test.ts test(ambiguous selectors stay unresolved (never guess)) —calls→ src/app/index.ts indexRepo
+- src/test/extractor-k8s.test.ts test(ambiguous selectors stay unresolved (never guess)) —calls→ src/store/store.ts Store
+- src/test/extractor-k8s.test.ts test(ambiguous selectors stay unresolved (never guess)) —calls→ src/store/store.ts Store.close
+- src/test/extractor-k8s.test.ts test(ambiguous selectors stay unresolved (never guess)) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-k8s.test.ts test(ambiguous selectors stay unresolved (never guess)) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-k8s.test.ts test(ambiguous selectors stay unresolved (never guess)) —calls→ src/test/extractor-k8s.test.ts builtBinary
+- src/test/extractor-k8s.test.ts test(ambiguous selectors stay unresolved (never guess)) —references→ src/test/extractor-k8s.test.ts hasGo
+- src/test/extractor-k8s.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/app/eval.ts loadGoldenFile
+- src/test/extractor-k8s.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/app/eval.ts runEval
+- src/test/extractor-k8s.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/store/store.ts Store.close
+- src/test/extractor-k8s.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —references→ src/test/extractor-k8s.test.ts fixture
+- src/test/extractor-k8s.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —references→ src/test/extractor-k8s.test.ts golden
+- src/test/extractor-k8s.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —references→ src/test/extractor-k8s.test.ts hasGo
+- src/test/extractor-k8s.test.ts test(eval baseline: the reference graph recovers the golden blast radius) —calls→ src/test/extractor-k8s.test.ts indexedFixture
+- src/test/extractor-k8s.test.ts test(image references carry the tag-stripped specifier (#35/#40 lockstep)) —calls→ src/store/store.ts Store.close
+- src/test/extractor-k8s.test.ts test(image references carry the tag-stripped specifier (#35/#40 lockstep)) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-k8s.test.ts test(image references carry the tag-stripped specifier (#35/#40 lockstep)) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-k8s.test.ts test(image references carry the tag-stripped specifier (#35/#40 lockstep)) —references→ src/test/extractor-k8s.test.ts hasGo
+- src/test/extractor-k8s.test.ts test(image references carry the tag-stripped specifier (#35/#40 lockstep)) —calls→ src/test/extractor-k8s.test.ts indexedFixture
+- src/test/extractor-k8s.test.ts test(k8s fixture indexes resources as kind/name documents) —calls→ src/store/store.ts Store.close
+- src/test/extractor-k8s.test.ts test(k8s fixture indexes resources as kind/name documents) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-k8s.test.ts test(k8s fixture indexes resources as kind/name documents) —references→ src/test/extractor-k8s.test.ts hasGo
+- src/test/extractor-k8s.test.ts test(k8s fixture indexes resources as kind/name documents) —calls→ src/test/extractor-k8s.test.ts indexedFixture
+- src/test/extractor-k8s.test.ts test(name references resolve: configMap/secret refs, ingress backend, selector) —calls→ src/store/store.ts Store.close
+- src/test/extractor-k8s.test.ts test(name references resolve: configMap/secret refs, ingress backend, selector) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-k8s.test.ts test(name references resolve: configMap/secret refs, ingress backend, selector) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-k8s.test.ts test(name references resolve: configMap/secret refs, ingress backend, selector) —references→ src/test/extractor-k8s.test.ts hasGo
+- src/test/extractor-k8s.test.ts test(name references resolve: configMap/secret refs, ingress backend, selector) —calls→ src/test/extractor-k8s.test.ts indexedFixture
+- src/test/extractor-k8s.test.ts test(non-k8s YAML degrades to the file module with zero false edges) —calls→ src/app/index.ts indexRepo
+- src/test/extractor-k8s.test.ts test(non-k8s YAML degrades to the file module with zero false edges) —calls→ src/store/store.ts Store
+- src/test/extractor-k8s.test.ts test(non-k8s YAML degrades to the file module with zero false edges) —calls→ src/store/store.ts Store.close
+- src/test/extractor-k8s.test.ts test(non-k8s YAML degrades to the file module with zero false edges) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-k8s.test.ts test(non-k8s YAML degrades to the file module with zero false edges) —calls→ src/store/store.ts Store.stats
+- src/test/extractor-k8s.test.ts test(non-k8s YAML degrades to the file module with zero false edges) —calls→ src/test/extractor-k8s.test.ts builtBinary
+- src/test/extractor-k8s.test.ts test(non-k8s YAML degrades to the file module with zero false edges) —references→ src/test/extractor-k8s.test.ts hasGo
+- src/test/extractor-k8s.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/k8s.ts K8sExtractor
+- src/test/extractor-k8s.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
 - src/test/extractor-php.test.ts fixture —references→ src/test/extractor-php.test.ts repoRoot
 - src/test/extractor-php.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
 - src/test/extractor-php.test.ts indexedFixture —calls→ src/store/store.ts Store
@@ -2652,64 +2759,64 @@
 
 ## Unresolved (aggregated)
 
-- 104× equal (calls)
-- 97× map (calls)
-- 91× node:path#join (calls)
-- 79× ok (calls)
-- 55× some (calls)
-- 51× deepEqual (calls)
+- 111× equal (calls)
+- 100× map (calls)
+- 100× node:path#join (calls)
+- 83× ok (calls)
+- 58× some (calls)
+- 54× deepEqual (calls)
+- 44× node:fs#mkdtempSync (calls)
+- 44× node:os#tmpdir (calls)
 - 40× get (calls)
-- 40× node:fs#mkdtempSync (calls)
-- 40× node:os#tmpdir (calls)
+- 40× node:fs#writeFileSync (calls)
 - 40× prepare (calls)
+- 39× node:path (imports)
+- 38× filter (calls)
+- 38× node:fs (imports)
 - 38× stringify (calls)
-- 37× node:fs#writeFileSync (calls)
-- 37× node:path (imports)
-- 36× filter (calls)
-- 36× node:fs (imports)
-- 33× node:fs#rmSync (calls)
+- 36× find (calls)
+- 36× node:fs#rmSync (calls)
+- 34× node:path#join (imports)
 - 32× Error (calls)
-- 32× find (calls)
-- 32× node:path#join (imports)
 - 30× join (calls)
 - 30× push (calls)
 - 28× Map (calls)
+- 28× node:child_process#spawnSync (calls)
 - 26× Set (calls)
 - 25× has (calls)
-- 25× node:child_process#spawnSync (calls)
+- 25× split (calls)
+- 24× includes (calls)
+- 24× node:assert/strict (imports)
+- 24× node:path#resolve (calls)
+- 24× node:test (imports)
 - 24× slice (calls)
-- 24× split (calls)
 - 23× all (calls)
-- 23× includes (calls)
-- 23× node:assert/strict (imports)
-- 23× node:test (imports)
+- 23× node:test#test (calls)
+- 23× node:test#test (imports)
+- 23× parse (calls)
 - 22× node:fs#mkdirSync (calls)
-- 22× node:path#resolve (calls)
-- 22× node:test#test (calls)
-- 22× node:test#test (imports)
-- 22× parse (calls)
-- 21× node:fs#writeFileSync (imports)
-- 20× node:fs#mkdtempSync (imports)
-- 20× node:os (imports)
-- 20× node:os#tmpdir (imports)
-- 20× node:path#dirname (calls)
-- 20× node:path#resolve (imports)
+- 22× node:fs#writeFileSync (imports)
+- 22× node:path#dirname (calls)
+- 22× node:path#resolve (imports)
+- 21× node:fs#existsSync (calls)
+- 21× node:fs#mkdtempSync (imports)
+- 21× node:os (imports)
+- 21× node:os#tmpdir (imports)
+- 21× node:path#dirname (imports)
 - 20× set (calls)
-- 19× node:fs#existsSync (calls)
-- 19× node:path#dirname (imports)
-- 16× node:url (imports)
-- 16× node:url#fileURLToPath (calls)
-- 16× node:url#fileURLToPath (imports)
+- 18× node:url (imports)
+- 18× node:url#fileURLToPath (calls)
+- 18× node:url#fileURLToPath (imports)
+- 17× sort (calls)
 - 15× node:fs#mkdirSync (imports)
-- 15× sort (calls)
-- 14× node:fs#rmSync (imports)
+- 15× node:fs#rmSync (imports)
 - 13× json (calls)
+- 13× startsWith (calls)
 - 13× throws (calls)
 - 12× run (calls)
-- 11× startsWith (calls)
-- 10× node:child_process (imports)
-- 10× node:child_process#spawnSync (imports)
-- 10× node:fs#existsSync (imports)
+- 11× node:child_process (imports)
+- 11× node:child_process#spawnSync (imports)
+- 11× node:fs#existsSync (imports)
 - 10× node:fs#readFileSync (calls)
 - 9× @scip-code/scip (imports)
 - 9× add (calls)
@@ -2720,6 +2827,7 @@
 - 9× node:fs#readFileSync (imports)
 - 9× test (calls)
 - 8× keys (calls)
+- 8× node:path#delimiter (imports)
 - 8× now (calls)
 - 7× @/lib/librarian (imports)
 - 7× @/lib/librarian#openLibrarian (calls)
@@ -2728,7 +2836,6 @@
 - 7× Number (calls)
 - 7× entries (calls)
 - 7× match (calls)
-- 7× node:path#delimiter (imports)
 - 7× trim (calls)
 - 7× values (calls)
 - 6× fetch (calls)

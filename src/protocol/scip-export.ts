@@ -35,6 +35,8 @@ const SCHEME_BY_EXTENSION: Record<string, LibrarianScheme> = {
   '.tf': 'librarian-terraform',
   '.sql': 'librarian-sql',
   '.dockerfile': 'librarian-dockerfile',
+  '.yaml': 'librarian-k8s',
+  '.yml': 'librarian-k8s',
 };
 
 /**

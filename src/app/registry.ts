@@ -24,6 +24,7 @@ import { delimiter, isAbsolute, join, resolve } from 'node:path';
 import type { Extractor } from '../protocol/extractor.js';
 import { DockerfileExtractor } from '../extractors/dockerfile.js';
 import { GoExtractor } from '../extractors/go.js';
+import { K8sExtractor } from '../extractors/k8s.js';
 import { PhpExtractor } from '../extractors/php.js';
 import { PythonExtractor } from '../extractors/python.js';
 import { SqlExtractor } from '../extractors/sql.js';
@@ -31,7 +32,7 @@ import { SubprocessExtractor, type SubprocessCommand } from '../extractors/subpr
 import { TerraformExtractor } from '../extractors/terraform.js';
 import { TypeScriptExtractor } from '../extractors/ts.js';
 
-/** The always-on built-ins: TS in-process, Go/PHP/Python/Terraform/SQL/Dockerfile as reference plugins. */
+/** The always-on built-ins: TS in-process, Go/PHP/Python/Terraform/SQL/Dockerfile/k8s as reference plugins. */
 export function builtinExtractors(): Extractor[] {
   return [
     new TypeScriptExtractor(),
@@ -41,6 +42,7 @@ export function builtinExtractors(): Extractor[] {
     new TerraformExtractor(),
     new SqlExtractor(),
     new DockerfileExtractor(),
+    new K8sExtractor(),
   ];
 }
 
