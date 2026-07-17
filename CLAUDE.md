@@ -25,6 +25,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   子プロセスとして呼ぶ(issue #9、`docs/terraform-baseline.md`)。ただし HCL は
   call graph でなく**参照グラフ**で、型解決が要らず構文レベルで十分 — ADR-2 の「型解決
   必須」は call graph 言語向けの判断であり HCL には適用しない(dlog 記録)。
+  SQL も同じ多言語パス・同じ参照グラフの整理: `sql-extractor/`(libpg_query =
+  PostgreSQL 本体のパーサ、pganalyze/pg_query_go 経由の Go 製バイナリ)を子プロセスと
+  して呼ぶ(issue #36、`docs/sql-baseline.md`)。方言は Postgres のみで `--capabilities`
+  の `dialect` に申告、他方言はパース失敗としてファイルレベルに degrade(偽エッジより
+  欠落)。function/procedure 本体は sql_body / LANGUAGE sql / plpgsql の 3 段階で
+  best-effort に辿る(dlog 記録)。
 - **全機能はまず CLI**(`librarian`)として存在する。
 
 ## Commands
@@ -101,11 +107,12 @@ dlog の「変更前に `dlog why`」と対になるルール:
 - `src/protocol/extractor.ts` — Extractor インターフェース(多言語対応の抽象、公開面)。実装は
   TS(`src/extractors/ts.ts`、in-process)・Go(`src/extractors/go.ts` + `go-extractor/`)・PHP
   (`src/extractors/php.ts` + `php-extractor/`)・Python(`src/extractors/python.ts` +
-  `py-extractor/`)・Terraform(`src/extractors/terraform.ts` + `tf-extractor/`)。
-  Go/PHP/Python/Terraform は汎用ランナー
+  `py-extractor/`)・Terraform(`src/extractors/terraform.ts` + `tf-extractor/`)・SQL
+  (`src/extractors/sql.ts` + `sql-extractor/`)。
+  Go/PHP/Python/Terraform/SQL は汎用ランナー
   `src/extractors/subprocess.ts` に resolver を渡すリファレンスプラグイン。
 - `src/protocol/scip-plus.schema.json` — 封筒(`{scip, ext}`)の JSON Schema(プラグイン公開物)。
-- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP/Python/Terraform)
+- `src/app/registry.ts` — 抽出器レジストリ(issue #22)。ビルトイン(TS/Go/PHP/Python/Terraform/SQL)
   + `.librarian/extractors.json` の合成・拡張子上書き(`resolveExtractors`)。信頼モデル:
   明示登録のみ・自動 DL/PATH 規約発見なし。
 - `go-extractor/` — Go 抽出バイナリ(`golang.org/x/tools/go/packages`)。stdin/stdout
@@ -114,6 +121,13 @@ dlog の「変更前に `dlog why`」と対になるルール:
   ではない)。SCIP+ 封筒 + `--capabilities`。symbol は参照アドレスで命名(`aws_x.y` /
   `var.z` / `module.m` / `data.t.n` / `local.k` / `output.o`)。ビルド・配布は README の
   「Terraform リポジトリのインデックス」、ベースラインは `docs/terraform-baseline.md`。
+- `sql-extractor/` — SQL 抽出バイナリ(libpg_query / pg_query_go、Postgres 方言のみ)。
+  参照グラフ。SCIP+ 封筒 + `--capabilities`(`dialect: postgresql` を申告)。symbol は
+  参照アドレスで命名(`table.users` / `view.v` / `matview.m` / `function.f` /
+  `procedure.p` / `trigger.tr` / `index.i`)。FK / FROM / JOIN / EXECUTE FUNCTION が
+  references エッジ、関数本体は sql_body / LANGUAGE sql / plpgsql の 3 段階 best-effort。
+  ビルド・配布は README の「SQL リポジトリのインデックス」、ベースラインは
+  `docs/sql-baseline.md`。
 - `php-extractor/` — PHP 抽出スクリプト(nikic/php-parser、`vendor/` 同梱)。stdin/stdout
   JSON 契約 + `--capabilities`。インタプリタ実行でビルド不要 — 詳細は README の「PHP リポジトリのインデックス」。
 - `py-extractor/` — Python 抽出スクリプト(標準ライブラリ `ast` のみ、依存ゼロ・ビルド不要)。
@@ -141,6 +155,9 @@ dlog の「変更前に `dlog why`」と対になるルール:
 - `eval/fixtures/terraform-taskflow/` — Terraform 用正解セットの対象構成(コミットされた
   fixture、ローカル module 含む)。ベースラインは `docs/terraform-baseline.md`
   (`eval/golden/terraform-taskflow.json`)。
+- `eval/fixtures/sql-taskflow/` — SQL 用正解セットの対象スキーマ(コミットされた fixture。
+  schema/ + views + functions + migrations)。ベースラインは `docs/sql-baseline.md`
+  (`eval/golden/sql-taskflow.json`)。
 - `src/app/link.ts` — リポジトリ間 import 解決(issue #27 / ADR-8)。`.librarian/links.json`
   の **明示宣言(package → repo)** を入力に、抽出器が残した unresolved エッジを再解決する
   後段ステップ(`librarian link`)。**推測で名前一致させない** — 抽出器が吐く import

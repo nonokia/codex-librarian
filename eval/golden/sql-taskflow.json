@@ -1,0 +1,78 @@
+{
+  "cases": [
+    {
+      "id": "sql-001",
+      "title": "tasks テーブルの変更(コア work item)",
+      "note": "expected はコードリーディングで作成: tasks を FK/参照で触るすべてのオブジェクト(1-hop)。FK の向きは tasks→projects/users、task_events→tasks。migrations/005 はファイルレベル(ALTER/UPDATE の module 参照)。",
+      "target": { "file": "schema/003_tasks.sql", "symbol": "table.tasks" },
+      "expected": [
+        { "file": "schema/001_users.sql", "symbol": "table.users" },
+        { "file": "schema/002_projects.sql", "symbol": "table.projects" },
+        { "file": "schema/003_tasks.sql", "symbol": "index.idx_tasks_status" },
+        { "file": "schema/003_tasks.sql", "symbol": "index.idx_tasks_project" },
+        { "file": "schema/004_audit.sql", "symbol": "table.task_events" },
+        { "file": "schema/004_audit.sql", "symbol": "trigger.tasks_audit" },
+        { "file": "views.sql", "symbol": "view.active_tasks" },
+        { "file": "views.sql", "symbol": "matview.project_task_stats" },
+        { "file": "functions.sql", "symbol": "function.complete_task" },
+        { "file": "functions.sql", "symbol": "procedure.archive_done_tasks" },
+        { "file": "migrations/005_task_notes.sql" }
+      ]
+    },
+    {
+      "id": "sql-002",
+      "title": "users テーブルの変更(アカウント)",
+      "note": "users を参照する FK(projects.owner_id / tasks.assignee_id)、view の JOIN、同ファイルの index。",
+      "target": { "file": "schema/001_users.sql", "symbol": "table.users" },
+      "expected": [
+        { "file": "schema/001_users.sql", "symbol": "index.idx_users_email" },
+        { "file": "schema/002_projects.sql", "symbol": "table.projects" },
+        { "file": "schema/003_tasks.sql", "symbol": "table.tasks" },
+        { "file": "views.sql", "symbol": "view.active_tasks" }
+      ]
+    },
+    {
+      "id": "sql-003",
+      "title": "active_tasks ビューの変更(読み取りモデル)",
+      "note": "ビューが SELECT/JOIN する 3 テーブル(out 方向 1-hop)。",
+      "target": { "file": "views.sql", "symbol": "view.active_tasks" },
+      "expected": [
+        { "file": "schema/001_users.sql", "symbol": "table.users" },
+        { "file": "schema/002_projects.sql", "symbol": "table.projects" },
+        { "file": "schema/003_tasks.sql", "symbol": "table.tasks" }
+      ]
+    },
+    {
+      "id": "sql-004",
+      "title": "log_task_change トリガ関数の変更(監査)",
+      "note": "plpgsql 本体が INSERT する task_events と、この関数を EXECUTE する trigger。",
+      "target": { "file": "schema/004_audit.sql", "symbol": "function.log_task_change" },
+      "expected": [
+        { "file": "schema/004_audit.sql", "symbol": "table.task_events" },
+        { "file": "schema/004_audit.sql", "symbol": "trigger.tasks_audit" }
+      ]
+    },
+    {
+      "id": "sql-005",
+      "title": "projects テーブルの変更(グルーピング)",
+      "note": "FK の out(users)と in(tasks)、projects を読む view / matview。",
+      "target": { "file": "schema/002_projects.sql", "symbol": "table.projects" },
+      "expected": [
+        { "file": "schema/001_users.sql", "symbol": "table.users" },
+        { "file": "schema/003_tasks.sql", "symbol": "table.tasks" },
+        { "file": "views.sql", "symbol": "view.active_tasks" },
+        { "file": "views.sql", "symbol": "matview.project_task_stats" }
+      ]
+    },
+    {
+      "id": "sql-006",
+      "title": "archive_done_tasks プロシージャの変更(ライフサイクル)",
+      "note": "LANGUAGE sql 本体が触る tasks(DELETE/SELECT)と task_events(INSERT)。",
+      "target": { "file": "functions.sql", "symbol": "procedure.archive_done_tasks" },
+      "expected": [
+        { "file": "schema/003_tasks.sql", "symbol": "table.tasks" },
+        { "file": "schema/004_audit.sql", "symbol": "table.task_events" }
+      ]
+    }
+  ]
+}

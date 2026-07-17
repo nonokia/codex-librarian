@@ -27,7 +27,16 @@ export type SymbolKind =
   | 'resource'
   | 'data'
   | 'output'
-  | 'locals';
+  | 'locals'
+  // SQL object kinds (#36). `module` and `function` are reused; like the
+  // Terraform kinds these carry no call semantics — the SQL graph is a
+  // relation/routine reference graph.
+  | 'table'
+  | 'view'
+  | 'matview'
+  | 'procedure'
+  | 'trigger'
+  | 'index';
 
 export type EdgeKind = 'calls' | 'imports' | 'extends' | 'references' | 'dispatches';
 
