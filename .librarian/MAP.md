@@ -6,10 +6,10 @@
 
 ## Stats
 
-- files: 71
-- symbols: 681
-- edges: 3820 (unresolved: 2186)
-- symbols by kind: class=13, function=202, interface=75, method=57, module=71, testblock=147, typealias=14, variable=102
+- files: 73
+- symbols: 709
+- edges: 3978 (unresolved: 2266)
+- symbols by kind: class=14, function=209, interface=75, method=59, module=73, testblock=156, typealias=14, variable=109
 
 ## Files
 
@@ -27,14 +27,14 @@
 ### src/app/index.ts
 
 - variable SKIP_DIRS L16-16
-- function discoverSourceFiles L18-33 `(rootDir: string, extensions: string[] = EXTENSIONS): string[]`
-- function extractorFor L36-38 `(file: string, extractors: Extractor[]): Extractor | null`
-- function contentHash L40-42 `(text: string): string`
-- function namespaceIds L50-66 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
-- interface IndexReport L74-88
-- function indexRepo L109-177 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
-- interface ScipImportReport L179-185
-- function importScip L210-285 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[]; preferScip?: boolean } = {}): ScipImportReport`
+- function discoverSourceFiles L18-41 `(rootDir: string, extensions: string[] = EXTENSIONS, claims?: (relPath: string) => boolean): string[]`
+- function extractorFor L48-54 `(file: string, extractors: Extractor[]): Extractor | null`
+- function contentHash L56-58 `(text: string): string`
+- function namespaceIds L66-82 `(repo: string, results: ExtractionResult[]): ExtractionResult[]`
+- interface IndexReport L90-104
+- function indexRepo L125-200 `(store: Store, rootDir: string, opts: { extractors?: Extractor[]; include?: string[]; repoName?: string } = {}): IndexReport`
+- interface ScipImportReport L202-208
+- function importScip L233-308 `(store: Store, scipPath: string, opts: { repoName?: string; root?: string; extractors?: Extractor[]; preferScip?: boolean } = {}): ScipImportReport`
 
 ### src/app/link.ts
 
@@ -67,15 +67,15 @@
 
 ### src/app/registry.ts
 
-- function builtinExtractors L34-43 `(): Extractor[]`
-- interface RegistryEntry L46-57
-- function onPath L59-64 `(name: string): string | null`
-- function registryCommandResolver L71-81 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
-- function entryToExtractor L83-92 `(entry: RegistryEntry, root: string): SubprocessExtractor`
-- function parseRegistry L95-107 `(raw: unknown): RegistryEntry[]`
-- function parseEntry L109-135 `(raw: unknown, i: number): RegistryEntry`
-- function loadRegistry L138-148 `(root: string): RegistryEntry[]`
-- function resolveExtractors L156-174 `(root: string): Extractor[]`
+- function builtinExtractors L35-45 `(): Extractor[]`
+- interface RegistryEntry L48-59
+- function onPath L61-66 `(name: string): string | null`
+- function registryCommandResolver L73-83 `(entry: RegistryEntry, root: string): () => SubprocessCommand | null`
+- function entryToExtractor L85-94 `(entry: RegistryEntry, root: string): SubprocessExtractor`
+- function parseRegistry L97-109 `(raw: unknown): RegistryEntry[]`
+- function parseEntry L111-137 `(raw: unknown, i: number): RegistryEntry`
+- function loadRegistry L140-150 `(root: string): RegistryEntry[]`
+- function resolveExtractors L158-176 `(root: string): Extractor[]`
 
 ### src/app/resolve-dispatches.ts
 
@@ -152,6 +152,16 @@
 - interface Candidate L154-158
 - function expandContext L164-312 `(store: Store, roots: RootResolver, seeds: Seed[], opts: { strategy?: Strategy; hops?: number; budget?: number; withSource?: boolean; demote?: Demote } = {}): ContextPack`
 - function retrieveForDiff L320-344 `(store: Store, roots: RootResolver, hunks: FileRanges[], opts: { strategy?: Strategy; useCache?: boolean; hops?: number; budget?: number; withSource?: boolean; repo?: string } = {}): ContextPack`
+
+### src/extractors/dockerfile.ts
+
+- function dockerfileExtractorSourceDir L31-33 `(): string`
+- function onPath L35-40 `(name: string): string | null`
+- function resolveDockerfileExtractorCommand L42-52 `(): SubprocessCommand | null`
+- variable UNAVAILABLE_WARNING L54-57
+- class DockerfileExtractor L59-72
+- method DockerfileExtractor.constructor L60-67 `()`
+- method DockerfileExtractor.claims L69-71 `(relPath: string): boolean`
 
 ### src/extractors/go.ts
 
@@ -265,19 +275,21 @@
 - function symbolId L17-27 `(file: string, container: string | null, name: string, kind: string): string`
 - typealias ExtractedSymbol L35-35
 - interface ExtractionResult L37-42
-- interface Extractor L44-53
+- interface Extractor L44-61
 
 ### src/protocol/scip-emit.ts
 
-- variable LANGUAGE L37-43
-- function parentOf L46-55 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
-- function extractionResultsToScipPlus L57-187 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
+- variable LANGUAGE L37-45
+- function parentOf L48-57 `(rows: ExtractedSymbol[], tb: ExtractedSymbol): ExtractedSymbol | null`
+- function extractionResultsToScipPlus L59-189 `(scheme: LibrarianScheme, rootDir: string, results: ExtractionResult[]): { index: Index; ext: Ext }`
 
 ### src/protocol/scip-export.ts
 
-- variable SCHEME_BY_EXTENSION L22-36
-- interface ScipExportResult L38-50
-- function storeToScipPlus L52-110 `(store: Store, repo: string): ScipExportResult`
+- variable SCHEME_BY_EXTENSION L22-38
+- function isDockerfilePath L46-49 `(relPath: string): boolean`
+- function schemeForPath L52-54 `(path: string): LibrarianScheme | undefined`
+- interface ScipExportResult L56-68
+- function storeToScipPlus L70-128 `(store: Store, repo: string): ScipExportResult`
 
 ### src/protocol/scip-ingest.ts
 
@@ -308,80 +320,80 @@
 - interface ExtDocument L83-87
 - interface ExtSymbol L89-98
 - interface ExtEdge L100-108
-- variable SYMBOL_KIND_FLAGS L112-134
-- variable EDGE_KIND_FLAGS L135-144
-- variable SYMBOL_KINDS L145-145
-- variable EDGE_KINDS L146-146
-- function parseScipPlus L153-162 `(envelope: unknown): { index: Index; ext: Ext }`
-- function parseCapabilities L170-195 `(raw: unknown): Capabilities`
-- function parseExt L198-208 `(raw: unknown): Ext`
-- function parseExtDocument L210-225 `(raw: unknown, i: number): ExtDocument`
-- function parseExtSymbol L227-249 `(raw: unknown, at: string): ExtSymbol`
-- function parseExtEdge L251-268 `(raw: unknown, at: string): ExtEdge`
-- function encodeScip L274-276 `(index: Index): Uint8Array`
-- function decodeScip L278-280 `(bytes: Uint8Array): Index`
-- function scipFromJson L282-284 `(json: JsonValue): Index`
-- function scipToJson L286-288 `(index: Index): JsonValue`
-- function createScipIndex L291-293 `(init: MessageInitShape<typeof IndexSchema>): Index`
-- variable KIND_TO_SCIP L301-328
-- variable SCIP_TO_KIND L330-332
-- function kindFromScip L334-336 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- variable DEGRADE_KIND_FROM_SCIP L347-376
-- function degradeKindFromScip L378-380 `(kind: SymbolInformation_Kind): SymbolKind | null`
-- typealias LibrarianScheme L396-401
-- interface MonikerParts L403-415
-- typealias DescriptorSuffix L417-425
-- interface ParsedDescriptor L427-431
-- interface ParsedMoniker L433-439
-- interface LibrarianSymbolKey L442-446
-- variable IDENT_CHAR L448-448
-- variable SIMPLE_IDENT L449-449
-- variable TYPE_KINDS L450-450
-- function escapeIdent L452-455 `(name: string): string`
-- function descriptorFor L457-462 `(name: string, kind: SymbolKind): string`
-- function formatLocal L464-467 `(n: number): string`
-- function isLocalSymbol L469-471 `(symbol: string): boolean`
-- function formatMoniker L473-492 `(scheme: LibrarianScheme, parts: MonikerParts): string`
-- function readHeaderField L495-509 `(s: string, i: number, what: string): [string, number]`
-- function readIdent L511-532 `(s: string, i: number): [string, number]`
-- function parseMoniker L534-607 `(moniker: string): ParsedMoniker`
-- function monikerToParts L615-626 `(moniker: string): LibrarianSymbolKey`
-- function monikerToId L628-631 `(moniker: string, kind: SymbolKind): string`
-- typealias ExternalMonikerKey L646-650
-- function externalMonikerKey L652-675 `(moniker: string): ExternalMonikerKey`
-- interface ScipMultiLineRange L682-687
-- interface ScipSingleLineRange L689-693
-- function spanToScipRange L696-701 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
-- function scipRangeToSpan L703-714 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
+- variable SYMBOL_KIND_FLAGS L112-135
+- variable EDGE_KIND_FLAGS L136-145
+- variable SYMBOL_KINDS L146-146
+- variable EDGE_KINDS L147-147
+- function parseScipPlus L154-163 `(envelope: unknown): { index: Index; ext: Ext }`
+- function parseCapabilities L171-196 `(raw: unknown): Capabilities`
+- function parseExt L199-209 `(raw: unknown): Ext`
+- function parseExtDocument L211-226 `(raw: unknown, i: number): ExtDocument`
+- function parseExtSymbol L228-250 `(raw: unknown, at: string): ExtSymbol`
+- function parseExtEdge L252-269 `(raw: unknown, at: string): ExtEdge`
+- function encodeScip L275-277 `(index: Index): Uint8Array`
+- function decodeScip L279-281 `(bytes: Uint8Array): Index`
+- function scipFromJson L283-285 `(json: JsonValue): Index`
+- function scipToJson L287-289 `(index: Index): JsonValue`
+- function createScipIndex L292-294 `(init: MessageInitShape<typeof IndexSchema>): Index`
+- variable KIND_TO_SCIP L302-332
+- variable SCIP_TO_KIND L334-336
+- function kindFromScip L338-340 `(kind: SymbolInformation_Kind): SymbolKind | null`
+- variable DEGRADE_KIND_FROM_SCIP L351-380
+- function degradeKindFromScip L382-384 `(kind: SymbolInformation_Kind): SymbolKind | null`
+- typealias LibrarianScheme L400-407
+- interface MonikerParts L409-421
+- typealias DescriptorSuffix L423-431
+- interface ParsedDescriptor L433-437
+- interface ParsedMoniker L439-445
+- interface LibrarianSymbolKey L448-452
+- variable IDENT_CHAR L454-454
+- variable SIMPLE_IDENT L455-455
+- variable TYPE_KINDS L456-456
+- function escapeIdent L458-461 `(name: string): string`
+- function descriptorFor L463-468 `(name: string, kind: SymbolKind): string`
+- function formatLocal L470-473 `(n: number): string`
+- function isLocalSymbol L475-477 `(symbol: string): boolean`
+- function formatMoniker L479-498 `(scheme: LibrarianScheme, parts: MonikerParts): string`
+- function readHeaderField L501-515 `(s: string, i: number, what: string): [string, number]`
+- function readIdent L517-538 `(s: string, i: number): [string, number]`
+- function parseMoniker L540-613 `(moniker: string): ParsedMoniker`
+- function monikerToParts L621-632 `(moniker: string): LibrarianSymbolKey`
+- function monikerToId L634-637 `(moniker: string, kind: SymbolKind): string`
+- typealias ExternalMonikerKey L652-656
+- function externalMonikerKey L658-681 `(moniker: string): ExternalMonikerKey`
+- interface ScipMultiLineRange L688-693
+- interface ScipSingleLineRange L695-699
+- function spanToScipRange L702-707 `(spanStart: number, spanEnd: number): ScipMultiLineRange`
+- function scipRangeToSpan L709-720 `(range: ScipMultiLineRange | ScipSingleLineRange): { spanStart: number; spanEnd: number }`
 
 ### src/store/store.ts
 
-- typealias SymbolKind L12-39
-- typealias EdgeKind L41-41
-- interface SymbolRow L43-54
-- interface RepoRow L56-60
-- interface EdgeRow L62-68
-- interface UnresolvedEdge L71-77
-- interface EdgeEndpoint L79-85
-- interface JoinedEdge L87-91
-- interface NeighborRow L93-97
-- interface FileCount L100-104
-- interface CollapsedEdge L111-119
-- variable SCHEMA_VERSION L122-122
-- variable SCHEMA L124-205
-- class Store L207-927
-- method Store.constructor L210-229 `(path: string)`
-- method Store.close L231-233 `(): void`
-- method Store.getMeta L235-240 `(key: string): string | null`
-- method Store.setMeta L242-246 `(key: string, value: string): void`
-- method Store.upsertRepo L248-255 `(name: string, root: string): void`
-- method Store.getRepo L257-262 `(name: string): RepoRow | null`
-- method Store.listRepos L264-272 `(): RepoRow[]`
-- method Store.fileHash L274-279 `(repo: string, path: string): string | null`
-- method Store.replaceFile L282-311 `(repo: string, path: string, hash: string, symbols: Omit<SymbolRow, 'repo'>[], edges: EdgeRow[]): void`
-- method Store.removeFiles L313-322 `(repo: string, paths: string[]): void`
-- method Store.listFiles L324-335 `(repo?: string): { repo: string; path: string; hash: string }[]`
-- method Store.stats L337-381 `(): {
+- typealias SymbolKind L12-42
+- typealias EdgeKind L44-44
+- interface SymbolRow L46-57
+- interface RepoRow L59-63
+- interface EdgeRow L65-71
+- interface UnresolvedEdge L74-80
+- interface EdgeEndpoint L82-88
+- interface JoinedEdge L90-94
+- interface NeighborRow L96-100
+- interface FileCount L103-107
+- interface CollapsedEdge L114-122
+- variable SCHEMA_VERSION L125-125
+- variable SCHEMA L127-208
+- class Store L210-930
+- method Store.constructor L213-232 `(path: string)`
+- method Store.close L234-236 `(): void`
+- method Store.getMeta L238-243 `(key: string): string | null`
+- method Store.setMeta L245-249 `(key: string, value: string): void`
+- method Store.upsertRepo L251-258 `(name: string, root: string): void`
+- method Store.getRepo L260-265 `(name: string): RepoRow | null`
+- method Store.listRepos L267-275 `(): RepoRow[]`
+- method Store.fileHash L277-282 `(repo: string, path: string): string | null`
+- method Store.replaceFile L285-314 `(repo: string, path: string, hash: string, symbols: Omit<SymbolRow, 'repo'>[], edges: EdgeRow[]): void`
+- method Store.removeFiles L316-325 `(repo: string, paths: string[]): void`
+- method Store.listFiles L327-338 `(repo?: string): { repo: string; path: string; hash: string }[]`
+- method Store.stats L340-384 `(): {
     files: number;
     symbols: number;
     edges: number;
@@ -390,15 +402,15 @@
     byExtension: Record<string, number>;
     byRepo: Record<string, { files: number; symbols: number }>;
   }`
-- method Store.statsForRepo L390-404 `(repo: string): { symbols: number; edges: number; unresolvedEdges: number }`
-- method Store.findSymbols L407-419 `(query: string, limit = 20, repo?: string): SymbolRow[]`
-- method Store.symbolsInFile L421-429 `(file: string, repo?: string): SymbolRow[]`
-- method Store.neighborhood L435-460 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
-- method Store.symbolCountsByFile L467-479 `(repo?: string): FileCount[]`
-- method Store.collapsedEdges L492-524 `(repo?: string): CollapsedEdge[]`
-- method Store.edgesOf L526-538 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
-- method Store.edgesFromFile L544-559 `(repo: string, file: string): EdgeRow[]`
-- method Store.logRetrieval L563-592 `(entry: {
+- method Store.statsForRepo L393-407 `(repo: string): { symbols: number; edges: number; unresolvedEdges: number }`
+- method Store.findSymbols L410-422 `(query: string, limit = 20, repo?: string): SymbolRow[]`
+- method Store.symbolsInFile L424-432 `(file: string, repo?: string): SymbolRow[]`
+- method Store.neighborhood L438-463 `(seedId: string, hops: number, limit = 200): NeighborRow[]`
+- method Store.symbolCountsByFile L470-482 `(repo?: string): FileCount[]`
+- method Store.collapsedEdges L495-527 `(repo?: string): CollapsedEdge[]`
+- method Store.edgesOf L529-541 `(id: string): { out: EdgeRow[]; in: EdgeRow[] }`
+- method Store.edgesFromFile L547-562 `(repo: string, file: string): EdgeRow[]`
+- method Store.logRetrieval L566-595 `(entry: {
     source: string;
     signature: string;
     strategy: string;
@@ -409,12 +421,12 @@
     usedChars: number;
     latencyMs: number;
   }): number`
-- method Store.updateRetrievalOutcome L594-615 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
-- method Store.listRetrievals L617-621 `(limit = 20): Record<string, unknown>[]`
-- method Store.getPattern L623-631 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
-- method Store.putPattern L633-643 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
-- method Store.listPatterns L645-649 `(): Record<string, unknown>[]`
-- method Store.recordEval L651-679 `(entry: {
+- method Store.updateRetrievalOutcome L597-618 `(id: number, outcome: { sectionsUsed?: string[]; groundedFindings?: number; totalFindings?: number; feedback?: number }): boolean`
+- method Store.listRetrievals L620-624 `(limit = 20): Record<string, unknown>[]`
+- method Store.getPattern L626-634 `(signature: string): { strategy: string; source: string; score: number; baseline: number } | null`
+- method Store.putPattern L636-646 `(signature: string, strategy: string, source: string, score: number, baseline: number): void`
+- method Store.listPatterns L648-652 `(): Record<string, unknown>[]`
+- method Store.recordEval L654-682 `(entry: {
     golden: string;
     cases: number;
     microRecall: number;
@@ -425,21 +437,21 @@
     usedCache: boolean;
     note?: string;
   }): void`
-- method Store.evalHistory L681-685 `(): Record<string, unknown>[]`
-- method Store.resolvedEdgesJoined L692-725 `(): JoinedEdge[]`
-- method Store.unresolvedSummary L728-737 `(): { name: string; kind: EdgeKind; count: number }[]`
-- method Store.symbolById L739-744 `(id: string): SymbolRow | null`
-- method Store.unresolvedEdges L751-768 `(repo?: string): UnresolvedEdge[]`
-- method Store.topLevelSymbolsNamed L776-786 `(repo: string, name: string): SymbolRow[]`
-- method Store.dispatchTargets L797-807 `(repo: string, controllerClass: string, action: string): SymbolRow[]`
-- method Store.moduleSymbol L809-814 `(repo: string, file: string): SymbolRow | null`
-- method Store.linkEdges L822-843 `(links: { fromId: string; toName: string; kind: EdgeKind; toId: string }[]): number`
-- method Store.crossRepoEdges L846-848 `(): JoinedEdge[]`
-- method Store.countCrossRepoEdges L850-859 `(): number`
-- method Store.countResolvedDispatches L862-867 `(): number`
-- method Store.unlinkDispatches L875-897 `(): number`
-- method Store.unlinkCrossRepo L900-926 `(): number`
-- function rowToSymbol L929-943 `(r: unknown): SymbolRow`
+- method Store.evalHistory L684-688 `(): Record<string, unknown>[]`
+- method Store.resolvedEdgesJoined L695-728 `(): JoinedEdge[]`
+- method Store.unresolvedSummary L731-740 `(): { name: string; kind: EdgeKind; count: number }[]`
+- method Store.symbolById L742-747 `(id: string): SymbolRow | null`
+- method Store.unresolvedEdges L754-771 `(repo?: string): UnresolvedEdge[]`
+- method Store.topLevelSymbolsNamed L779-789 `(repo: string, name: string): SymbolRow[]`
+- method Store.dispatchTargets L800-810 `(repo: string, controllerClass: string, action: string): SymbolRow[]`
+- method Store.moduleSymbol L812-817 `(repo: string, file: string): SymbolRow | null`
+- method Store.linkEdges L825-846 `(links: { fromId: string; toName: string; kind: EdgeKind; toId: string }[]): number`
+- method Store.crossRepoEdges L849-851 `(): JoinedEdge[]`
+- method Store.countCrossRepoEdges L853-862 `(): number`
+- method Store.countResolvedDispatches L865-870 `(): number`
+- method Store.unlinkDispatches L878-900 `(): number`
+- method Store.unlinkCrossRepo L903-929 `(): number`
+- function rowToSymbol L932-946 `(r: unknown): SymbolRow`
 
 ### src/test/collapsed-graph.test.ts
 
@@ -510,6 +522,26 @@
 - testblock test(seedsFromDiff: span overlap, module fallback, unknown file) L54-72
 - testblock test(retrieveForDiff finds callers of a changed function; budget elides) L74-89
 - testblock test(runEval scores golden cases (diff and target styles)) L91-123
+
+### src/test/extractor-dockerfile.test.ts
+
+- variable repoRoot L18-18
+- variable extractorDir L19-19
+- variable fixture L20-20
+- variable golden L21-21
+- variable hasGo L23-23
+- variable binary L25-25
+- function builtBinary L26-33 `(): string`
+- function indexedFixture L35-40 `(): Store`
+- testblock test(claims routes all three Dockerfile naming forms, not by extension) L42-50
+- testblock test(dockerfile fixture indexes stages and ARGs alongside TS files) L52-70
+- testblock test(stage graph: FROM / COPY --from / --mount=from resolve to prior stages) L72-92
+- testblock test(ARG blast radius: stages using ${ARG} reference the declaration) L94-103
+- testblock test(COPY sources stay honestly unresolved with the repo-relative path) L105-113
+- testblock test(a diff on a stage seeds retrieval and packs dependent stages) L115-128
+- testblock test(eval baseline: stage/ARG blast radius recovered; COPY-source gap is measured) L130-140
+- testblock test(without a Go toolchain the claimed files degrade to file-level modules) L142-157
+- testblock test(--capabilities answers the handshake and announces basename patterns) L159-169
 
 ### src/test/extractor-go.test.ts
 
@@ -916,6 +948,7 @@
 - src/app/loop.ts → src/app/review.ts
 - src/app/loop.ts → src/core/retrieval.ts
 - src/app/loop.ts → src/store/store.ts
+- src/app/registry.ts → src/extractors/dockerfile.ts
 - src/app/registry.ts → src/extractors/go.ts
 - src/app/registry.ts → src/extractors/php.ts
 - src/app/registry.ts → src/extractors/python.ts
@@ -946,6 +979,8 @@
 - src/core/map.ts → src/store/store.ts
 - src/core/retrieval.ts → src/core/diff.ts
 - src/core/retrieval.ts → src/store/store.ts
+- src/extractors/dockerfile.ts → src/extractors/subprocess.ts
+- src/extractors/dockerfile.ts → src/protocol/scip-export.ts
 - src/extractors/go.ts → src/extractors/subprocess.ts
 - src/extractors/php.ts → src/extractors/subprocess.ts
 - src/extractors/python.ts → src/extractors/subprocess.ts
@@ -1002,6 +1037,15 @@
 - src/test/eval.test.ts → src/core/diff.ts
 - src/test/eval.test.ts → src/core/retrieval.ts
 - src/test/eval.test.ts → src/store/store.ts
+- src/test/extractor-dockerfile.test.ts → src/app/eval.ts
+- src/test/extractor-dockerfile.test.ts → src/app/index.ts
+- src/test/extractor-dockerfile.test.ts → src/core/contextpack.ts
+- src/test/extractor-dockerfile.test.ts → src/core/diff.ts
+- src/test/extractor-dockerfile.test.ts → src/core/retrieval.ts
+- src/test/extractor-dockerfile.test.ts → src/extractors/dockerfile.ts
+- src/test/extractor-dockerfile.test.ts → src/protocol/scip-export.ts
+- src/test/extractor-dockerfile.test.ts → src/protocol/scip.ts
+- src/test/extractor-dockerfile.test.ts → src/store/store.ts
 - src/test/extractor-go.test.ts → src/app/index.ts
 - src/test/extractor-go.test.ts → src/core/contextpack.ts
 - src/test/extractor-go.test.ts → src/core/diff.ts
@@ -1122,6 +1166,7 @@
 - src/app/index.ts ScipImportReport —references→ src/app/index.ts IndexReport
 - src/app/index.ts discoverSourceFiles —references→ src/app/index.ts SKIP_DIRS
 - src/app/index.ts discoverSourceFiles —references→ src/extractors/ts.ts EXTENSIONS
+- src/app/index.ts extractorFor —calls→ src/protocol/extractor.ts Extractor
 - src/app/index.ts extractorFor —references→ src/protocol/extractor.ts Extractor
 - src/app/index.ts importScip —references→ src/app/index.ts ScipImportReport
 - src/app/index.ts importScip —calls→ src/app/index.ts contentHash
@@ -1209,6 +1254,7 @@
 - src/app/loop.ts recordReviewOutcome —references→ src/app/review.ts ReviewResult
 - src/app/loop.ts recordReviewOutcome —references→ src/store/store.ts Store
 - src/app/loop.ts recordReviewOutcome —calls→ src/store/store.ts Store.updateRetrievalOutcome
+- src/app/registry.ts builtinExtractors —calls→ src/extractors/dockerfile.ts DockerfileExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/go.ts GoExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/php.ts PhpExtractor
 - src/app/registry.ts builtinExtractors —calls→ src/extractors/python.ts PythonExtractor
@@ -1388,6 +1434,14 @@
 - src/core/retrieval.ts seedsFromDiff —references→ src/core/retrieval.ts Seed
 - src/core/retrieval.ts seedsFromDiff —references→ src/store/store.ts Store
 - src/core/retrieval.ts seedsFromDiff —calls→ src/store/store.ts Store.symbolsInFile
+- src/extractors/dockerfile.ts DockerfileExtractor —extends→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/dockerfile.ts DockerfileExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
+- src/extractors/dockerfile.ts resolveDockerfileExtractorCommand —calls→ src/extractors/dockerfile.ts dockerfileExtractorSourceDir
+- src/extractors/dockerfile.ts resolveDockerfileExtractorCommand —calls→ src/extractors/dockerfile.ts onPath
+- src/extractors/dockerfile.ts resolveDockerfileExtractorCommand —references→ src/extractors/subprocess.ts SubprocessCommand
+- src/extractors/dockerfile.ts DockerfileExtractor.claims —calls→ src/protocol/scip-export.ts isDockerfilePath
+- src/extractors/dockerfile.ts DockerfileExtractor.constructor —references→ src/extractors/dockerfile.ts UNAVAILABLE_WARNING
+- src/extractors/dockerfile.ts DockerfileExtractor.constructor —references→ src/extractors/dockerfile.ts resolveDockerfileExtractorCommand
 - src/extractors/go.ts GoCommand —references→ src/extractors/subprocess.ts SubprocessCommand
 - src/extractors/go.ts GoExtractor —extends→ src/extractors/subprocess.ts SubprocessExtractor
 - src/extractors/go.ts GoExtractor —references→ src/extractors/subprocess.ts SubprocessExtractor
@@ -1509,10 +1563,13 @@
 - src/protocol/scip-emit.ts parentOf —references→ src/protocol/extractor.ts ExtractedSymbol
 - src/protocol/scip-export.ts SCHEME_BY_EXTENSION —references→ src/protocol/scip.ts LibrarianScheme
 - src/protocol/scip-export.ts ScipExportResult —references→ src/protocol/scip.ts Ext
+- src/protocol/scip-export.ts schemeForPath —references→ src/protocol/scip-export.ts SCHEME_BY_EXTENSION
+- src/protocol/scip-export.ts schemeForPath —calls→ src/protocol/scip-export.ts isDockerfilePath
+- src/protocol/scip-export.ts schemeForPath —references→ src/protocol/scip.ts LibrarianScheme
 - src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/extractor.ts ExtractionResult
 - src/protocol/scip-export.ts storeToScipPlus —calls→ src/protocol/scip-emit.ts extractionResultsToScipPlus
-- src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/scip-export.ts SCHEME_BY_EXTENSION
 - src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/scip-export.ts ScipExportResult
+- src/protocol/scip-export.ts storeToScipPlus —calls→ src/protocol/scip-export.ts schemeForPath
 - src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/scip.ts ExtDocument
 - src/protocol/scip-export.ts storeToScipPlus —references→ src/protocol/scip.ts LibrarianScheme
 - src/protocol/scip-export.ts storeToScipPlus —calls→ src/protocol/scip.ts createScipIndex
@@ -1863,6 +1920,59 @@
 - src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/store/store.ts Store
 - src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/store/store.ts Store.close
 - src/test/eval.test.ts test(seedsFromDiff: span overlap, module fallback, unknown file) —calls→ src/test/eval.test.ts fixtureRepo
+- src/test/extractor-dockerfile.test.ts builtBinary —references→ src/test/extractor-dockerfile.test.ts binary
+- src/test/extractor-dockerfile.test.ts builtBinary —references→ src/test/extractor-dockerfile.test.ts extractorDir
+- src/test/extractor-dockerfile.test.ts extractorDir —references→ src/test/extractor-dockerfile.test.ts repoRoot
+- src/test/extractor-dockerfile.test.ts fixture —references→ src/test/extractor-dockerfile.test.ts repoRoot
+- src/test/extractor-dockerfile.test.ts golden —references→ src/test/extractor-dockerfile.test.ts repoRoot
+- src/test/extractor-dockerfile.test.ts indexedFixture —calls→ src/app/index.ts indexRepo
+- src/test/extractor-dockerfile.test.ts indexedFixture —calls→ src/store/store.ts Store
+- src/test/extractor-dockerfile.test.ts indexedFixture —references→ src/store/store.ts Store
+- src/test/extractor-dockerfile.test.ts indexedFixture —calls→ src/test/extractor-dockerfile.test.ts builtBinary
+- src/test/extractor-dockerfile.test.ts indexedFixture —references→ src/test/extractor-dockerfile.test.ts fixture
+- src/test/extractor-dockerfile.test.ts test(--capabilities answers the handshake and announces basename patterns) —references→ src/protocol/scip.ts PROTOCOL_NAME
+- src/test/extractor-dockerfile.test.ts test(--capabilities answers the handshake and announces basename patterns) —references→ src/protocol/scip.ts PROTOCOL_VERSION
+- src/test/extractor-dockerfile.test.ts test(--capabilities answers the handshake and announces basename patterns) —calls→ src/protocol/scip.ts parseCapabilities
+- src/test/extractor-dockerfile.test.ts test(--capabilities answers the handshake and announces basename patterns) —calls→ src/test/extractor-dockerfile.test.ts builtBinary
+- src/test/extractor-dockerfile.test.ts test(--capabilities answers the handshake and announces basename patterns) —references→ src/test/extractor-dockerfile.test.ts hasGo
+- src/test/extractor-dockerfile.test.ts test(ARG blast radius: stages using ${ARG} reference the declaration) —calls→ src/store/store.ts Store.close
+- src/test/extractor-dockerfile.test.ts test(ARG blast radius: stages using ${ARG} reference the declaration) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-dockerfile.test.ts test(ARG blast radius: stages using ${ARG} reference the declaration) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-dockerfile.test.ts test(ARG blast radius: stages using ${ARG} reference the declaration) —references→ src/test/extractor-dockerfile.test.ts hasGo
+- src/test/extractor-dockerfile.test.ts test(ARG blast radius: stages using ${ARG} reference the declaration) —calls→ src/test/extractor-dockerfile.test.ts indexedFixture
+- src/test/extractor-dockerfile.test.ts test(COPY sources stay honestly unresolved with the repo-relative path) —calls→ src/store/store.ts Store.close
+- src/test/extractor-dockerfile.test.ts test(COPY sources stay honestly unresolved with the repo-relative path) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-dockerfile.test.ts test(COPY sources stay honestly unresolved with the repo-relative path) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-dockerfile.test.ts test(COPY sources stay honestly unresolved with the repo-relative path) —references→ src/test/extractor-dockerfile.test.ts hasGo
+- src/test/extractor-dockerfile.test.ts test(COPY sources stay honestly unresolved with the repo-relative path) —calls→ src/test/extractor-dockerfile.test.ts indexedFixture
+- src/test/extractor-dockerfile.test.ts test(a diff on a stage seeds retrieval and packs dependent stages) —calls→ src/core/contextpack.ts assembleReviewPack
+- src/test/extractor-dockerfile.test.ts test(a diff on a stage seeds retrieval and packs dependent stages) —calls→ src/core/diff.ts parseUnifiedDiff
+- src/test/extractor-dockerfile.test.ts test(a diff on a stage seeds retrieval and packs dependent stages) —calls→ src/core/retrieval.ts retrieveForDiff
+- src/test/extractor-dockerfile.test.ts test(a diff on a stage seeds retrieval and packs dependent stages) —calls→ src/store/store.ts Store.close
+- src/test/extractor-dockerfile.test.ts test(a diff on a stage seeds retrieval and packs dependent stages) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-dockerfile.test.ts test(a diff on a stage seeds retrieval and packs dependent stages) —references→ src/test/extractor-dockerfile.test.ts fixture
+- src/test/extractor-dockerfile.test.ts test(a diff on a stage seeds retrieval and packs dependent stages) —references→ src/test/extractor-dockerfile.test.ts hasGo
+- src/test/extractor-dockerfile.test.ts test(a diff on a stage seeds retrieval and packs dependent stages) —calls→ src/test/extractor-dockerfile.test.ts indexedFixture
+- src/test/extractor-dockerfile.test.ts test(claims routes all three Dockerfile naming forms, not by extension) —calls→ src/protocol/scip-export.ts isDockerfilePath
+- src/test/extractor-dockerfile.test.ts test(dockerfile fixture indexes stages and ARGs alongside TS files) —calls→ src/store/store.ts Store.close
+- src/test/extractor-dockerfile.test.ts test(dockerfile fixture indexes stages and ARGs alongside TS files) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-dockerfile.test.ts test(dockerfile fixture indexes stages and ARGs alongside TS files) —calls→ src/store/store.ts Store.stats
+- src/test/extractor-dockerfile.test.ts test(dockerfile fixture indexes stages and ARGs alongside TS files) —references→ src/test/extractor-dockerfile.test.ts hasGo
+- src/test/extractor-dockerfile.test.ts test(dockerfile fixture indexes stages and ARGs alongside TS files) —calls→ src/test/extractor-dockerfile.test.ts indexedFixture
+- src/test/extractor-dockerfile.test.ts test(eval baseline: stage/ARG blast radius recovered; COPY-source gap is measured) —calls→ src/app/eval.ts loadGoldenFile
+- src/test/extractor-dockerfile.test.ts test(eval baseline: stage/ARG blast radius recovered; COPY-source gap is measured) —calls→ src/app/eval.ts runEval
+- src/test/extractor-dockerfile.test.ts test(eval baseline: stage/ARG blast radius recovered; COPY-source gap is measured) —calls→ src/store/store.ts Store.close
+- src/test/extractor-dockerfile.test.ts test(eval baseline: stage/ARG blast radius recovered; COPY-source gap is measured) —references→ src/test/extractor-dockerfile.test.ts fixture
+- src/test/extractor-dockerfile.test.ts test(eval baseline: stage/ARG blast radius recovered; COPY-source gap is measured) —references→ src/test/extractor-dockerfile.test.ts golden
+- src/test/extractor-dockerfile.test.ts test(eval baseline: stage/ARG blast radius recovered; COPY-source gap is measured) —references→ src/test/extractor-dockerfile.test.ts hasGo
+- src/test/extractor-dockerfile.test.ts test(eval baseline: stage/ARG blast radius recovered; COPY-source gap is measured) —calls→ src/test/extractor-dockerfile.test.ts indexedFixture
+- src/test/extractor-dockerfile.test.ts test(stage graph: FROM / COPY --from / --mount=from resolve to prior stages) —calls→ src/store/store.ts Store.close
+- src/test/extractor-dockerfile.test.ts test(stage graph: FROM / COPY --from / --mount=from resolve to prior stages) —calls→ src/store/store.ts Store.edgesOf
+- src/test/extractor-dockerfile.test.ts test(stage graph: FROM / COPY --from / --mount=from resolve to prior stages) —calls→ src/store/store.ts Store.findSymbols
+- src/test/extractor-dockerfile.test.ts test(stage graph: FROM / COPY --from / --mount=from resolve to prior stages) —references→ src/test/extractor-dockerfile.test.ts hasGo
+- src/test/extractor-dockerfile.test.ts test(stage graph: FROM / COPY --from / --mount=from resolve to prior stages) —calls→ src/test/extractor-dockerfile.test.ts indexedFixture
+- src/test/extractor-dockerfile.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/dockerfile.ts DockerfileExtractor
+- src/test/extractor-dockerfile.test.ts test(without a Go toolchain the claimed files degrade to file-level modules) —calls→ src/extractors/subprocess.ts SubprocessExtractor.extract
 - src/test/extractor-go.test.ts builtBinary —references→ src/test/extractor-go.test.ts binary
 - src/test/extractor-go.test.ts builtBinary —references→ src/test/extractor-go.test.ts goExtractorDir
 - src/test/extractor-go.test.ts fixture —references→ src/test/extractor-go.test.ts repoRoot
@@ -2542,73 +2652,73 @@
 
 ## Unresolved (aggregated)
 
-- 99× equal (calls)
-- 95× map (calls)
-- 84× node:path#join (calls)
-- 73× ok (calls)
-- 51× some (calls)
-- 49× deepEqual (calls)
+- 104× equal (calls)
+- 97× map (calls)
+- 91× node:path#join (calls)
+- 79× ok (calls)
+- 55× some (calls)
+- 51× deepEqual (calls)
 - 40× get (calls)
+- 40× node:fs#mkdtempSync (calls)
+- 40× node:os#tmpdir (calls)
 - 40× prepare (calls)
-- 38× node:fs#mkdtempSync (calls)
-- 38× node:os#tmpdir (calls)
 - 38× stringify (calls)
-- 36× node:fs#writeFileSync (calls)
-- 35× filter (calls)
-- 35× node:path (imports)
-- 34× node:fs (imports)
+- 37× node:fs#writeFileSync (calls)
+- 37× node:path (imports)
+- 36× filter (calls)
+- 36× node:fs (imports)
+- 33× node:fs#rmSync (calls)
 - 32× Error (calls)
-- 32× node:fs#rmSync (calls)
-- 31× find (calls)
+- 32× find (calls)
+- 32× node:path#join (imports)
 - 30× join (calls)
-- 30× node:path#join (imports)
 - 30× push (calls)
 - 28× Map (calls)
 - 26× Set (calls)
 - 25× has (calls)
+- 25× node:child_process#spawnSync (calls)
 - 24× slice (calls)
+- 24× split (calls)
 - 23× all (calls)
-- 23× split (calls)
-- 22× includes (calls)
-- 22× node:assert/strict (imports)
-- 22× node:child_process#spawnSync (calls)
+- 23× includes (calls)
+- 23× node:assert/strict (imports)
+- 23× node:test (imports)
 - 22× node:fs#mkdirSync (calls)
-- 22× node:test (imports)
-- 21× node:test#test (calls)
-- 21× node:test#test (imports)
-- 21× parse (calls)
-- 20× node:fs#writeFileSync (imports)
-- 20× node:path#resolve (calls)
+- 22× node:path#resolve (calls)
+- 22× node:test#test (calls)
+- 22× node:test#test (imports)
+- 22× parse (calls)
+- 21× node:fs#writeFileSync (imports)
+- 20× node:fs#mkdtempSync (imports)
+- 20× node:os (imports)
+- 20× node:os#tmpdir (imports)
+- 20× node:path#dirname (calls)
+- 20× node:path#resolve (imports)
 - 20× set (calls)
-- 19× node:fs#mkdtempSync (imports)
-- 19× node:os (imports)
-- 19× node:os#tmpdir (imports)
-- 18× node:path#dirname (calls)
-- 18× node:path#resolve (imports)
-- 17× node:fs#existsSync (calls)
-- 17× node:path#dirname (imports)
+- 19× node:fs#existsSync (calls)
+- 19× node:path#dirname (imports)
+- 16× node:url (imports)
+- 16× node:url#fileURLToPath (calls)
+- 16× node:url#fileURLToPath (imports)
 - 15× node:fs#mkdirSync (imports)
 - 15× sort (calls)
-- 14× node:url (imports)
-- 14× node:url#fileURLToPath (calls)
-- 14× node:url#fileURLToPath (imports)
+- 14× node:fs#rmSync (imports)
 - 13× json (calls)
-- 13× node:fs#rmSync (imports)
 - 13× throws (calls)
 - 12× run (calls)
+- 11× startsWith (calls)
+- 10× node:child_process (imports)
+- 10× node:child_process#spawnSync (imports)
+- 10× node:fs#existsSync (imports)
 - 10× node:fs#readFileSync (calls)
-- 10× startsWith (calls)
 - 9× @scip-code/scip (imports)
 - 9× add (calls)
+- 9× endsWith (calls)
 - 9× exec (calls)
 - 9× isArray (calls)
 - 9× max (calls)
-- 9× node:child_process (imports)
-- 9× node:child_process#spawnSync (imports)
-- 9× node:fs#existsSync (imports)
 - 9× node:fs#readFileSync (imports)
 - 9× test (calls)
-- 8× endsWith (calls)
 - 8× keys (calls)
 - 8× now (calls)
 - 7× @/lib/librarian (imports)
@@ -2618,13 +2728,13 @@
 - 7× Number (calls)
 - 7× entries (calls)
 - 7× match (calls)
+- 7× node:path#delimiter (imports)
 - 7× trim (calls)
 - 7× values (calls)
 - 6× fetch (calls)
 - 6× localeCompare (calls)
 - 6× next/server (imports)
 - 6× next/server#NextResponse (imports)
-- 6× node:path#delimiter (imports)
 - 5× @scip-code/scip#SymbolInformation_Kind (imports)
 - 5× String (calls)
 - 5× digest (calls)
@@ -2663,6 +2773,7 @@
 - 3× isMethodDeclaration (calls)
 - 3× isPropertyAccessExpression (calls)
 - 3× isVariableDeclaration (calls)
+- 3× node:path#basename (calls)
 - 3× node:sqlite (imports)
 - 3× node:sqlite#DatabaseSync (calls)
 - 3× node:sqlite#DatabaseSync (imports)
@@ -2697,7 +2808,7 @@
 - 2× isTypeAliasDeclaration (calls)
 - 2× listRepos (calls)
 - 2× log (calls)
-- 2× node:path#basename (calls)
+- 2× node:path#basename (imports)
 - 2× node:path#extname (calls)
 - 2× node:path#extname (imports)
 - 2× notEqual (calls)
@@ -2757,6 +2868,7 @@
 - 1× Link (calls)
 - 1× Response (calls)
 - 1× URLSearchParams (calls)
+- 1× bind (calls)
 - 1× collapsedEdges (calls)
 - 1× complete (calls)
 - 1× cos (calls)
@@ -2804,7 +2916,6 @@
 - 1× next/link (imports)
 - 1× node:fs#readdirSync (calls)
 - 1× node:fs#readdirSync (imports)
-- 1× node:path#basename (imports)
 - 1× node:path#isAbsolute (calls)
 - 1× node:path#isAbsolute (imports)
 - 1× react#useCallback (calls)
