@@ -36,7 +36,10 @@ export type SymbolKind =
   | 'matview'
   | 'procedure'
   | 'trigger'
-  | 'index';
+  | 'index'
+  // Dockerfile build stage (#40). ARGs reuse `variable`; the graph is a
+  // stage/ARG reference graph (multi-stage structure), not a call graph.
+  | 'stage';
 
 export type EdgeKind = 'calls' | 'imports' | 'extends' | 'references' | 'dispatches';
 

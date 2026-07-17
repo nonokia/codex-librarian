@@ -15,26 +15,42 @@ import { Store } from '../store/store.js';
 
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', 'coverage', '.git', '.dlog', '.librarian', 'out', 'vendor', '.terraform']);
 
-export function discoverSourceFiles(rootDir: string, extensions: string[] = EXTENSIONS): string[] {
+export function discoverSourceFiles(
+  rootDir: string,
+  extensions: string[] = EXTENSIONS,
+  claims?: (relPath: string) => boolean
+): string[] {
   const found: string[] = [];
-  const walk = (dir: string) => {
+  const walk = (dir: string, relDir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (entry.name.startsWith('.') && entry.name !== '.') continue;
       const full = join(dir, entry.name);
+      const relPath = relDir === '' ? entry.name : `${relDir}/${entry.name}`;
       if (entry.isDirectory()) {
-        if (!SKIP_DIRS.has(entry.name)) walk(full);
-      } else if (extensions.some((ext) => entry.name.endsWith(ext)) && !entry.name.endsWith('.d.ts')) {
+        if (!SKIP_DIRS.has(entry.name)) walk(full, relPath);
+      } else if (
+        (extensions.some((ext) => entry.name.endsWith(ext)) || (claims?.(relPath) ?? false)) &&
+        !entry.name.endsWith('.d.ts')
+      ) {
         found.push(full);
       }
     }
   };
-  walk(rootDir);
+  walk(rootDir, '');
   return found.sort();
 }
 
-/** first registered extractor claiming the file's extension, or null */
+/**
+ * First registered extractor claiming the file, or null. An extractor's
+ * optional `claims` predicate replaces extension-suffix matching (issue #40 —
+ * extension-less files like `Dockerfile`).
+ */
 function extractorFor(file: string, extractors: Extractor[]): Extractor | null {
-  return extractors.find((x) => x.extensions.some((ext) => file.endsWith(ext))) ?? null;
+  return (
+    extractors.find((x) =>
+      x.claims ? x.claims(file) : x.extensions.some((ext) => file.endsWith(ext))
+    ) ?? null
+  );
 }
 
 export function contentHash(text: string): string {
@@ -114,7 +130,14 @@ export function indexRepo(
   const t0 = Date.now();
   const repo = opts.repoName ?? basename(resolve(rootDir));
   const extractors = opts.extractors ?? resolveExtractors(rootDir);
-  const allExtensions = [...new Set(extractors.flatMap((x) => x.extensions))];
+  const allExtensions = [
+    ...new Set(extractors.filter((x) => !x.claims).flatMap((x) => x.extensions)),
+  ];
+  const claimPredicates = extractors.filter((x) => x.claims).map((x) => x.claims!.bind(x));
+  const anyClaims =
+    claimPredicates.length === 0
+      ? undefined
+      : (relPath: string) => claimPredicates.some((c) => c(relPath));
   const rel = (abs: string) => relative(rootDir, abs).split(sep).join('/');
   // --include: keep only files under the given root-relative prefixes
   // (directory-boundary aware, so `src` does not match `src2/`).
@@ -124,7 +147,7 @@ export function indexRepo(
     const r = rel(abs);
     return prefixes.some((p) => r === p || r.startsWith(`${p}/`));
   };
-  const absFiles = discoverSourceFiles(rootDir, allExtensions).filter(included);
+  const absFiles = discoverSourceFiles(rootDir, allExtensions, anyClaims).filter(included);
 
   const hashes = new Map<string, string>();
   for (const abs of absFiles) hashes.set(rel(abs), contentHash(readFileSync(abs, 'utf8')));

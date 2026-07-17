@@ -40,6 +40,8 @@ const LANGUAGE: Record<LibrarianScheme, string> = {
   'librarian-php': 'php',
   'librarian-py': 'python',
   'librarian-terraform': 'terraform',
+  'librarian-sql': 'sql',
+  'librarian-dockerfile': 'dockerfile',
 };
 
 /** innermost row strictly enclosing the testblock's span — its enclosing_symbol */

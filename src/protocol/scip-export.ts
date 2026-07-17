@@ -11,7 +11,7 @@
  * back; ToolInfo names `librarian` (the store is the producer, not one of the
  * language extractors — schemes stay per-document in the monikers).
  */
-import { extname } from 'node:path';
+import { basename, extname } from 'node:path';
 import { TextEncoding } from '@scip-code/scip';
 import type { Index } from '@scip-code/scip';
 import type { Store } from '../store/store.js';
@@ -33,7 +33,25 @@ const SCHEME_BY_EXTENSION: Record<string, LibrarianScheme> = {
   '.py': 'librarian-py',
   '.pyi': 'librarian-py',
   '.tf': 'librarian-terraform',
+  '.sql': 'librarian-sql',
+  '.dockerfile': 'librarian-dockerfile',
 };
+
+/**
+ * The extension-less Dockerfile claim patterns of issue #40 (`Dockerfile` /
+ * `Dockerfile.<x>` / `*.dockerfile`). Lives here — next to the rest of the
+ * path→language knowledge — so the extractors layer can import it without
+ * inverting the protocol → extractors dependency direction (issue #21).
+ */
+export function isDockerfilePath(relPath: string): boolean {
+  const name = basename(relPath);
+  return name === 'Dockerfile' || name.startsWith('Dockerfile.') || name.endsWith('.dockerfile');
+}
+
+/** Extension → scheme, plus the Dockerfile patterns — the export-side mirror of `claims`. */
+function schemeForPath(path: string): LibrarianScheme | undefined {
+  return SCHEME_BY_EXTENSION[extname(path)] ?? (isDockerfilePath(path) ? 'librarian-dockerfile' : undefined);
+}
 
 export interface ScipExportResult {
   index: Index;
@@ -62,7 +80,7 @@ export function storeToScipPlus(store: Store, repo: string): ScipExportResult {
     .map((f) => f.path)
     .sort();
   for (const path of paths) {
-    const scheme = SCHEME_BY_EXTENSION[extname(path)];
+    const scheme = schemeForPath(path);
     if (scheme === undefined) {
       skipped.push(path);
       continue;
